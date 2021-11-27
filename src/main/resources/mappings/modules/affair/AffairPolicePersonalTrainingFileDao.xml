@@ -1,0 +1,446 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairPolicePersonalTrainingFileDao">
+    
+	<sql id="affairPolicePersonalTrainingFileColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.sex AS "sex",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.job AS "job",
+		a.birthday AS "birthday",
+		a.hiredate AS "hiredate",
+		a.education AS "education",
+		a.politics_face AS "politicsFace",
+		a.technical_title AS "technicalTitle",
+		a.phone AS "phone",
+		a.online_course_num AS "onlineCourseNum",
+		a.online_course_passing AS "onlineCoursePassing",
+		a.online_course_average AS "onlineCourseAverage",
+		a.online_course_total_time AS "onlineCourseTotalTime",
+		a.online_course_credit AS "onlineCourseCredit",
+		a.train_course_num AS "trainCourseNum",
+		a.train_course_passing AS "trainCoursePassing",
+		a.train_course_average AS "trainCourseAverage",
+		a.train_course_total_time AS "trainCourseTotalTime",
+		a.train_course_credit AS "trainCourseCredit",
+		a.job_training_num AS "jobTrainingNum",
+		a.job_training_total_time AS "jobTrainingTotalTime",
+		a.out_training_num AS "outTrainingNum",
+		a.out_training_finish AS "outTrainingFinish",
+		a.out_training_main_type AS "outTrainingMainType",
+		a.out_training_highest_level AS "outTrainingHighestLevel",
+		a.out_training_get_ccie AS "outTrainingGetCcie",
+		a.exchange_study_num AS "exchangeStudyNum",
+		a.exchange_study_finish AS "exchangeStudyFinish",
+		a.exchange_study_main_job AS "exchangeStudyMainJob",
+		a.exchange_study_highest_spec AS "exchangeStudyHighestSpec",
+		a.exchange_study_total_time AS "exchangeStudyTotalTime",
+		a.exam_num AS "examNum",
+		a.exam_pass AS "examPass",
+		a.exam_average AS "examAverage",
+		a.exam_cheat AS "examCheat",
+		a.training_integral AS "trainingIntegral",
+		a.expert_opinion AS "expertOpinion",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.id_number AS "idNumber"
+	</sql>
+	
+	<sql id="affairPolicePersonalTrainingFileJoins">
+		LEFT JOIN sys_office o5 ON o5.id = a.unit_id
+	</sql>
+
+	<sql id="personnelBaseColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.id_number AS "idNumber",
+		a.nation AS "nation",
+		a.birthday AS "birthday",
+		a.status AS "status",
+		a.blood_type AS "bloodType",
+		a.police_depot_sign AS "policeDepotSign",
+		a.police_id_number AS "policeIdNumber",
+		a.personnel_type AS "personnelType",
+		a.native_place AS "nativePlace",
+		a.birth_place AS "birthPlace",
+		a.grow_place AS "growPlace",
+		a.population_character AS "populationCharacter",
+		a.hjszd AS "hjszd",
+		a.identity AS "identity",
+		a.marriage_status AS "marriageStatus",
+		a.secret_status AS "secretStatus",
+		a.health_status AS "healthStatus",
+		a.hjszdxz AS "hjszdxz",
+		a.reason AS "reason",
+		a.work_date AS "workDate",
+        a.public_security_date AS "publicSecurityDate",
+		a.jcgzjlsj AS "jcgzjlsj",
+		a.gljsjzz AS "gljsjzz",
+		a.jxyjxznx AS "jxyjxznx",
+		a.politics_face AS "politicsFace",
+		a.organization_date AS "organizationDate",
+		a.workunit_code AS "workunitCode",
+		a.workunit_name AS "workunitName",
+		a.unit_code AS "unitCode",
+		a.relationship_unit AS "relationshipUnit",
+		a.bmhjz AS "bmhjz",
+		a.job_abbreviation AS "jobAbbreviation",
+		a.job_fullname AS "jobFullname",
+		a.job AS "job",
+		a.xggbbs AS "xggbbs",
+		a.is_xggb AS "isXggb",
+		a.category AS "category",
+		a.expertise AS "expertise",
+		a.award AS "award",
+		a.assessment AS "assessment",
+		a.remarks AS "remarks",
+		a.photo AS "photo",
+		a.sex AS "sex",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.workunit_id AS "workunitId",
+		a.education AS "education",
+		a.phone_number AS "phoneNumber"
+	</sql>
+
+	<sql id="personnelBaseJoins">
+		LEFT JOIN sys_office o ON o.id = a.workunit_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+
+	<select id="get" resultType="AffairPolicePersonalTrainingFile">
+		SELECT 
+			<include refid="affairPolicePersonalTrainingFileColumns"/>
+		FROM affair_police_personal_training_file a
+		<include refid="affairPolicePersonalTrainingFileJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairPolicePersonalTrainingFile">
+		SELECT 
+			<include refid="affairPolicePersonalTrainingFileColumns"/>
+		FROM affair_police_personal_training_file a
+		<include refid="affairPolicePersonalTrainingFileJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+			</if>
+			<if test="unitId != null and unitId != ''">
+				AND a.unit_id = #{unitId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findPersonnelBaseList" resultType="com.thinkgem.jeesite.modules.personnel.entity.PersonnelBase">
+		SELECT
+		<include refid="personnelBaseColumns"/>
+		FROM personnel_base a
+		<include refid="personnelBaseJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name  LIKE
+				<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+			</if>
+			<if test="workunitId != null and workunitId != ''">
+				AND (a.workunit_Id = #{workunitId} or o.parent_ids like '%,'||#{workunitId}||',%')
+			</if>
+			<if test="idNumber != null and idNumber != ''">
+				and a.id_number = #{idNumber}
+			</if>
+			<if test="policeIdNumber != null and policeIdNumber != ''">
+				and a.police_id_number = #{policeIdNumber}
+			</if>
+			and a.status in ('1','10','19','2','3','4','5','6')
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY COALESCE(a.police_id_number, '0') ASC ,${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY COALESCE(a.police_id_number, '0') ASC
+				/*ORDER BY cast(a.police_id_number AS INTEGER) ASC*/
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairPolicePersonalTrainingFile">
+		SELECT 
+			<include refid="affairPolicePersonalTrainingFileColumns"/>
+		FROM affair_police_personal_training_file a
+		<include refid="affairPolicePersonalTrainingFileJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	<select id="selByIdNumber" resultType="java.lang.Integer">
+		select count(*) from affair_police_personal_training_file a where a.del_flag='0' and a.id_number = #{idNumber}
+	</select>
+	<select id="findPersonnaInfoByIdNumber"
+			resultType="com.thinkgem.jeesite.modules.affair.entity.AffairPolicePersonalTrainingFile">
+		SELECT
+		<include refid="affairPolicePersonalTrainingFileColumns"/>
+		FROM affair_police_personal_training_file a
+		WHERE a.del_flag = '0' and a.id_number = #{idNumber}
+		limit 1
+	</select>
+	<select id="findPersonnaMapByIdNumber" resultType="java.util.Map">
+		SELECT
+		a.id AS "id",
+		a.name AS "name",
+		a.sex AS "sex",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.job AS "job",
+		a.education AS "education",
+		a.politics_face AS "politicsFace",
+		a.technical_title AS "technicalTitle",
+		a.phone AS "phone",
+		a.online_course_num AS "onlineCourseNum",
+		a.online_course_passing AS "onlineCoursePassing",
+		a.online_course_average AS "onlineCourseAverage",
+		a.online_course_total_time AS "onlineCourseTotalTime",
+		a.online_course_credit AS "onlineCourseCredit",
+		a.train_course_num AS "trainCourseNum",
+		a.train_course_passing AS "trainCoursePassing",
+		a.train_course_average AS "trainCourseAverage",
+		a.train_course_total_time AS "trainCourseTotalTime",
+		a.train_course_credit AS "trainCourseCredit",
+		a.job_training_num AS "jobTrainingNum",
+		a.job_training_total_time AS "jobTrainingTotalTime",
+		a.out_training_num AS "outTrainingNum",
+		a.out_training_finish AS "outTrainingFinish",
+		a.out_training_main_type AS "outTrainingMainType",
+		a.out_training_highest_level AS "outTrainingHighestLevel",
+		a.out_training_get_ccie AS "outTrainingGetCcie",
+		a.exchange_study_num AS "exchangeStudyNum",
+		a.exchange_study_finish AS "exchangeStudyFinish",
+		a.exchange_study_main_job AS "exchangeStudyMainJob",
+		a.exchange_study_highest_spec AS "exchangeStudyHighestSpec",
+		a.exchange_study_total_time AS "exchangeStudyTotalTime",
+		a.exam_num AS "examNum",
+		a.exam_pass AS "examPass",
+		a.exam_average AS "examAverage",
+		a.exam_cheat AS "examCheat",
+		a.training_integral AS "trainingIntegral",
+		a.expert_opinion AS "expertOpinion",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.del_flag AS "delFlag",
+		a.id_number AS "idNumber"
+		FROM affair_police_personal_training_file a
+		WHERE a.del_flag = '0' and a.id_number = #{idNumber}
+		limit 1
+	</select>
+
+	<insert id="insert">
+		INSERT INTO affair_police_personal_training_file(
+			id,
+			name,
+			sex,
+			unit,
+			unit_id,
+			job,
+			birthday,
+			hiredate,
+			education,
+			politics_face,
+			technical_title,
+			phone,
+			online_course_num,
+			online_course_passing,
+			online_course_average,
+			online_course_total_time,
+			online_course_credit,
+			train_course_num,
+			train_course_passing,
+			train_course_average,
+			train_course_total_time,
+			train_course_credit,
+			job_training_num,
+			job_training_total_time,
+			out_training_num,
+			out_training_finish,
+			out_training_main_type,
+			out_training_highest_level,
+			out_training_get_ccie,
+			exchange_study_num,
+			exchange_study_finish,
+			exchange_study_main_job,
+			exchange_study_highest_spec,
+			exchange_study_total_time,
+			exam_num,
+			exam_pass,
+			exam_average,
+			exam_cheat,
+			training_integral,
+			expert_opinion,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			id_number
+		) VALUES (
+			#{id},
+			#{name},
+			#{sex},
+			#{unit},
+			#{unitId},
+			#{job},
+			#{birthday},
+			#{hiredate},
+			#{education},
+			#{politicsFace},
+			#{technicalTitle},
+			#{phone},
+			#{onlineCourseNum},
+			#{onlineCoursePassing},
+			#{onlineCourseAverage},
+			#{onlineCourseTotalTime},
+			#{onlineCourseCredit},
+			#{trainCourseNum},
+			#{trainCoursePassing},
+			#{trainCourseAverage},
+			#{trainCourseTotalTime},
+			#{trainCourseCredit},
+			#{jobTrainingNum},
+			#{jobTrainingTotalTime},
+			#{outTrainingNum},
+			#{outTrainingFinish},
+			#{outTrainingMainType},
+			#{outTrainingHighestLevel},
+			#{outTrainingGetCcie},
+			#{exchangeStudyNum},
+			#{exchangeStudyFinish},
+			#{exchangeStudyMainJob},
+			#{exchangeStudyHighestSpec},
+			#{exchangeStudyTotalTime},
+			#{examNum},
+			#{examPass},
+			#{examAverage},
+			#{examCheat},
+			#{trainingIntegral},
+			#{expertOpinion},
+			#{createBy.id},
+			#{createOrgId},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateOrgId},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{idNumber}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_police_personal_training_file SET 	
+			name = #{name},
+			sex = #{sex},
+			unit = #{unit},
+			unit_id = #{unitId},
+			job = #{job},
+			birthday = #{birthday},
+			hiredate = #{hiredate},
+			education = #{education},
+			politics_face = #{politicsFace},
+			technical_title = #{technicalTitle},
+			phone = #{phone},
+			online_course_num = #{onlineCourseNum},
+			online_course_passing = #{onlineCoursePassing},
+			online_course_average = #{onlineCourseAverage},
+			online_course_total_time = #{onlineCourseTotalTime},
+			online_course_credit = #{onlineCourseCredit},
+			train_course_num = #{trainCourseNum},
+			train_course_passing = #{trainCoursePassing},
+			train_course_average = #{trainCourseAverage},
+			train_course_total_time = #{trainCourseTotalTime},
+			train_course_credit = #{trainCourseCredit},
+			job_training_num = #{jobTrainingNum},
+			job_training_total_time = #{jobTrainingTotalTime},
+			out_training_num = #{outTrainingNum},
+			out_training_finish = #{outTrainingFinish},
+			out_training_main_type = #{outTrainingMainType},
+			out_training_highest_level = #{outTrainingHighestLevel},
+			out_training_get_ccie = #{outTrainingGetCcie},
+			exchange_study_num = #{exchangeStudyNum},
+			exchange_study_finish = #{exchangeStudyFinish},
+			exchange_study_main_job = #{exchangeStudyMainJob},
+			exchange_study_highest_spec = #{exchangeStudyHighestSpec},
+			exchange_study_total_time = #{exchangeStudyTotalTime},
+			exam_num = #{examNum},
+			exam_pass = #{examPass},
+			exam_average = #{examAverage},
+			exam_cheat = #{examCheat},
+			training_integral = #{trainingIntegral},
+			expert_opinion = #{expertOpinion},
+			create_org_id = #{createOrgId},
+			create_id_no = #{createIdNo},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateOrgId},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			id_number = #{idNumber}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_police_personal_training_file SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<delete id="deleteByIdNumber">
+		delete from affair_police_personal_training_file where id_number = #{idNumber}
+	</delete>
+	
+</mapper>

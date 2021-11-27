@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairSitemAnagementDao">
+    
+	<sql id="affairSitemAnagementColumns">
+		a.id AS "id",
+		a.province AS "province",
+		a.city AS "city",
+		a.site_name AS "siteName",
+		a.max_chengxun_capacity AS "maxChengxunCapacity",
+		a.site_computer_num AS "siteComputerNum",
+		a.site AS "site",
+		a.phone AS "phone",
+		a.email AS "email",
+		a.remark AS "remark",
+		a.accessory_file AS "accessoryFile",
+		a.site_bed_num AS "siteBedNum",
+		a.site_canteen_repast_num AS "siteCanteenRepastNum",
+		a.linkman AS "linkman",
+		a.fax AS "fax",
+		a.is_valid AS "isValid",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.create_org_id as "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo"
+	</sql>
+
+	<sql id="affairSitemAnagementJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+
+	<sql id="affairClassManageColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.year AS "year",
+		a.unit_id AS "unitId",
+		a.unit AS "unit",
+-- 		a.train_date AS "trainDate",
+		a.title AS "title",
+		a.type AS "type",
+		a.purpose AS "purpose",
+		a.content AS "content",
+		a.site AS "site",
+		a.train_object AS "trainObject",
+		a.budget AS "budget",
+		a.channel AS "channel",
+		a.open_status AS "openStatus",
+		a.class_status AS "classStatus",
+		a.posp_status AS "pospStatus",
+		a.creator AS "creator",
+		a.create_time AS "createTime",
+		a.creator_unit AS "creatorUnit",
+		a.sponsor_unit AS "sponsorUnit",
+		a.teacher AS "teacher",
+		a.assistant AS "assistant",
+		a.teacher_phone AS "teacherPhone",
+		a.phone AS "phone",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.status AS "status",
+		a.fees AS "fees",
+		a.teacher_fees AS "teacherFees",
+		a.informant AS "informant",
+		a.began_date AS "beganDate",
+		a.result_date AS "resultDate",
+		a.level AS "level",
+		a.creator_unit_id AS "creatorUnitId",
+		a.sponsor_unit_id AS "sponsorUnitId",
+		a.train_day AS "trainDay",
+		a.count AS "count",
+		a.train_way AS "trainWay",
+		a.class_count AS "classCount",
+		a.score AS "score",
+		a.participate_train AS "participateTrain",
+		a.real_participate AS "realParticipate",
+		a.participate_rate AS "participateRate",
+		a.passed_count AS "passedCount",
+		a.fail_count AS "failCount",
+		a.pass_rate AS "passRate",
+		a.accommodation_fees AS "accommodationFees",
+		a.board_wages AS "boardWages",
+		a.site_fees AS "siteFees",
+		a.other_fees AS "otherFees",
+		a.fees_count AS "feesCount",
+		a.study_time AS "studyTime",
+		a.average_time AS "averageTime",
+		a.study_count AS "studyCount",
+		a.average_count AS "averageCount"
+	</sql>
+
+	<sql id="affairClassManageJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairSitemAnagement">
+		SELECT 
+			<include refid="affairSitemAnagementColumns"/>
+		FROM affair_sitem_anagement a
+		<include refid="affairSitemAnagementJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairSitemAnagement">
+		SELECT 
+			<include refid="affairSitemAnagementColumns"/>
+		FROM affair_sitem_anagement a
+		<include refid="affairSitemAnagementJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="province != null and province != ''">
+				AND a.province = #{province}
+			</if>
+			<if test="city != null and city != ''">
+				AND a.city = #{city}
+			</if>
+			<if test="siteName != null and siteName != ''">
+				AND a.site_name = #{siteName}
+			</if>
+			<if test="site != null and site != ''">
+				AND a.site = #{site}
+			</if>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairSitemAnagement">
+		SELECT 
+			<include refid="affairSitemAnagementColumns"/>
+		FROM affair_sitem_anagement a
+		<include refid="affairSitemAnagementJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_sitem_anagement(
+			id,
+			province,
+			city,
+			site_name,
+			max_chengxun_capacity,
+			site_computer_num,
+			site,
+			phone,
+			email,
+			remark,
+			accessory_file,
+			site_bed_num,
+			site_canteen_repast_num,
+			linkman,
+			fax,
+			is_valid,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			create_org_id,
+			create_id_no,
+			update_org_id,
+			update_id_no
+		) VALUES (
+			#{id},
+			#{province},
+			#{city},
+			#{siteName},
+			#{maxChengxunCapacity},
+			#{siteComputerNum},
+			#{site},
+			#{phone},
+			#{email},
+			#{remark},
+			#{accessoryFile},
+			#{siteBedNum},
+			#{siteCanteenRepastNum},
+			#{linkman},
+			#{fax},
+			#{isValid},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{updateBy.office.id},
+			#{updateIdNo}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_sitem_anagement SET
+			id = #{id},
+			province = #{province},
+			city = #{city},
+			site_name = #{siteName},
+			max_chengxun_capacity = #{maxChengxunCapacity},
+			site_computer_num = #{siteComputerNum},
+			site = #{site},
+			phone = #{phone},
+			email = #{email},
+			remark = #{remark},
+			accessory_file = #{accessoryFile},
+			site_bed_num = #{siteBedNum},
+			site_canteen_repast_num = #{siteCanteenRepastNum},
+			linkman = #{linkman},
+			fax = #{fax},
+			is_valid = #{isValid},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			create_id_no = #{createIdNo},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_sitem_anagement SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+
+	<update id="deleteByIds">
+		UPDATE affair_sitem_anagement SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<!--
+		根据id查询一条数据的详细内容
+	-->
+	<select id="findOne" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairClassManage">
+		SELECT
+		<include refid="affairClassManageColumns"/>
+		FROM affair_class_manage a
+		<include refid="affairClassManageJoins"/>
+		WHERE a.id = #{id}
+	</select>
+
+</mapper>

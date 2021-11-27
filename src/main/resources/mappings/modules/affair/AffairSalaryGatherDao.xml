@@ -1,0 +1,477 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairSalaryGatherDao">
+    
+	<sql id="affairSalaryGatherColumns">
+		a.id AS "id",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.year AS "year",
+		a.month AS "month",
+		a.name AS "name",
+		a.id_number AS "idNumber",
+		a.level AS "level",
+		a.sum AS "sum",
+		a.jb_salary AS "jbSalary",
+		a.jb_grade_salary AS "jbGradeSalary",
+		a.gj_sum AS "gjSum",
+		a.jiaban_allowance AS "jiabanAllowance",
+		a.jingxian_allowance AS "jingxianAllowance",
+		a.zhiqin_allowance AS "zhiqinAllowance",
+		a.jkby_allowance AS "jkbyAllowance",
+		a.telephone_fee AS "telephoneFee",
+		a.mobile_fee AS "mobileFee",
+		a.jszr_allowance AS "jszrAllowance",
+		a.nv_hygiene_fee AS "nvHygieneFee",
+		a.only_child_allowance AS "onlyChildAllowance",
+		a.fangshu_allowance AS "fangshuAllowance",
+		a.xinfang_allowance AS "xinfangAllowance",
+		a.gonggai1993_allowance AS "gonggai1993Allowance",
+		a.xizang_allowance AS "xizangAllowance",
+		a.high_altitude_allowance AS "highAltitudeAllowance",
+		a.xinjiang_allowance AS "xinjiangAllowance",
+		a.sar_allowance AS "sarAllowance",
+		a.township_allowance AS "townshipAllowance",
+		a.linshi_allowance AS "linshiAllowance",
+		a.guojia_19 AS "guojia19",
+		a.guojia_20 AS "guojia20",
+		a.guojia_21 AS "guojia21",
+		a.guojia_22 AS "guojia22",
+		a.guojia_23 AS "guojia23",
+		a.guojia_24 AS "guojia24",
+		a.guojia_25 AS "guojia25",
+		a.guojia_26 AS "guojia26",
+		a.guojia_27 AS "guojia27",
+		a.guojia_28 AS "guojia28",
+		a.guojia_29 AS "guojia29",
+		a.guojia_30 AS "guojia30",
+		a.guifan_sum AS "guifanSum",
+		a.working_allowance AS "workingAllowance",
+		a.living_allowance AS "livingAllowance",
+		a.gaige_sum AS "gaigeSum",
+		a.zhuzhai_allowance AS "zhuzhaiAllowance",
+		a.zhufang_allowance AS "zhufangAllowance",
+		a.wuye_allowance AS "wuyeAllowance",
+		a.jiaotong_allowance AS "jiaotongAllowance",
+		a.gaige_allowance AS "gaigeAllowance",
+		a.gaige_6 AS "gaige6",
+		a.gaige_7 AS "gaige7",
+		a.gaige_8 AS "gaige8",
+		a.gaige_9 AS "gaige9",
+		a.gaige_10 AS "gaige10",
+		a.reward_sum AS "rewardSum",
+		a.chengwu_allowance AS "chengwuAllowance",
+		a.xianlu_allowance AS "xianluAllowance",
+		a.anquan_allowance AS "anquanAllowance",
+		a.jingshen_allowance AS "jingshenAllowance",
+		a.jingcha_allowance AS "jingchaAllowance",
+		a.gongwuyuan_allowance AS "gongwuyuanAllowance",
+		a.jiangke_allowance AS "jiangkeAllowance",
+		a.reward_8 AS "reward8",
+		a.reward_9 AS "reward9",
+		a.reward_10 AS "reward10",
+		a.reward_11 AS "reward11",
+		a.reward_12 AS "reward12",
+		a.reward_13 AS "reward13",
+		a.jianyuan_allowance AS "jianyuanAllowance",
+		a.gongzi_allowance AS "gongziAllowance",
+		a.year_end_awards AS "yearEndAwards",
+		a.baoxian_sum AS "baoxianSum",
+		a.base_yanglao__allowance AS "baseYanglaoAllowance",
+		a.zhiye_allowance AS "zhiyeAllowance",
+		a.base_yiliao_allowance AS "baseYiliaoAllowance",
+		a.buchong_yiliao_allowance AS "buchongYiliaoAllowance",
+		a.shengyu_allowance AS "shengyuAllowance",
+		a.gongjijin AS "gongjijin",
+		a.personal_income_tax AS "personalIncomeTax",
+		a.where_gonganju AS "whereGonganju",
+		a.where_gonganchu AS "whereGonganchu",
+		a.department AS "department",
+		a.personnel_type AS "personnelType",
+		a.is_logo AS "isLogo",
+		a.remark AS "remark",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="affairSalaryGatherJoins">
+		LEFT JOIN affair_labor_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairSalaryGather">
+		SELECT 
+			<include refid="affairSalaryGatherColumns"/>
+		FROM affair_salary_gather a
+		<include refid="affairSalaryGatherJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairLabor">
+		SELECT 
+			<include refid="affairSalaryGatherColumns"/>
+		FROM affair_labor a
+		<include refid="affairSalaryGatherJoins"/>
+		LEFT JOIN affair_labor_office s ON s.id = a.unit_id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="unitId != null and unitId != ''">
+				AND a.unit_id = #{unitId}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE '%'||#{name}||'%'
+			</if>
+			<if test="month != null and month != ''">
+				AND a.month = #{month}
+			</if>
+			<if test="year != null and year != ''">
+				AND SUBSTRING ( a.month, 1, 4 ) = #{year}
+			</if>
+			<if test="treeId != null and treeId != ''">
+				AND (a.unit_id = #{treeId} OR s.parent_ids LIKE CONCAT('%,', #{treeId}, ',%'))
+			</if>
+			<!-- 数据范围过滤-->
+-- 			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairSalaryGather">
+		SELECT 
+			<include refid="affairSalaryGatherColumns"/>
+		FROM affair_salary_gather a
+		<include refid="affairSalaryGatherJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_salary_gather(
+			id,
+			unit,
+			unit_id,
+			year,
+			month,
+			name,
+			id_number,
+			level,
+			sum,
+			jb_salary,
+			jb_grade_salary,
+			gj_sum,
+			jiaban_allowance,
+			jingxian_allowance,
+			zhiqin_allowance,
+			jkby_allowance,
+			telephone_fee,
+			mobile_fee,
+			jszr_allowance,
+			nv_hygiene_fee,
+			only_child_allowance,
+			fangshu_allowance,
+			xinfang_allowance,
+			gonggai1993_allowance,
+			xizang_allowance,
+			high_altitude_allowance,
+			xinjiang_allowance,
+			sar_allowance,
+			township_allowance,
+			linshi_allowance,
+			guojia_19,
+			guojia_20,
+			guojia_21,
+			guojia_22,
+			guojia_23,
+			guojia_24,
+			guojia_25,
+			guojia_26,
+			guojia_27,
+			guojia_28,
+			guojia_29,
+			guojia_30,
+			guifan_sum,
+			working_allowance,
+			living_allowance,
+			gaige_sum,
+			zhuzhai_allowance,
+			zhufang_allowance,
+			wuye_allowance,
+			jiaotong_allowance,
+			gaige_allowance,
+			gaige_6,
+			gaige_7,
+			gaige_8,
+			gaige_9,
+			gaige_10,
+			reward_sum,
+			chengwu_allowance,
+			xianlu_allowance,
+			anquan_allowance,
+			jingshen_allowance,
+			jingcha_allowance,
+			gongwuyuan_allowance,
+			jiangke_allowance,
+			reward_8,
+			reward_9,
+			reward_10,
+			reward_11,
+			reward_12,
+			reward_13,
+			jianyuan_allowance,
+			gongzi_allowance,
+			year_end_awards,
+			baoxian_sum,
+			base_yanglao__allowance,
+			zhiye_allowance,
+			base_yiliao_allowance,
+			buchong_yiliao_allowance,
+			shengyu_allowance,
+			gongjijin,
+			personal_income_tax,
+			where_gonganju,
+			where_gonganchu,
+			department,
+			personnel_type,
+			is_logo,
+			remark,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{unit},
+			#{unitId},
+			#{year},
+			#{month},
+			#{name},
+			#{idNumber},
+			#{level},
+			#{sum},
+			#{jbSalary},
+			#{jbGradeSalary},
+			#{gjSum},
+			#{jiabanAllowance},
+			#{jingxianAllowance},
+			#{zhiqinAllowance},
+			#{jkbyAllowance},
+			#{telephoneFee},
+			#{mobileFee},
+			#{jszrAllowance},
+			#{nvHygieneFee},
+			#{onlyChildAllowance},
+			#{fangshuAllowance},
+			#{xinfangAllowance},
+			#{gonggai1993Allowance},
+			#{xizangAllowance},
+			#{highAltitudeAllowance},
+			#{xinjiangAllowance},
+			#{sarAllowance},
+			#{townshipAllowance},
+			#{linshiAllowance},
+			#{guojia19},
+			#{guojia20},
+			#{guojia21},
+			#{guojia22},
+			#{guojia23},
+			#{guojia24},
+			#{guojia25},
+			#{guojia26},
+			#{guojia27},
+			#{guojia28},
+			#{guojia29},
+			#{guojia30},
+			#{guifanSum},
+			#{workingAllowance},
+			#{livingAllowance},
+			#{gaigeSum},
+			#{zhuzhaiAllowance},
+			#{zhufangAllowance},
+			#{wuyeAllowance},
+			#{jiaotongAllowance},
+			#{gaigeAllowance},
+			#{gaige6},
+			#{gaige7},
+			#{gaige8},
+			#{gaige9},
+			#{gaige10},
+			#{rewardSum},
+			#{chengwuAllowance},
+			#{xianluAllowance},
+			#{anquanAllowance},
+			#{jingshenAllowance},
+			#{jingchaAllowance},
+			#{gongwuyuanAllowance},
+			#{jiangkeAllowance},
+			#{reward8},
+			#{reward9},
+			#{reward10},
+			#{reward11},
+			#{reward12},
+			#{reward13},
+			#{jianyuanAllowance},
+			#{gongziAllowance},
+			#{yearEndAwards},
+			#{baoxianSum},
+			#{baseYanglaoAllowance},
+			#{zhiyeAllowance},
+			#{baseYiliaoAllowance},
+			#{buchongYiliaoAllowance},
+			#{shengyuAllowance},
+			#{gongjijin},
+			#{personalIncomeTax},
+			#{whereGonganju},
+			#{whereGonganchu},
+			#{department},
+			#{personnelType},
+			#{isLogo},
+			#{remark},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_salary_gather SET
+			unit = #{unit},
+			unit_id = #{unitId},
+			year = #{year},
+			month = #{month},
+			name = #{name},
+			id_number = #{idNumber},
+			level = #{level},
+			sum = #{sum},
+			jb_salary = #{jbSalary},
+			jb_grade_salary = #{jbGradeSalary},
+			gj_sum = #{gjSum},
+			jiaban_allowance = #{jiabanAllowance},
+			jingxian_allowance = #{jingxianAllowance},
+			zhiqin_allowance = #{zhiqinAllowance},
+			jkby_allowance = #{jkbyAllowance},
+			telephone_fee = #{telephoneFee},
+			mobile_fee = #{mobileFee},
+			jszr_allowance = #{jszrAllowance},
+			nv_hygiene_fee = #{nvHygieneFee},
+			only_child_allowance = #{onlyChildAllowance},
+			fangshu_allowance = #{fangshuAllowance},
+			xinfang_allowance = #{xinfangAllowance},
+			gonggai1993_allowance = #{gonggai1993Allowance},
+			xizang_allowance = #{xizangAllowance},
+			high_altitude_allowance = #{highAltitudeAllowance},
+			xinjiang_allowance = #{xinjiangAllowance},
+			sar_allowance = #{sarAllowance},
+			township_allowance = #{townshipAllowance},
+			linshi_allowance = #{linshiAllowance},
+			guojia_19 = #{guojia19},
+			guojia_20 = #{guojia20},
+			guojia_21 = #{guojia21},
+			guojia_22 = #{guojia22},
+			guojia_23 = #{guojia23},
+			guojia_24 = #{guojia24},
+			guojia_25 = #{guojia25},
+			guojia_26 = #{guojia26},
+			guojia_27 = #{guojia27},
+			guojia_28 = #{guojia28},
+			guojia_29 = #{guojia29},
+			guojia_30 = #{guojia30},
+			guifan_sum = #{guifanSum},
+			working_allowance = #{workingAllowance},
+			living_allowance = #{livingAllowance},
+			gaige_sum = #{gaigeSum},
+			zhuzhai_allowance = #{zhuzhaiAllowance},
+			zhufang_allowance = #{zhufangAllowance},
+			wuye_allowance = #{wuyeAllowance},
+			jiaotong_allowance = #{jiaotongAllowance},
+			gaige_allowance = #{gaigeAllowance},
+			gaige_6 = #{gaige6},
+			gaige_7 = #{gaige7},
+			gaige_8 = #{gaige8},
+			gaige_9 = #{gaige9},
+			gaige_10 = #{gaige10},
+			reward_sum = #{rewardSum},
+			chengwu_allowance = #{chengwuAllowance},
+			xianlu_allowance = #{xianluAllowance},
+			anquan_allowance = #{anquanAllowance},
+			jingshen_allowance = #{jingshenAllowance},
+			jingcha_allowance = #{jingchaAllowance},
+			gongwuyuan_allowance = #{gongwuyuanAllowance},
+			jiangke_allowance = #{jiangkeAllowance},
+			reward_8 = #{reward8},
+			reward_9 = #{reward9},
+			reward_10 = #{reward10},
+			reward_11 = #{reward11},
+			reward_12 = #{reward12},
+			reward_13 = #{reward13},
+			jianyuan_allowance = #{jianyuanAllowance},
+			gongzi_allowance = #{gongziAllowance},
+			year_end_awards = #{yearEndAwards},
+			baoxian_sum = #{baoxianSum},
+			base_yanglao__allowance = #{baseYanglaoAllowance},
+			zhiye_allowance = #{zhiyeAllowance},
+			base_yiliao_allowance = #{baseYiliaoAllowance},
+			buchong_yiliao_allowance = #{buchongYiliaoAllowance},
+			shengyu_allowance = #{shengyuAllowance},
+			gongjijin = #{gongjijin},
+			personal_income_tax = #{personalIncomeTax},
+			where_gonganju = #{whereGonganju},
+			where_gonganchu = #{whereGonganchu},
+			department = #{department},
+			personnel_type = #{personnelType},
+			is_logo = #{isLogo},
+			remark = #{remark},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_salary_gather SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_salary_gather SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+	
+</mapper>

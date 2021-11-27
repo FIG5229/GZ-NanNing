@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairPoliceRankDao">
+    
+	<sql id="affairPoliceRankColumns">
+		a.id AS "id",
+		a.type AS "type",
+		a.start_date AS "startDate",
+		a.end_date AS "endDate",
+		a.name AS "name",
+		a.approval_unit AS "approvalUnit",
+		a.lh_no AS "lhNo",
+		a.status AS "status",
+		a.change_reason AS "changeReason",
+		a.grant_date AS "grantDate",
+		a.approval_unit_code AS "approvalUnitCode",
+		a.cancel_reason AS "cancelReason",
+		a.retain_date AS "retainDate",
+		a.not_retain_date AS "notRetainDate",
+		a.source AS "source",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="affairPoliceRankJoins">
+	</sql>
+    
+	<select id="get" resultType="AffairPoliceRank">
+		SELECT 
+			<include refid="affairPoliceRankColumns"/>
+		FROM affair_police_rank a
+		<include refid="affairPoliceRankJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairPoliceRank">
+		SELECT 
+			<include refid="affairPoliceRankColumns"/>
+		FROM affair_police_rank a
+		<include refid="affairPoliceRankJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+			<if test="beginStartDate != null and endStartDate != null and beginStartDate != '' and endStartDate != ''">
+				AND a.start_date BETWEEN #{beginStartDate} AND #{endStartDate}
+			</if>
+			<if test="beginStartDate != null and beginStartDate != ''">
+				AND a.start_date &gt;= #{beginStartDate}
+			</if>
+			<if test="endStartDate != null and endStartDate != ''">
+				AND a.start_date &lt;= #{endStartDate}
+			</if>
+			<if test="beginEndDate != null and endEndDate != null and beginEndDate != '' and endEndDate != ''">
+				AND a.end_date BETWEEN #{beginEndDate} AND #{endEndDate}
+			</if>
+			<if test="beginEndDate != null and beginEndDate != ''">
+				AND a.end_date &gt;= #{beginEndDate}
+			</if>
+			<if test="endEndDate != null and endEndDate != ''">
+				AND a.end_date &lt;= #{endEndDate}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+			</if>
+			<if test="approvalUnit != null and approvalUnit != ''">
+				AND a.approval_unit LIKE
+				<if test="dbName == 'oracle'">'%'||#{approvalUnit}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{approvalUnit}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{approvalUnit},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{approvalUnit}||'%'</if>
+			</if>
+			<!--<if test="approvalUnit != null and approvalUnit != ''">
+				AND a.approval_unit = #{approvalUnit}
+			</if>-->
+			<if test="lhNo != null and lhNo != ''">
+				AND a.lh_no LIKE
+				<if test="dbName == 'oracle'">'%'||#{lhNo}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{lhNo}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{lhNo},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{lhNo}||'%'</if>
+			</if>
+			<!--<if test="lhNo != null and lhNo != ''">
+				AND a.lh_no = #{lhNo}
+			</if>-->
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairPoliceRank">
+		SELECT 
+			<include refid="affairPoliceRankColumns"/>
+		FROM affair_police_rank a
+		<include refid="affairPoliceRankJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_police_rank(
+			id,
+			type,
+			start_date,
+			end_date,
+			name,
+			approval_unit,
+			lh_no,
+			status,
+			change_reason,
+			grant_date,
+			approval_unit_code,
+			cancel_reason,
+			retain_date,
+			not_retain_date,
+			source,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{type},
+			#{startDate},
+			#{endDate},
+			#{name},
+			#{approvalUnit},
+			#{lhNo},
+			#{status},
+			#{changeReason},
+			#{grantDate},
+			#{approvalUnitCode},
+			#{cancelReason},
+			#{retainDate},
+			#{notRetainDate},
+			#{source},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_police_rank SET 	
+			type = #{type},
+			start_date = #{startDate},
+			end_date = #{endDate},
+			name = #{name},
+			approval_unit = #{approvalUnit},
+			lh_no = #{lhNo},
+			status = #{status},
+			change_reason = #{changeReason},
+			grant_date = #{grantDate},
+			approval_unit_code = #{approvalUnitCode},
+			cancel_reason = #{cancelReason},
+			retain_date = #{retainDate},
+			not_retain_date = #{notRetainDate},
+			source = #{source},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_police_rank SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_police_rank SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+	
+	<select id="findInfoByCreateOrgId" resultType="java.util.HashMap">
+		SELECT
+			apr.approval_unit "label",
+			count( apr.approval_unit ) 
+		FROM
+			affair_police_rank apr
+		WHERE apr.del_flag = '0'
+		<if test="id != null and id != ''">
+		AND apr.create_org_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from apr.create_date) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(apr.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND date_trunc('day', apr.create_date) between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND apr.create_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= date_trunc('day', apr.create_date)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+			apr.approval_unit 
+	</select>
+	
+	<select id="findInfoByCreateOrgIds" resultType="java.util.HashMap">
+		SELECT
+			apr.approval_unit "label",
+			count( apr.approval_unit ) 
+		FROM
+			affair_police_rank apr
+		WHERE apr.del_flag = '0'
+			AND apr.create_org_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>	
+		)
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from apr.create_date) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(apr.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND date_trunc('day', apr.create_date) between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND apr.create_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= date_trunc('day', apr.create_date)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+			apr.approval_unit 
+	</select>
+</mapper>

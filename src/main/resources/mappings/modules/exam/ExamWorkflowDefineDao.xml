@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.exam.dao.ExamWorkflowDefineDao">
+    
+	<sql id="examWorkflowDefineColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.exam_type AS "examType",
+		a.exam_cycle AS "examCycle",
+		a.exam_object_type AS "examObjectType",
+		a.is_use AS "isUse",
+		a.templates_name AS "templatesName",
+		a.templates_ids AS "templatesIds",
+		a.flow_type AS "flowType",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="examWorkflowDefineJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    <delete id="deleteById">
+		update  exam_workflow_define  set del_flag = '1' where id = #{id}
+ 		<!--delete FROM exam_workflow_define where id = #{id}-->
+	</delete>
+
+    <select id="get" resultType="ExamWorkflowDefine">
+		SELECT 
+			<include refid="examWorkflowDefineColumns"/>
+		FROM exam_workflow_define a
+		<include refid="examWorkflowDefineJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ExamWorkflowDefine">
+		SELECT 
+			<include refid="examWorkflowDefineColumns"/>
+		FROM exam_workflow_define a
+		<include refid="examWorkflowDefineJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE concat('%',#{name},'%')
+			</if>
+			<if test="examType != null and examType != ''">
+				AND a.exam_type = #{examType}
+			</if>
+			<if test="examCycle != null and examCycle != ''">
+				AND a.exam_cycle = #{examCycle}
+			</if>
+			<if test="examObjectType != null and examObjectType != ''">
+				AND a.exam_object_type = #{examObjectType}
+			</if>
+			<if test="isUse != null and isUse != ''">
+				AND a.is_use = #{isUse}
+			</if>
+			<if test="createBy != null and createBy.id != null and createBy.id != ''">
+				and a.create_by = #{createBy.id}
+			</if>
+			<choose>
+				<when test="createStartDate != null and createStartDate != '' and createEndDate != null and createEndDate != ''">
+					AND date_trunc('day',  a.create_date) between #{createStartDate} and #{createEndDate}
+				</when>
+				<when test="createStartDate != null and createStartDate != ''">
+					AND a.create_date >= #{createStartDate}
+				</when>
+				<when test="createEndDate != null and createEndDate != ''">
+					AND  #{createEndDate} >= date_trunc('day',  a.create_date)
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ExamWorkflowDefine">
+		SELECT 
+			<include refid="examWorkflowDefineColumns"/>
+		FROM exam_workflow_define a
+		<include refid="examWorkflowDefineJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO exam_workflow_define(
+			id,
+			name,
+			exam_type,
+			exam_cycle,
+			exam_object_type,
+			is_use,
+			templates_name,
+			templates_ids,
+			flow_type,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{name},
+			#{examType},
+			#{examCycle},
+			#{examObjectType},
+			#{isUse},
+			#{templatesName},
+			#{templatesIds},
+			#{flowType},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE exam_workflow_define SET 	
+			name = #{name},
+			exam_type = #{examType},
+			exam_cycle = #{examCycle},
+			exam_object_type = #{examObjectType},
+			is_use = #{isUse},
+			templates_name = #{templatesName},
+			templates_ids = #{templatesIds},
+			flow_type = #{flowType},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE exam_workflow_define SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="updateIsUse">
+		UPDATE exam_workflow_define SET
+			is_use = #{isUse}
+		WHERE id = #{id}
+	</update>
+
+	<!--绩效自动考评-->
+	<select id="findAllInfo" resultType="ExamWorkflowDefine">
+		SELECT
+		<include refid="examWorkflowDefineColumns"/>
+		FROM exam_workflow_define a
+		where a.del_flag = '0'
+	</select>
+
+</mapper>

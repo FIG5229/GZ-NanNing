@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.exam.dao.ExamJcInfoDao">
+    
+	<sql id="examJcInfoColumns">
+		a.id AS "id",
+		a.jc_type AS "jcType",
+		a.jc_type_name AS "jcTypeName",
+		a.jc_code AS "jcCode",
+		a.jc_object AS "jcObject",
+		a.jc_object_personnel AS "jcObjectPersonnel",
+		a.jc_object_unit AS "jcObjectUnit",
+		a.jc_object_unit_id AS "jcObjectUnitId",
+		a.my_use_model AS "myUseModel",
+		a.exam_standart AS "examStandart",
+		a.file_path AS "filePath",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.id_number AS "idNumber",
+		a.change_type AS "changeType",
+		a.jc_date AS "jcDate",
+		a.file_num AS "fileNum",
+		a.my_use_model_name AS "myUseModelName",
+		a.jc_org AS "jcOrg",
+		a,jc_org_id AS "jcOrgId",
+		a.row_num as "rowNum"
+	</sql>
+	
+	<sql id="examJcInfoJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="ExamJcInfo">
+		SELECT 
+			<include refid="examJcInfoColumns"/>
+		FROM exam_jc_info a
+		<include refid="examJcInfoJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ExamJcInfo">
+		SELECT 
+			<include refid="examJcInfoColumns"/>
+		FROM exam_jc_info a
+		<include refid="examJcInfoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="jcType != null and jcType != ''">
+				AND a.jc_type = #{jcType}
+			</if>
+			<if test="jcObject != null and jcObject != ''">
+				AND a.jc_object = #{jcObject}
+			</if>
+			<if test="jcObjectPersonnel != null and jcObjectPersonnel != ''">
+				AND a.jc_object_personnel like '%'||#{jcObjectPersonnel}||'%'
+			</if>
+			<if test="jcObjectUnitId != null and jcObjectUnitId != ''">
+				AND a.jc_object_unit_id = #{jcObjectUnitId}
+			</if>
+			<!-- 数据范围过滤 -->
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findExamList" resultType="ExamJcInfo">
+		SELECT
+			<include refid="examJcInfoColumns"/>,u.id as "objId"
+		FROM exam_jc_info a
+		<choose>
+			<when test="jcType == '0'.toString()">
+				left join sys_user u on u.office_id = a.jc_object_unit_id
+			</when>
+			<when test="jcType == '1'.toString()">
+				left join sys_user u on u.no = a.id_number
+			</when>
+			<otherwise></otherwise>
+		</choose>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<choose>
+				<when test="month == 1 ">
+					and a.create_date between '${year-1}-12-26' and '${year}-${month}-25'
+				</when>
+				<when test="month != null and month != 0 and year != null and month != 1">
+					and a.create_date between '${year}-${month-1}-26' and '${year}-${month}-25'
+				</when>
+				<when test="year != null and month == 0">
+					and a.create_date between '${year-1}-12-02' and '${year}-12-01'
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			<if test="jcType != null and jcType != ''">
+				AND a.jc_type = #{jcType}
+			</if>
+			<if test="jcObject != null and jcObject != ''">
+				AND a.jc_object = #{jcObject}
+			</if>
+			<if test="jcObjectPersonnel != null and jcObjectPersonnel != ''">
+				AND a.jc_object_personnel like '%'||#{jcObjectPersonnel}||'%'
+			</if>
+			<if test="jcObjectUnitId != null and jcObjectUnitId != ''">
+				AND a.jc_object_unit_id = #{jcObjectUnitId}
+			</if>
+			<if test="defineList != null and defineList != ''">
+				and my_use_model in <foreach collection="defineList" item="item" index="index"
+							   open="(" separator="," close=")">#{item}</foreach>
+			</if>
+			<choose>
+				<when test="jcType == '0'.toString()">
+					and a.jc_object_unit_id is not null and a.jc_object_unit_id &lt;&gt; ''
+				</when>
+				<when test="jcType == '1'.toString()">
+					and a.id_number &lt;&gt; '' and a.id_number is not null
+				</when>
+				<otherwise></otherwise>
+			</choose>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ExamJcInfo">
+		SELECT 
+			<include refid="examJcInfoColumns"/>
+		FROM exam_jc_info a
+		<include refid="examJcInfoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findInfoByFileNum" resultType="com.thinkgem.jeesite.modules.exam.entity.ExamJcInfo">
+		SELECT
+			<include refid="examJcInfoColumns"/>
+		FROM exam_jc_info a
+		where a.del_flag = '0' and a.file_num = #{fileNum} order by a.update_date desc limit 1
+	</select>
+
+	<insert id="insert">
+		INSERT INTO exam_jc_info(
+			id,
+			jc_type,
+			jc_type_name,
+			jc_code,
+			jc_object,
+			jc_object_personnel,
+			jc_object_unit,
+			jc_object_unit_id,
+			my_use_model,
+			exam_standart,
+			file_path,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			id_number,
+			change_type,
+			jc_date,
+			file_num,
+			my_use_model_name,
+			jc_org,
+			jc_org_id,
+			row_num
+		) VALUES (
+			#{id},
+			#{jcType},
+			#{jcTypeName},
+			#{jcCode},
+			#{jcObject},
+			#{jcObjectPersonnel},
+			#{jcObjectUnit},
+			#{jcObjectUnitId},
+			#{myUseModel},
+			#{examStandart},
+			#{filePath},
+			#{createBy.id},
+			#{createOrgId},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateOrgId},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{idNumber},
+			#{changeType},
+			#{jcDate},
+			#{fileNum},
+			#{myUseModelName},
+			#{jcOrg},
+			#{jcOrgId},
+			#{rowNum}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE exam_jc_info SET 	
+			jc_type = #{jcType},
+			jc_type_name = #{jcTypeName},
+			jc_code = #{jcCode},
+			jc_object = #{jcObject},
+			jc_object_personnel = #{jcObjectPersonnel},
+			jc_object_unit = #{jcObjectUnit},
+			jc_object_unit_id = #{jcObjectUnitId},
+			my_use_model = #{myUseModel},
+			exam_standart = #{examStandart},
+			file_path = #{filePath},
+			create_org_id = #{createOrgId},
+			create_id_no = #{createIdNo},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateOrgId},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			id_number = #{idNumber},
+			change_type = #{changeType},
+			jc_date = #{jcDate},
+			file_num = #{fileNum},
+			my_use_model_name = #{myUseModelName},
+			jc_org = #{jcOrg},
+			jc_org_id = #{jcOrgId},
+			row_num = #{rowNum}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE exam_jc_info SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE exam_jc_info SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<select id="findJCListByYearMonth" resultType="com.thinkgem.jeesite.modules.exam.entity.ExamJcInfo">
+		select
+		<include refid="examJcInfoColumns"/>
+		from exam_jc_info a
+		where a.del_flag = '0'
+		and jc_object= #{jcObject}
+		and jc_object_unit_id = #{unitId}
+	</select>
+
+</mapper>

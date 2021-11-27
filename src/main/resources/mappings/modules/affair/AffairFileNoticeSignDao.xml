@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairFileNoticeSignDao">
+    
+	<sql id="affairFileNoticeSignColumns">
+		a.id AS "id",
+		a.notice_id AS "noticeId",
+		a.org_id AS "orgId",
+		a.unit AS "unit",
+		a.date AS "date",
+		a.sign AS "sign",
+		a.urge AS "urge"
+	</sql>
+	
+	<sql id="affairFileNoticeSignJoins">
+	</sql>
+    
+	<select id="get" resultType="AffairFileNoticeSign">
+		SELECT 
+			<include refid="affairFileNoticeSignColumns"/>
+		FROM affair_file_notice_sign a
+		<include refid="affairFileNoticeSignJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairFileNoticeSign">
+		SELECT
+			<include refid="affairFileNoticeSignColumns"/>
+		FROM affair_file_notice_sign a
+		<include refid="affairFileNoticeSignJoins"/>
+		<where>
+			<if test="noticeId != null and noticeId != ''">
+			AND a.notice_id = #{noticeId}
+		   </if>
+			<if test="orgId != null and orgId != ''">
+			AND a.org_id = #{orgId}
+			</if>
+			<if test="unit != null and unit != ''">
+				AND a.unit = #{unit}
+			</if>
+			<if test="date != null and date != ''">
+				AND a.date = #{date}
+			</if>
+			<if test="urge != null and urge != ''">
+				AND a.urge = #{urge}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+
+	</select>
+	
+	<select id="findAllList" resultType="AffairFileNoticeSign">
+		SELECT 
+			<include refid="affairFileNoticeSignColumns"/>
+		FROM affair_file_notice_sign a
+		<include refid="affairFileNoticeSignJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_file_notice_sign(
+			id,
+			notice_id,
+			org_id,
+			unit,
+			date,
+			sign,
+			urge
+		) VALUES (
+			#{id},
+			#{noticeId},
+			#{orgId},
+			#{unit},
+			#{date},
+			#{sign},
+			#{urge}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_file_notice_sign SET 	
+			notice_id = #{noticeId},
+			org_id = #{orgId},
+			unit = #{unit},
+			date = #{date},
+			sign = #{sign},
+			urge = #{urge}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM affair_file_notice_sign
+		WHERE id = #{id}
+	</update>
+
+	<select id="findSign" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairFileNoticeSign">
+		SELECT s.id as id,s.unit as unit,s.date as date  FROM affair_file_notice n LEFT JOIN  affair_file_notice_sign
+		s  on  n.id=s.notice_id where n.id=#{affairFileNoticeSign.noticeId} and s.sign = '1'
+	</select>
+
+	<select id="findNotSign" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairFileNoticeSign">
+	   SELECT s.id as id,
+		s.unit as unit,
+		 s.urge as urge
+		 from  affair_file_notice_sign s LEFT JOIN affair_file_notice n  ON n.id=s.notice_id
+		  WHERE n.id=#{affairFileNoticeSign.noticeId} and s.sign ISNULL order by s.date ASC
+ 	</select>
+
+	<select id="deleteByNoticeId">
+		DELETE FROM affair_file_notice_sign
+		WHERE notice_id = #{noticeId}
+	</select>
+
+</mapper>

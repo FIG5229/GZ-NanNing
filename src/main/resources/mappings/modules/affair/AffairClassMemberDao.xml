@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairClassMemberDao">
+    
+	<sql id="affairClassMemberColumns">
+		a.id AS "id",
+		a.party_organization AS "partyOrganization",
+		a.party_organization_id AS "partyOrganizationId",
+		a.shuji AS "shuji",
+		a.fushuji AS "fushuji",
+		a.zzwy AS "zzwy",
+		a.jjwy AS "jjwy",
+		a.xcwy AS "xcwy",
+		a.yqwy AS "yqwy",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.file_path AS "filePath",
+		a.situation AS "situation",
+		a.status AS "status",
+		a.opinion AS "opinion"
+	</sql>
+	
+	<sql id="affairClassMemberJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+
+	<select id="get" resultType="AffairClassMember">
+		SELECT 
+			<include refid="affairClassMemberColumns"/>
+		FROM affair_class_member a
+		<include refid="affairClassMemberJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairClassMember">
+		SELECT 
+			<include refid="affairClassMemberColumns"/>
+		FROM affair_class_member a
+		<include refid="affairClassMemberJoins"/>
+		LEFT JOIN affair_general_situation s
+		ON s.id = a.party_organization_id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="partyOrganizationId != null and partyOrganizationId != ''">
+				AND a.party_organization_id = #{partyOrganizationId}
+			</if>
+			<if test="shuji != null and shuji != ''">
+				AND a.shuji LIKE concat('%',#{shuji},'%')
+			</if>
+			<if test="fushuji != null and fushuji != ''">
+				AND a.fushuji LIKE concat('%',#{fushuji},'%')
+			</if>
+			<if test="zzwy != null and zzwy != ''">
+				AND a.zzwy LIKE concat('%',#{zzwy},'%')
+			</if>
+			<if test="jjwy != null and jjwy != ''">
+				AND a.jjwy LIKE concat('%',#{jjwy},'%')
+			</if>
+			<if test="xcwy != null and xcwy != ''">
+				AND a.xcwy LIKE concat('%',#{xcwy},'%')
+			</if>
+			<if test="yqwy != null and yqwy != ''">
+				AND a.yqwy LIKE concat('%',#{yqwy},'%')
+			</if>
+			<if test="treeId != null and treeId != ''">
+				AND (a.party_organization_id = #{treeId} OR s.parent_ids LIKE CONCAT('%,', #{treeId}, ',%'))
+			</if>
+			<!-- 数据范围过滤 -->
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairClassMember">
+		SELECT 
+			<include refid="affairClassMemberColumns"/>
+		FROM affair_class_member a
+		<include refid="affairClassMemberJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+    <insert id="insert">
+		INSERT INTO affair_class_member(
+			id,
+			party_organization,
+			party_organization_id,
+			shuji,
+			fushuji,
+			zzwy,
+			jjwy,
+			xcwy,
+			yqwy,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			file_path,
+		    situation,
+			status,
+			opinion
+		) VALUES (
+			#{id},
+			#{partyOrganization},
+			#{partyOrganizationId},
+			#{shuji},
+			#{fushuji},
+			#{zzwy},
+			#{jjwy},
+			#{xcwy},
+			#{yqwy},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{filePath},
+			#{situation},
+			#{status},
+			#{opinion}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_class_member SET 	
+			party_organization = #{partyOrganization},
+			party_organization_id = #{partyOrganizationId},
+			shuji = #{shuji},
+			fushuji = #{fushuji},
+			zzwy = #{zzwy},
+			jjwy = #{jjwy},
+			xcwy = #{xcwy},
+			yqwy = #{yqwy},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			file_path = #{filePath},
+			situation = #{situation},
+			status = #{status},
+			opinion = #{opinion}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_class_member SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_class_member SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+			 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<update id="shenHeSave">
+		UPDATE affair_class_member SET
+			status = #{status},
+			opinion = #{opinion},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+
+    <select id="findListByPartyOrganization" resultType="java.lang.String">
+		select a.id from affair_class_member a where a.party_organization = #{partyOrganization} and a.del_flag = '0'
+	</select>
+
+	<delete id="deleteByPartyOrganization">
+		delete from affair_class_member a where a.party_organization = #{partyOrganization}
+	</delete>
+</mapper>

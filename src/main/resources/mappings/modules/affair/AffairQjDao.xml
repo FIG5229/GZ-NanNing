@@ -1,0 +1,453 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairQjDao">
+    
+	<sql id="affairQjColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.id_number AS "idNumber",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.department AS "department",
+		a.department_id AS "departmentId",
+		a.job AS "job",
+		a.qj_date AS "qjDate",
+		a.type AS "type",
+		a.start_time AS "startTime",
+		a.end_time AS "endTime",
+		a.qj_day AS "qjDay",
+		a.qj_remark AS "qjRemark",
+		a.status AS "status",
+		a.dep_opinion AS "depOpinion",
+		a.hr__opinion AS "hrOpinion",
+		a.leader__opinion AS "leaderOpinion",
+		a.xj_date AS "xjDate",
+		a.resume_time AS "resumeTime",
+		a.ghyc_day AS "ghycDay",
+		a.xj_remark AS "xjRemark",
+		a.explain AS "explain",
+		a.dep_status AS "depStatus",
+		a.hr_status AS "hrStatus",
+		a.leader_status AS "leaderStatus",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.sh_person AS "shPerson",
+		a.year AS "year",
+		a.month AS "month",
+		a.lj_leave AS "ljLeave",
+		a.summary AS "summary"
+	</sql>
+	
+	<sql id="affairQjJoins">
+		LEFT JOIN affair_labor_office o ON o.id = a.create_org_id
+		LEFT JOIN affair_labor_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairQj">
+		SELECT 
+			<include refid="affairQjColumns"/>
+		FROM affair_qj a
+		<include refid="affairQjJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairQj">
+		SELECT 
+			<include refid="affairQjColumns"/>
+		FROM affair_qj a
+		LEFT JOIN affair_labor_office o ON o.id = a.unit_id
+		LEFT JOIN affair_labor_user u ON u.id = a.create_by
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE '%'||#{name}||'%'
+			</if>
+			<if test="year != null and year != ''">
+				AND a.year = #{year}
+			</if>
+			<if test="month != null and month != ''">
+				AND a.month = #{month}
+			</if>
+			<choose>
+				<when test="startQjDate != null and endQjDate != null and startQjDate != '' and endQjDate != ''">
+					AND a.qj_date BETWEEN #{startQjDate} AND #{endQjDate}
+				</when>
+				<when test="startQjDate != null and startQjDate != ''">
+					AND a.qj_date &gt;= #{startQjDate}
+				</when>
+				<when test="endQjDate != null and endQjDate != ''">
+					AND a.qj_date &lt;= #{endQjDate}
+				</when>
+			</choose>
+			<if test="unitId != '' and unitId != null">
+				AND (a.unit_id = #{unitId} OR o.parent_ids LIKE'%,'||#{unitId}||',%')
+			</if>
+			<!--<if test="unitId != '' and unitId != null">
+				AND (a.unit_id = #{unitId} )
+			</if>-->
+			<!--<if test="mType != null and mType != ''">
+				<choose>
+					<when test="mType == 1">
+						AND a.hr_status in ('1','2','3')
+					</when>
+					<when test="mType == 2">
+						AND a.dep_status in ('1','2','3') AND a.hr_status in ('null','','2')
+					</when>
+					<when test="mType == 3">
+						AND a.leader_status in ('1','2','3')  AND a.dep_status in ('null','','2')
+					</when>
+					<otherwise>
+					</otherwise>
+				</choose>
+			</if>-->
+			<if test="department != null and department != ''">
+				AND a.department = #{department}
+			</if>
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+			<if test="userId != null and userId != ''">
+				AND ( o.ID = #{userId} OR o.parent_ids LIKE'%,'||#{userId}||',%' OR u.ID = #{userId} or a.unit_id=#{userId})
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairQj">
+		SELECT 
+			<include refid="affairQjColumns"/>
+		FROM affair_qj a
+		<include refid="affairQjJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_qj(
+			id,
+			name,
+			id_number,
+			unit,
+			unit_id,
+			department,
+			department_id,
+			job,
+			qj_date,
+			type,
+			start_time,
+			end_time,
+			qj_day,
+			qj_remark,
+			status,
+			dep_opinion,
+			hr__opinion,
+			leader__opinion,
+			xj_date,
+			resume_time,
+			ghyc_day,
+			xj_remark,
+			explain,
+			dep_status,
+			hr_status,
+			leader_status,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			sh_person,
+			year,
+			month,
+			lj_leave,
+			summary
+		) VALUES (
+			#{id},
+			#{name},
+			#{idNumber},
+			#{unit},
+			#{unitId},
+			#{department},
+			#{departmentId},
+			#{job},
+			#{qjDate},
+			#{type},
+			#{startTime},
+			#{endTime},
+			#{qjDay},
+			#{qjRemark},
+			#{status},
+			#{depOpinion},
+			#{hrOpinion},
+			#{leaderOpinion},
+			#{xjDate},
+			#{resumeTime},
+			#{ghycDay},
+			#{xjRemark},
+			#{explain},
+			#{depStatus},
+			#{hrStatus},
+			#{leaderStatus},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{shPerson},
+			#{year},
+			#{month},
+			#{ljLeave},
+			#{summary}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_qj SET 	
+			name = #{name},
+			unit = #{unit},
+			department = #{department},
+			job = #{job},
+			qj_date = #{qjDate},
+			type = #{type},
+			start_time = #{startTime},
+			end_time = #{endTime},
+			qj_day = #{qjDay},
+			qj_remark = #{qjRemark},
+			status = #{status},
+			dep_opinion = #{depOpinion},
+			hr__opinion = #{hrOpinion},
+			leader__opinion = #{leaderOpinion},
+			xj_date = #{xjDate},
+			resume_time = #{resumeTime},
+			ghyc_day = #{ghycDay},
+			xj_remark = #{xjRemark},
+			explain = #{explain},
+			dep_status = #{depStatus},
+			hr_status = #{hrStatus},
+			leader_status = #{leaderStatus},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			sh_person = #{shPerson},
+			year = #{year},
+			month = #{month},
+			lj_leave = #{ljLeave},
+			summary = #{summary},
+			id_number = #{idNumber}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_qj SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	<update id="deleteByIds">
+		UPDATE affair_qj SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<update id="leaderShenHe">
+		UPDATE affair_qj SET
+			status = #{affairQj.status},
+			leader_status = #{affairQj.leaderStatus},
+			sh_person = #{affairQj.shPerson}, leader__opinion = #{affairQj.leaderOpinion},
+			update_date = #{affairQj.updateDate}
+			where id = #{affairQj.id}
+	</update>
+
+	<update id="depShenHe">
+		UPDATE affair_qj SET
+			status = #{affairQj.status},
+			dep_status = #{affairQj.depStatus},
+			sh_person = #{affairQj.shPerson}, dep_opinion = #{affairQj.depOpinion},
+			update_date = #{affairQj.updateDate}
+			where id = #{affairQj.id}
+	</update>
+
+
+
+	<update id="hrShenHe">
+		UPDATE affair_qj SET
+			status = #{affairQj.status},
+			hr_status = #{affairQj.hrStatus},
+			sh_person = #{affairQj.shPerson}, hr__opinion = #{affairQj.hrOpinion},
+			update_date = #{affairQj.updateDate}
+			where id = #{affairQj.id}
+	</update>
+
+	<sql id="statistic">
+		r.del_flag = '0'
+		<choose>
+			<when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+				AND r.start_time between #{startDate} and #{endDate}
+			</when>
+			<when test="startDate != null and startDate != ''">
+				AND r.start_time >= #{startDate}
+			</when>
+			<when test="endDate != null and endDate != ''">
+				AND  #{endDate} >= r.start_time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="flag != '' and flag != null">
+				<if test="unitId != null and unitId != ''">
+					AND (r.unit_id = #{unitId} OR b.parent_ids = '0,1,'  OR b.parent_ids = '0,1,307,' OR b.parent_ids = '0,1,312,' OR b.parent_ids = '0,1,316,')
+					and b.id not in ('777','888','999')
+				</if>
+			</when>
+			<otherwise>
+				<if test="unitId != null and unitId != ''">
+					AND (r.unit_id = #{unitId} OR b.parent_ids LIKE CONCAT('%,', #{unitId}, ',%'))
+				</if>
+			</otherwise>
+		</choose>
+
+
+	</sql>
+	<sql id="except">/*过滤掉未提交的数据*/
+		EXCEPT (select COUNT(1)
+		from affair_qj  r
+		LEFT JOIN affair_labor_office b ON b.id = r.unit_id
+		where <include refid="statistic"/> and r.status='0')
+	</sql>
+
+	<select id="findByNowNameUnitId" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairQjSum">
+		select
+		T1.a AS "nianXiu",  --年休
+		T2.b AS "tanQin",   --探亲
+		T3.c AS "hun",     --婚嫁
+		T4.d AS "bing",    --病假
+		T5.e AS "peiCan",   --陪产
+		T6.f AS "can",    --产假
+		T7.g AS "sang",    --丧假
+		T8.h AS "shi",    --事假
+		T9.i AS "gongShang",   --工伤
+		T10.j AS "chucai",   --出差
+		T11.k AS "lianXi"   --联系工作
+		from
+		(
+		select COUNT(1) AS a
+		from affair_qj  r
+		LEFT JOIN affair_labor_office b ON b.id = r.unit_id
+		where <include refid="statistic"/> and r.type='1'
+		)T1,(
+		select COUNT(1) AS b
+		from affair_qj  r
+		LEFT JOIN affair_labor_office b ON b.id = r.unit_id
+		where <include refid="statistic"/> and r.type='2'
+		)T2,(
+		select COUNT(1) AS c
+		from affair_qj  r
+		LEFT JOIN affair_labor_office b ON b.id = r.unit_id
+		where <include refid="statistic"/> and r.type='3'
+		)T3,(
+		select COUNT(1) AS d
+		from affair_qj  r
+		LEFT JOIN affair_labor_office b ON b.id = r.unit_id
+		where <include refid="statistic"/> and r.type='4'
+		)T4,(
+		select COUNT(1) AS e
+		from affair_qj  r
+		LEFT JOIN affair_labor_office b ON b.id = r.unit_id
+		where <include refid="statistic"/> and r.type='5'
+		)T5,(
+		select COUNT(1) AS f
+		from affair_qj  r
+		LEFT JOIN affair_labor_office b ON b.id = r.unit_id
+		where <include refid="statistic"/> and r.type='6'
+		)T6,(
+		select COUNT(1) AS g
+		from affair_qj  r
+		LEFT JOIN affair_labor_office b ON b.id = r.unit_id
+		where <include refid="statistic"/> and r.type='7'
+		)T7,(
+		select COUNT(1) AS h
+		from affair_qj  r
+		LEFT JOIN affair_labor_office b ON b.id = r.unit_id
+		where <include refid="statistic"/> and r.type='8'
+		)T8,(
+		select COUNT(1) AS i
+		from affair_qj  r
+		LEFT JOIN affair_labor_office b ON b.id = r.unit_id
+		where <include refid="statistic"/> and r.type='9'
+		)T9,(
+		select COUNT(1) AS j
+		from affair_qj  r
+		LEFT JOIN affair_labor_office b ON b.id = r.unit_id
+		where <include refid="statistic"/> and r.type='10'
+		)T10,(
+		select COUNT(1) AS k
+		from affair_qj  r
+		LEFT JOIN affair_labor_office b ON b.id = r.unit_id
+		where <include refid="statistic"/> and r.type='11'
+		)T11
+	</select>
+
+<!--	请假汇总-->
+	<select id="countList" resultType="AffairQj">
+		SELECT
+		a.name as name, SUM(CAST(a.qj_day AS decimal(35,0))) as summary,a."month",
+		a."year"
+		FROM affair_qj a
+        LEFT JOIN affair_labor_office o ON o.id = a.create_org_id
+        LEFT JOIN affair_labor_user u ON u.id = a.create_by
+		<where>
+			a.del_flag = '0'
+			<if test="year != null and year != ''">
+				AND a.year = #{year}
+			</if>
+			<if test="month != null and month != ''">
+				AND a.month = #{month}
+			</if>
+            <if test="userId != null and userId != ''">
+                AND ( o.ID = #{userId} OR o.parent_ids LIKE'%,'||#{userId}||',%' OR u.ID = #{userId} or a.unit_id=#{userId})
+            </if>
+		</where>
+		GROUP BY a.name,a."month",
+		a."year"
+		<!--<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>-->
+	</select>
+</mapper>

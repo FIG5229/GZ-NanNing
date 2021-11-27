@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairBookCatalogDao">
+    
+	<sql id="affairBookCatalogColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.year AS "year",
+		a.writer AS "writer",
+		a.description AS "description",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="affairBookCatalogJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairBookCatalog">
+		SELECT 
+			<include refid="affairBookCatalogColumns"/>
+		FROM affair_book_catalog a
+		<include refid="affairBookCatalogJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairBookCatalog">
+		SELECT 
+			<include refid="affairBookCatalogColumns"/>
+		FROM affair_book_catalog a
+		<include refid="affairBookCatalogJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="year != null and year != ''">
+				AND a.year LIKE
+					<if test="dbName == 'oracle'">'%'||#{year}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{year}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{year},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{year}||'%'</if>
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+			</if>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairBookCatalog">
+		SELECT 
+			<include refid="affairBookCatalogColumns"/>
+		FROM affair_book_catalog a
+		<include refid="affairBookCatalogJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_book_catalog(
+			id,
+			name,
+			year,
+			writer,
+			description,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{name},
+			#{year},
+			#{writer},
+			#{description},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_book_catalog SET 	
+			name = #{name},
+			year = #{year},
+			writer = #{writer},
+			description = #{description},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_book_catalog SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_book_catalog SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+</mapper>

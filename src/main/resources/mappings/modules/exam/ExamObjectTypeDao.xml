@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.exam.dao.ExamObjectTypeDao">
+    
+	<sql id="examObjectTypeColumns">
+		a.id AS "id",
+		a.type_name AS "typeName",
+		a.exam_type AS "examType",
+		a.ju_chu_id AS "juChuId",
+		a.object_user_name AS "objectUserName",
+		a.object_user_id AS "objectUserId",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.is_gt AS "isGt"
+	</sql>
+	
+	<sql id="examObjectTypeJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="ExamObjectType">
+		SELECT 
+			<include refid="examObjectTypeColumns"/>
+		FROM exam_object_type a
+		<include refid="examObjectTypeJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ExamObjectType">
+		SELECT 
+			<include refid="examObjectTypeColumns"/>
+		FROM exam_object_type a
+		<include refid="examObjectTypeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="typeName != null and typeName != ''">
+				AND a.type_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{typeName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{typeName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{typeName},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{typeName}||'%'</if>
+			</if>
+			<if test="examType != null and examType != ''">
+				AND a.exam_type = #{examType}
+			</if>
+			<if test="userId != null and userId != ''">
+				AND a.create_by = #{userId}
+			</if>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ExamObjectType">
+		SELECT 
+			<include refid="examObjectTypeColumns"/>
+		FROM exam_object_type a
+		<include refid="examObjectTypeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+    <select id="getAllNameId" resultType="com.thinkgem.jeesite.modules.exam.entity.ExamObjectType">
+		SELECT
+		<include refid="examObjectTypeColumns"/>
+		FROM exam_object_type a
+		<include refid="examObjectTypeJoins"/>
+		<where> a.del_flag = '0' and u.del_flag = '0' and o.del_flag = '0'
+			<if test="userId != null and userId != ''">
+				AND a.create_by = #{userId}
+			</if>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+    <insert id="insert">
+		INSERT INTO exam_object_type(
+			id,
+			type_name,
+			exam_type,
+			ju_chu_id,
+			object_user_name,
+			object_user_id,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			is_gt
+		) VALUES (
+			#{id},
+			#{typeName},
+			#{examType},
+			#{juChuId},
+			#{objectUserName},
+			#{objectUserId},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createBy.no},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateBy.no},
+			#{updateDate},
+			#{delFlag},
+			#{isGt}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE exam_object_type SET 	
+			type_name = #{typeName},
+			exam_type = #{examType},
+			ju_chu_id = #{juChuId},
+			object_user_name = #{objectUserName},
+			object_user_id = #{objectUserId},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateBy.no},
+			update_date = #{updateDate},
+			is_gt = #{isGt}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE exam_object_type SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE exam_object_type SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+	
+</mapper>

@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairArchiveRegisterDao">
+    
+	<sql id="affairArchiveRegisterColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.id_number AS "idNumber",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.job AS "job",
+		a.level AS "level",
+		a.z_num AS "zNum",
+		a.f_num AS "fNum",
+		a.archive_no AS "archiveNo",
+		a.out_reason AS "outReason",
+		a.out_date AS "outDate",
+		a.into_reason AS "intoReason",
+		a.into_date AS "intoDate",
+		a.remark AS "remark",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.file_unit AS "fileUnit"
+	</sql>
+	
+	<sql id="affairArchiveRegisterJoins">
+		 LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairArchiveRegister">
+		SELECT
+		A.id AS id,
+		A."name" AS name,
+		A.id_number AS idNumber,
+		b.sex AS sex,
+		b.workunit_name AS unit,
+		a.department AS buMen,
+		a.duty AS job,
+		a.level AS level,
+		a.z_num AS zNum,
+		a.f_num2 AS fNum,
+		a.record_no as archiveNo,
+		a.remark AS remark,
+		a.unit AS fileUnit
+		FROM
+		personnel_hr_record AS A
+		<include refid="affairArchiveRegisterJoins"/>
+		LEFT JOIN	personnel_base AS b on	A.id_number = b.id_number
+		WHERE A.id = #{id}
+		<!--SELECT
+		A."name" AS name,
+		A.sex AS sex,
+		A.job_abbreviation AS job,
+		A.workunit_name AS unit,
+		A.id_number,
+		b.z_num as zNum,
+		b.f_num2 as fNum,
+		b.record_no as archiveNo,
+		c.job_level as level
+		FROM
+		personnel_base AS A
+		<include refid="affairArchiveRegisterJoins"/>
+		LEFT JOIN	personnel_hr_record AS b on	A.id_number = b.id_number
+		left join personnel_job as c on a.id_number=c.id_number
+		WHERE A.id = #{id}-->
+	</select><!--
+	<select id="get" resultType="AffairArchiveRegister">
+		SELECT
+			<include refid="affairArchiveRegisterColumns"/>
+		FROM affair_archive_register a
+		<include refid="affairArchiveRegisterJoins"/>
+		WHERE a.id = #{id}
+	</select>-->
+	
+<!--	修改 在职 离退 死亡信息数据来源为人员信息管理
+		<select id="findList" resultType="AffairArchiveRegister">
+		SELECT 
+			<include refid="affairArchiveRegisterColumns"/>
+		FROM affair_archive_register a
+		<include refid="affairArchiveRegisterJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE '%'||#{name}||'%'
+			</if>
+
+			<if test="idNumber != null and idNumber != ''">
+				AND a.id_number LIKE '%'||#{idNumber}||'%'
+			</if>
+			<if test="unitId != null and unitId != ''">
+				AND a.unit_id = #{unitId}
+			</if>
+			<if test="job != null and job != ''">
+				AND a.job = #{job}
+			</if>
+			<if test="level != null and level != ''">
+				AND a.level = #{level}
+			</if>
+			<if test="archiveNo != null and archiveNo != ''">
+				AND a.archive_no LIKE '%'||#{archiveNo}||'%'
+
+			</if>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>-->
+
+	<select id="findList" resultType="AffairArchiveRegister">
+		SELECT
+		A.id AS id,
+		a.unit AS fileUnit,
+		A."name" AS name,
+		A.id_number AS idNumber,
+		b.sex AS sex,
+		b.workunit_name AS unit,
+		a.department AS buMen,
+		a.duty AS job,
+		a.level AS level,
+		a.z_num AS zNum,
+		a.f_num2 AS fNum,
+		a.record_no as archiveNo,
+		a.remark AS remark
+		FROM
+		personnel_hr_record AS A
+		<include refid="affairArchiveRegisterJoins"/>
+		LEFT JOIN	personnel_base AS b on	A.id_number = b.id_number
+		<where>
+			b.status in ('1','2','3','4','5','6')
+			and a.del_flag = '0'
+			<if test="name != null and name != ''">
+				AND a.name LIKE '%'||#{name}||'%'
+			</if>
+			<if test="fileUnit != null and fileUnit != ''">
+				AND a.unit = #{fileUnit}
+			</if>
+			<if test="archiveNo != null and archiveNo != ''">
+				AND a.record_no LIKE '%'||#{archiveNo}||'%'
+			</if>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairArchiveRegister">
+		SELECT 
+			<include refid="affairArchiveRegisterColumns"/>
+		FROM affair_archive_register a
+		<include refid="affairArchiveRegisterJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_archive_register(
+			id,
+			name,
+			id_number,
+			unit,
+			unit_id,
+			job,
+			level,
+			z_num,
+			f_num,
+			archive_no,
+			out_reason,
+			out_date,
+			into_reason,
+			into_date,
+			remark,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			file_unit
+		) VALUES (
+			#{id},
+			#{name},
+			#{idNumber},
+			#{unit},
+			#{unitId},
+			#{job},
+			#{level},
+			#{zNum},
+			#{fNum},
+			#{archiveNo},
+			#{outReason},
+			#{outDate},
+			#{intoReason},
+			#{intoDate},
+			#{remark},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{fileUnit}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_archive_register SET 	
+			name = #{name},
+			id_number = #{idNumber},
+			unit = #{unit},
+			job = #{job},
+			level = #{level},
+			z_num = #{zNum},
+			f_num = #{fNum},
+			archive_no = #{archiveNo},
+			remark = #{remark},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			file_unit = #{fileUnit}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_archive_register SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_archive_register SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+</mapper>

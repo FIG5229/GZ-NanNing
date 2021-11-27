@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.warn.dao.WarningDao">
+
+	<sql id="warningColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.receive_per_name AS "receivePerName",
+		a.receive_per_id AS "receivePerId",
+		a.repeat_cycle AS "repeatCycle",
+		a.month AS "month",
+		a.day AS "day",
+		a.hour AS "hour",
+		a.minute AS "minute",
+		a.week AS "week",
+		a.date AS "date",
+		a.remind AS "remind",
+		a.is_voice AS "isVoice",
+		a.voice AS "voice",
+		a.is_bubble AS "isBubble",
+		a.bubble_content AS "bubbleContent",
+		a.bubble_degree AS "bubbleDegree",
+		a.is_alert AS "isAlert",
+		a.alert_content AS "alertContent",
+		a.alert_degree AS "alertDegree",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.continue_day AS "continueDay"
+	</sql>
+
+	<sql id="warningJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+
+	<select id="get" resultType="Warning">
+		SELECT
+			<include refid="warningColumns"/>
+		FROM warning a
+		<include refid="warningJoins"/>
+		WHERE a.id = #{id}
+	</select>
+
+	<select id="findList" resultType="Warning">
+        SELECT DISTINCT
+			<include refid="warningColumns"/>
+		FROM warning a
+		<include refid="warningJoins"/>
+		<if test="idStrList != null and idStrList != ''">
+		left join warn_receive r on r.warn_id = a.id
+		</if>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE concat('%',#{name},'%')
+			</if>
+			<if test="repeatCycle != null and repeatCycle != ''">
+				AND a.repeat_cycle = #{repeatCycle}
+			</if>
+			<choose>
+				<when test="idStrList != null and idStrList != ''">
+					AND r.id in
+					<foreach collection="idStrList" item="item" index="index"
+							 open="(" separator="," close=")">#{item}
+					</foreach>
+				</when>
+				<otherwise>
+					<!-- 数据范围过滤 （预警弹窗不加数据过滤）-->
+					<choose>
+						<when test="userId != null and userId != ''">
+							and a.create_by = #{userId}
+						</when>
+						<otherwise>
+							<!--${sqlMap.dsf}-->
+						</otherwise>
+					</choose>
+				</otherwise>
+			</choose>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findAllList" resultType="Warning">
+		SELECT
+			<include refid="warningColumns"/>
+		FROM warning a
+		<include refid="warningJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<insert id="insert">
+		INSERT INTO warning(
+			id,
+			name,
+			receive_per_name,
+			receive_per_id,
+			repeat_cycle,
+			month,
+			day,
+			hour,
+			minute,
+			week,
+			date,
+			remind,
+			is_voice,
+			voice,
+			is_bubble,
+			bubble_content,
+			bubble_degree,
+			is_alert,
+			alert_content,
+			alert_degree,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			continue_day
+		) VALUES (
+			#{id},
+			#{name},
+			#{receivePerName},
+			#{receivePerId},
+			#{repeatCycle},
+			#{month},
+			#{day},
+			#{hour},
+			#{minute},
+			#{week},
+			#{date},
+			#{remind},
+			#{isVoice},
+			#{voice},
+			#{isBubble},
+			#{bubbleContent},
+			#{bubbleDegree},
+			#{isAlert},
+			#{alertContent},
+			#{alertDegree},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{continueDay}
+		)
+	</insert>
+
+	<update id="update">
+		UPDATE warning SET
+			name = #{name},
+			receive_per_name = #{receivePerName},
+			receive_per_id = #{receivePerId},
+			repeat_cycle = #{repeatCycle},
+			month = #{month},
+			day = #{day},
+			hour = #{hour},
+			minute = #{minute},
+			week = #{week},
+			date = #{date},
+			remind = #{remind},
+			is_voice = #{isVoice},
+			voice = #{voice},
+			is_bubble = #{isBubble},
+			bubble_content = #{bubbleContent},
+			bubble_degree = #{bubbleDegree},
+			is_alert = #{isAlert},
+			alert_content = #{alertContent},
+			alert_degree = #{alertDegree},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			continue_day = #{continueDay}
+		WHERE id = #{id}
+	</update>
+
+	<update id="delete">
+		UPDATE warning SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE warning SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+		 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+    <select id="findKQOldWarnByName" resultType="com.thinkgem.jeesite.modules.warn.entity.Warning">
+        select * from warning where del_flag = '0' and  name = #{name}  limit 1
+    </select>
+
+    <select id="findKQOldWarnByAlertContent" resultType="com.thinkgem.jeesite.modules.warn.entity.Warning">
+     select * from warning where del_flag = '0' and  alert_content = #{alertContent}  limit 1
+    </select>
+
+    <select id="findDFOldWarnByNewWarning" resultType="com.thinkgem.jeesite.modules.warn.entity.Warning">
+     select <include refid="warningColumns"/>
+	 from warning a
+     where a.del_flag = '0'
+     and a.name =#{name}
+     and a.receive_per_id = #{receivePerId}
+     and a.continue_day = #{continueDay}
+     and a.repeat_cycle = #{repeatCycle}
+     and a.is_alert = #{isAlert}
+     and a.alert_degree = #{alertDegree}
+     and a.remind = #{remind}
+     limit 1
+    </select>
+</mapper>

@@ -1,0 +1,204 @@
+/**
+ * Copyright &copy; 2012-2016 <a href="https://github.com/thinkgem/jeesite">JeeSite</a> All rights reserved.
+ */
+package com.thinkgem.jeesite.modules.affair.entity;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.thinkgem.jeesite.common.persistence.DataEntity;
+import com.thinkgem.jeesite.common.utils.excel.annotation.ExcelField;
+
+import java.util.Date;
+
+/**
+ * 工会名册Entity
+ * @author mason.xv
+ * @version 2019-12-30
+ */
+public class AffairGonghuiPersonnel extends DataEntity<AffairGonghuiPersonnel> {
+	
+	private static final long serialVersionUID = 1L;
+	@ExcelField(title = "警号", type = 0, align = 2, sort = 0)
+	private String policeNo;		// 警号
+	@ExcelField(title = "姓名", type = 0, align = 2, sort = 1)
+	private String name;		// 姓名
+	@ExcelField(title = "性别", type = 0, align = 2, sort = 2, dictType="sex")
+	private String sex;		// 性别
+	@ExcelField(title = "身份证号", type = 0, align = 2, sort = 3)
+	private String idNumber;		// 身份证号
+	@ExcelField(title = "出生日期", type = 0, align = 2, sort = 4)
+	private Date birthday;		// 出生日期
+	@ExcelField(title = "注册时间", type = 0, align = 2, sort = 5)
+	private Date date;		// 注册时间
+	@ExcelField(title = "所在工会支部", type = 0, align = 2, sort = 6)
+	private String partyBranch;		// 所在工会支部
+	private String partyBranchId;		// 所在工会支部id
+	@ExcelField(title = "工会内职务", type = 0, align = 2, sort = 7)
+	private String job;		// 工会内职务
+	@ExcelField(title = "备注", type = 0, align = 2, sort = 8)
+	private String remark;		// 备注
+	@ExcelField(title = "排序", type = 0, align = 2, sort = 9)
+	private String sort;
+
+	private String createOrgId;		// 创建者机构id
+	private String createIdNo;		// 创建者身份证号
+	private String updateOrgId;		// 更新者机构id
+	private String updateIdNo;		// 更新者身份证号
+
+	private String create;
+	private Date beginDate;		// 开始 注册时间
+	private Date endDate;		// 结束 注册时间
+	
+	public AffairGonghuiPersonnel() {
+		super();
+	}
+
+	public AffairGonghuiPersonnel(String id){
+		super(id);
+	}
+
+	public String getPoliceNo() {
+		return policeNo;
+	}
+
+	public void setPoliceNo(String policeNo) {
+		this.policeNo = policeNo;
+	}
+	
+	public String getPartyBranch() {
+		return partyBranch;
+	}
+
+	public void setPartyBranch(String partyBranch) {
+		this.partyBranch = partyBranch;
+	}
+	
+	public String getPartyBranchId() {
+		return partyBranchId;
+	}
+
+	public void setPartyBranchId(String partyBranchId) {
+		this.partyBranchId = partyBranchId;
+	}
+	
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+	
+	public String getIdNumber() {
+		return idNumber;
+	}
+
+	public void setIdNumber(String idNumber) {
+		this.idNumber = idNumber;
+	}
+	
+	@JsonFormat(pattern = "yyyy-MM-dd")
+	public Date getBirthday() {
+		return birthday;
+	}
+
+	public void setBirthday(Date birthday) {
+		this.birthday = birthday;
+	}
+	
+	public String getJob() {
+		return job;
+	}
+
+	public void setJob(String job) {
+		this.job = job;
+	}
+	
+	public String getSex() {
+		return sex;
+	}
+
+	public void setSex(String sex) {
+		this.sex = sex;
+	}
+	
+	public String getRemark() {
+		return remark;
+	}
+
+	public void setRemark(String remark) {
+		this.remark = remark;
+	}
+	
+	public String getCreateOrgId() {
+		return createOrgId;
+	}
+
+	public void setCreateOrgId(String createOrgId) {
+		this.createOrgId = createOrgId;
+	}
+	
+	public String getCreateIdNo() {
+		return createIdNo;
+	}
+
+	public void setCreateIdNo(String createIdNo) {
+		this.createIdNo = createIdNo;
+	}
+	
+	public String getUpdateOrgId() {
+		return updateOrgId;
+	}
+
+	public void setUpdateOrgId(String updateOrgId) {
+		this.updateOrgId = updateOrgId;
+	}
+	
+	public String getUpdateIdNo() {
+		return updateIdNo;
+	}
+
+	public void setUpdateIdNo(String updateIdNo) {
+		this.updateIdNo = updateIdNo;
+	}
+	
+	@JsonFormat(pattern = "yyyy-MM-dd")
+	public Date getDate() {
+		return date;
+	}
+
+	public void setDate(Date date) {
+		this.date = date;
+	}
+	
+	public Date getBeginDate() {
+		return beginDate;
+	}
+
+	public void setBeginDate(Date beginDate) {
+		this.beginDate = beginDate;
+	}
+	
+	public Date getEndDate() {
+		return endDate;
+	}
+
+	public void setEndDate(Date endDate) {
+		this.endDate = endDate;
+	}
+
+	public String getCreate() {
+		return create;
+	}
+
+	public void setCreate(String create) {
+		this.create = create;
+	}
+
+	public String getSort() {
+		return sort;
+	}
+
+	public void setSort(String sort) {
+		this.sort = sort;
+	}
+}

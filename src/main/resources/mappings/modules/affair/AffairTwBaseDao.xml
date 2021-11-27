@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairTwBaseDao">
+    
+	<sql id="affairTwBaseColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.num AS "num",
+		a.org_name AS "orgName",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.hj_date AS "hjDate",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.parent_id AS "parentId",
+		a.parent_ids AS "parentIds",
+		a.sort AS "sort"
+	</sql>
+	
+	<sql id="affairTwBaseJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairTwBase">
+		SELECT 
+			<include refid="affairTwBaseColumns"/>
+		FROM affair_tw_base a
+		<include refid="affairTwBaseJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairTwBase">
+		SELECT
+		<include refid="affairTwBaseColumns"/>
+		FROM affair_tw_base a
+		<include refid="affairTwBaseJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE '%'||#{name}||'%'
+			</if>
+			<if test="treeId != null and treeId != ''">
+				AND (a.id = #{treeId} OR a.parent_ids LIKE '%,'||#{treeId}||',%')
+			</if>
+			 <!--数据范围过滤
+			${sqlMap.dsf}-->
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.sort ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairTwBase">
+		SELECT 
+			<include refid="affairTwBaseColumns"/>
+		FROM affair_tw_base a
+		<include refid="affairTwBaseJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<!-- 数据范围过滤 -->
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="getSum" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairTwBase">
+		SELECT count(1) AS "partyNum",
+		party_branch_id AS "childId"
+		from  affair_tj_register t
+		where t.del_flag = #{DEL_FLAG_NORMAL}
+		GROUP BY  t.party_branch_id
+	</select>
+
+    <insert id="insert">
+		INSERT INTO affair_tw_base(
+			id,
+			name,
+			num,
+			org_name,
+			unit,
+			unit_id,
+			hj_date,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			parent_id,
+			parent_ids,
+			sort
+		) VALUES (
+			#{id},
+			#{name},
+			#{num},
+			#{orgName},
+			#{unit},
+			#{unitId},
+			#{hjDate},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{parentId},
+			#{parentIds},
+			#{sort}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_tw_base SET 	
+			name = #{name},
+			num = #{num},
+			org_name = #{orgName},
+			unit = #{unit},
+			unit_id = #{unitId},
+			hj_date = #{hjDate},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			parent_id = #{parentId},
+			parent_ids = #{parentIds},
+			sort = #{sort}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_tw_base SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_tw_base SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<select id="getOrgInfo" resultType="Map">
+		SELECT
+		a.*
+		FROM affair_tw_base a LEFT JOIN sys_offices s ON A.ID = s.group_id
+		WHERE s.id = #{id}
+	</select>
+
+	<select id="findTreeData" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairOrganizationBulid">
+		SELECT
+		a.id AS "id",
+		a.name AS "name",
+		a.parent_id AS "parentId",
+		a.parent_ids AS "parentIds"
+		FROM affair_tw_base a
+		where a.del_flag = '0'
+		<if test="null != id and null != parentIds">
+			AND	(a.id = #{id} OR a.parent_ids LIKE #{parentIds}||#{id}||',%')
+		</if>
+		order by a.sort asc
+	</select>
+
+	<select id="findByName" resultType="java.lang.String">
+		SELECT a.id as id
+		FROM affair_tw_base a
+		WHERE a.name = #{name} and a.del_flag = '0' limit 1
+	</select>
+	<!--IN ( SELECT "id" FROM sys_offices WHERE group_id = #{id} )-->
+	<select id="getPersonnelUnder28" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairTjRegisterFromP">
+		SELECT
+		p.id AS "id",
+		p.name AS "name",
+		p.id_number AS "idNumber",
+		p.birthday AS "birthday",
+		( CURRENT_DATE - P.birthday ) / 365 AS "age"
+		FROM
+		affair_tj_register P
+		WHERE
+		 p.del_flag = '0'
+		<if test="id != null and id != ''">
+			AND p.party_branch_id = #{id}
+		</if>
+		<!--	需求变更 不在限制年龄
+		AND ( CURRENT_DATE - P.birthday ) / 365 &lt;= '28'*/-->
+	</select>
+
+    <select id="findListByName" resultType="java.lang.String">
+		SELECT a.id as id
+		FROM affair_tw_base a
+		WHERE a.name = #{name} and a.del_flag = '0' limit 1
+	</select>
+
+    <select id="selectAllTw" resultType="java.lang.String">
+		SELECT NAME
+		FROM
+			affair_tw_base
+		WHERE
+			del_flag = '0'
+	</select>
+
+    <select id="selectId" resultType="java.lang.String">
+		SELECT Id
+		FROM
+			affair_tw_base
+		WHERE
+			del_flag = '0'
+		and name = #{twName}
+	</select>
+
+	<select id="findAllTwUnit" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairTwBase">
+		select 	<include refid="affairTwBaseColumns"/>
+		FROM affair_tw_base a
+		where a.del_flag = '0'
+
+	</select>
+
+	<select id="findOrgNameById" resultType="java.lang.String">
+		select
+		a.org_name
+		from
+		affair_tw_base a
+		where
+		a.id = #{id}
+	</select>
+
+	<select id="getChuPartyBranch" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairTwBase">
+		select DISTINCT <include refid="affairTwBaseColumns"/>
+		from affair_tw_base a
+		inner join sys_offices os on a.id = os.group_id
+		where a.del_flag = '0'
+		and a.id &lt;&gt; #{chuId}
+		and a.parent_ids like '%,'||#{chuId}||',%'
+		<if test='type != null and type != "" and type == "1"'>
+			and os.name not like '%派出所%'
+		</if>
+		<if test='type != null and type != "" and type == "2"'>
+			and os.name like '%派出所%'
+		</if>
+	</select>
+	<select id="selectChuTw" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairTwBase">
+		select DISTINCT <include refid="affairTwBaseColumns"/>
+		from affair_tw_base a
+		inner join sys_offices os on a.id = os.group_id
+		where a.del_flag = '0'
+		and a.id &lt;&gt; #{twId}
+		and a.parent_ids like '%,'||#{twId}||',%'
+	</select>
+	<select id="selectBeanTwById" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairTwBase">
+		select *
+		from affair_tw_base a
+		where a.del_flag = '0'
+		and a.id = #{id}
+	</select>
+	<select id="selectTwBeanById" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairTwBase">
+		select *
+		from affair_tw_base a
+		where a.del_flag = '0'
+		and a.id = #{id}
+	</select>
+</mapper>

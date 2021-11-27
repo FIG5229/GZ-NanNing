@@ -1,0 +1,1355 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairAttendanceChildDao">
+
+    <sql id="affairAttendanceChildColumns">
+		a.id AS "id",
+		a.att_id AS "attId",
+		a.name AS "name",
+		a.id_number AS "idNumber",
+		a.police_type AS "policeType",
+		a.work_type AS "workType",
+		a.day_1 AS "day1",
+		a.day_2 AS "day2",
+		a.day_3 AS "day3",
+		a.day_4 AS "day4",
+		a.day_5 AS "day5",
+		a.day_6 AS "day6",
+		a.day_7 AS "day7",
+		a.day_8 AS "day8",
+		a.day_9 AS "day9",
+		a.day_10 AS "day10",
+		a.day_11 AS "day11",
+		a.day_12 AS "day12",
+		a.day_13 AS "day13",
+		a.day_14 AS "day14",
+		a.day_15 AS "day15",
+		a.day_16 AS "day16",
+		a.day_17 AS "day17",
+		a.day_18 AS "day18",
+		a.day_19 AS "day19",
+		a.day_20 AS "day20",
+		a.day_21 AS "day21",
+		a.day_22 AS "day22",
+		a.day_23 AS "day23",
+		a.day_24 AS "day24",
+		a.day_25 AS "day25",
+		a.day_26 AS "day26",
+		a.day_27 AS "day27",
+		a.day_28 AS "day28",
+		a.day_29 AS "day29",
+		a.day_30 AS "day30",
+		a.day_31 AS "day31",
+		a.month_hours AS "monthHours",
+		a.lack_work AS "lackWork",
+		a.work_injury AS "workInjury",
+		a.year_weak AS "yearWeak",
+		a.go_out AS "goOut",
+		a.in_work AS "inWork",
+		a.overtime AS "overtime",
+		a.overtime_chip AS "overtimeChip",
+		a.beizhu AS "beizhu",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.line_post AS linePost,
+		a.jf_days AS "jfDays",
+		a.lock_flag AS "lockFlag"
+	</sql>
+
+    <sql id="affairAttendanceChildJoins">
+		LEFT JOIN affair_labor_office o ON o.id = a.create_org_id
+		LEFT JOIN affair_labor_user u ON u.id = a.create_by
+    </sql>
+
+    <select id="get" resultType="AffairAttendanceChild">
+        SELECT
+        <include refid="affairAttendanceChildColumns"/>,
+        p.unit AS "unit",
+        p.year AS "year",
+        p.mouth AS "month"
+        FROM affair_attendance_child a
+        LEFT JOIN affair_attendance p on a.att_id = p.id
+        WHERE a.id = #{id}
+    </select>
+
+    <select id="findList" resultType="AffairAttendanceChild">
+        SELECT
+        <include refid="affairAttendanceChildColumns"/>,b.unit AS "unit"
+        FROM affair_attendance_child a
+        LEFT JOIN affair_attendance b ON a.att_id = b.id
+		LEFT JOIN affair_labor_sort s ON s.id_number = a.id_number
+		<include refid="affairAttendanceChildJoins"/>
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL} AND b.del_flag = '0'
+			<!--AND S.del_flag = '0'-->
+			AND S.del_flag != '1'
+            AND a.att_id in (
+            SELECT
+            a.id
+            FROM affair_attendance a
+            LEFT JOIN affair_labor_office o ON o.id = a.create_org_id
+            LEFT JOIN affair_labor_user u ON u.id = a.create_by
+            LEFT JOIN affair_labor_office b ON b.id = a.unit_id
+			<where>
+				a.del_flag = '0'
+				<if test="year != null and year != ''">
+					AND a.year = #{year}
+					<if test="month != null and month != ''">
+						AND a.mouth = #{month}
+					</if>
+				</if>
+				<if test="unitId != null and unitId != ''">
+					AND (a.unit_id = #{unitId} OR b.parent_ids LIKE '%,'||#{unitId}||',%')
+				</if>
+				${sqlMap.dsf}
+			</where>
+            )
+            <if test="name != null and name != ''">
+                AND a.name LIKE '%'||#{name}||'%'
+            </if>
+            <if test="idNumber != null and idNumber != ''">
+                AND a.id_number LIKE '%'||#{idNumber}||'%'
+            </if>
+			<!--<if test="userId != null and userId != ''">
+				AND ( o.ID = #{userId} OR o.parent_ids LIKE'%,'||#{userId}||',%' OR u.ID = #{createBy.id} )
+			</if>-->
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY s.sort ASC
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="findAllList" resultType="AffairAttendanceChild">
+        SELECT
+        <include refid="affairAttendanceChildColumns"/>
+        FROM affair_attendance_child a
+        <include refid="affairAttendanceChildJoins"/>
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="findChildListByAttId" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairAttendanceChild">
+        SELECT
+        <include refid="affairAttendanceChildColumns"/>
+        FROM affair_attendance_child a
+        LEFT JOIN affair_labor_sort s ON s.id_number = a.id_number
+        <include refid="affairAttendanceChildJoins"/>
+        <where>
+            a.del_flag = '0' AND a.att_id = #{id} AND s.del_flag != '1'
+        </where>
+        ORDER BY s.sort ASC
+    </select>
+
+    <insert id="insert">
+		INSERT INTO affair_attendance_child(
+			id,
+			att_id,
+			name,
+			id_number,
+			police_type,
+			work_type,
+			day_1,
+			day_2,
+			day_3,
+			day_4,
+			day_5,
+			day_6,
+			day_7,
+			day_8,
+			day_9,
+			day_10,
+			day_11,
+			day_12,
+			day_13,
+			day_14,
+			day_15,
+			day_16,
+			day_17,
+			day_18,
+			day_19,
+			day_20,
+			day_21,
+			day_22,
+			day_23,
+			day_24,
+			day_25,
+			day_26,
+			day_27,
+			day_28,
+			day_29,
+			day_30,
+			day_31,
+			month_hours,
+			lack_work,
+			work_injury,
+			year_weak,
+			go_out,
+			in_work,
+			overtime,
+			overtime_chip,
+			beizhu,
+			create_by,
+			create_org_id,
+			create_date,
+			update_by,
+			update_org_id,
+			update_date,
+			del_flag,
+			line_post,
+			jf_days,
+			lock_flag
+		) VALUES (
+			#{id},
+			#{attId},
+			#{name},
+			#{idNumber},
+			#{policeType},
+			#{workType},
+			#{day1},
+			#{day2},
+			#{day3},
+			#{day4},
+			#{day5},
+			#{day6},
+			#{day7},
+			#{day8},
+			#{day9},
+			#{day10},
+			#{day11},
+			#{day12},
+			#{day13},
+			#{day14},
+			#{day15},
+			#{day16},
+			#{day17},
+			#{day18},
+			#{day19},
+			#{day20},
+			#{day21},
+			#{day22},
+			#{day23},
+			#{day24},
+			#{day25},
+			#{day26},
+			#{day27},
+			#{day28},
+			#{day29},
+			#{day30},
+			#{day31},
+			#{monthHours},
+			#{lackWork},
+			#{workInjury},
+			#{yearWeak},
+			#{goOut},
+			#{inWork},
+			#{overtime},
+			#{overtimeChip},
+			#{beizhu},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateDate},
+			#{delFlag},
+			#{linePost},
+			'0',
+			'0'
+		)
+	</insert>
+
+    <update id="update">
+		UPDATE affair_attendance_child SET
+			name = #{name},
+			id_number = #{idNumber},
+			police_type = #{policeType},
+			work_type = #{workType},
+		<if test="day1!=null and day1!=''">
+			day_1 = #{day1},
+		</if>
+		<if test="day2!=null and day2!=''">
+			day_2 = #{day2},
+		</if>
+		<if test="day3!=null and day3!=''">
+			day_3 = #{day3},
+		</if>
+		<if test="day4!=null and day4!=''">
+			day_4 = #{day4},
+		</if>
+		<if test="day5!=null and day5!=''">
+			day_5 = #{day5},
+		</if>
+		<if test="day6!=null and day6!=''">
+			day_6 = #{day6},
+		</if>
+		<if test="day7!=null and day7!=''">
+			day_7 = #{day7},
+		</if>
+		<if test="day8!=null and day8!=''">
+			day_8 = #{day8},
+		</if>
+		<if test="day9!=null and day9!=''">
+			day_9 = #{day9},
+		</if>
+		<if test="day10!=null and day10!=''">
+			day_10 = #{day10},
+		</if>
+		<if test="day11!=null and day11!=''">
+			day_11 = #{day11},
+		</if>
+		<if test="day12!=null and day12!=''">
+			day_12 = #{day12},
+		</if>
+		<if test="day13!=null and day13!=''">
+			day_13 = #{day13},
+		</if>
+		<if test="day14!=null and day14!=''">
+			day_14 = #{day14},
+		</if>
+		<if test="day15!=null and day15!=''">
+			day_15 = #{day15},
+		</if>
+		<if test="day16!=null and day16!=''">
+			day_16 = #{day16},
+		</if>
+		<if test="day17!=null and day17!=''">
+			day_17 = #{day17},
+		</if>
+		<if test="day18!=null and day18!=''">
+			day_18 = #{day18},
+		</if>
+		<if test="day19!=null and day19!=''">
+			day_19 = #{day19},
+		</if>
+		<if test="day20!=null and day20!=''">
+			day_20 = #{day20},
+		</if>
+		<if test="day21!=null and day21!=''">
+			day_21 = #{day21},
+		</if>
+		<if test="day22!=null and day22!=''">
+			day_22 = #{day22},
+		</if>
+		<if test="day23!=null and day23!=''">
+			day_23 = #{day23},
+		</if>
+		<if test="day24!=null and day24!=''">
+			day_24 = #{day24},
+		</if>
+		<if test="day25!=null and day25!=''">
+			day_25 = #{day25},
+		</if>
+		<if test="day26!=null and day26!=''">
+			day_26 = #{day26},
+		</if>
+		<if test="day27!=null and day27!=''">
+			day_27 = #{day27},
+		</if>
+		<if test="day28 != null and day28 != ''">
+			day_28 = #{day28},
+		</if>
+		<if test="day29 != null and day29 != ''">
+			day_29 = #{day29},
+		</if>
+		<if test="day30 != null and day30 != ''">
+			day_30 = #{day30},
+		</if>
+		<if test="day31 != null and day31 != ''">
+			day_31 = #{day31},
+		</if>
+			month_hours = #{monthHours},
+			lack_work = #{lackWork},
+			work_injury = #{workInjury},
+			year_weak = #{yearWeak},
+			go_out = #{goOut},
+			in_work = #{inWork},
+			overtime = #{overtime},
+			overtime_chip = #{overtimeChip},
+			beizhu = #{beizhu},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_date = #{updateDate},
+			line_post = #{linePost},
+			jf_days = #{jfDays},
+			lock_flag = #{lockFlag}
+		WHERE id = #{id}
+	</update>
+
+    <update id="delete">
+		UPDATE affair_attendance_child SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+    <delete id="deleteByAttId">
+		UPDATE affair_attendance_child SET
+			del_flag = '0'
+		WHERE att_id #{attId}
+	</delete>
+
+	<update id="deleteByIds">
+		UPDATE affair_attendance_child SET
+		del_flag = '1'
+		WHERE id in
+		<foreach collection="ids" item="item" index="index"
+				 open="(" separator="," close=")">#{item}
+		</foreach>
+	</update>
+
+	<select id="findPerson" resultType="PersonnelBase">
+		SELECT p.name,p.id_number
+		FROM personnel_base p
+		LEFT JOIN affair_labor_office o ON o.id = p.workunit_id
+		LEFT JOIN affair_labor_sort s ON s.id_number = p.id_number
+		WHERE (p.workunit_id = #{unitId} or o.parent_id = #{unitId})
+		<!--and s.del_flag = '0'-->
+		and p.status in ('1','2','3','4','5','6')
+		ORDER BY s.sort ASC
+	</select>
+
+<!--	解锁-->
+	<update id="unlock">
+		UPDATE affair_attendance_child a SET
+		lock_flag = '0'
+		from affair_attendance b
+		LEFT JOIN affair_labor_office o ON o.id = b.unit_id
+		LEFT JOIN affair_labor_user u ON u.id = b.create_by
+		where
+		a.att_id = b.id
+		<if test="userOffice != '' and userOffice != null">
+			AND ( o.ID = #{userOffice} OR o.parent_ids LIKE'%,'||#{userOffice}||',%' OR u.ID = #{userOffice})
+		</if>
+		and b.year = cast(#{year} as INTEGER)
+		and b.mouth = CAST(#{month} AS INTEGER)
+	</update>
+
+<!--	加锁-->
+	<update id="locked">
+		UPDATE affair_attendance_child a SET
+		lock_flag = '1'
+		from affair_attendance b
+		LEFT JOIN affair_labor_office o ON o.id = b.unit_id
+		LEFT JOIN affair_labor_user u ON u.id = b.create_by
+		where
+		a.att_id = b.id
+		and b.year = cast(#{year} as INTEGER)
+		and b.mouth = CAST(#{month} AS INTEGER)
+		<if test="userOffice != '' and userOffice != null">
+			AND ( o.ID = #{userOffice} OR o.parent_ids LIKE'%,'||#{userOffice}||',%' OR u.ID = #{userOffice})
+		</if>
+	</update>
+
+	<select id="findLock" resultType="java.lang.String">
+		select lock_flag from affair_attendance_child where att_id = #{id}
+	</select>
+
+	<select id="findSumLackDay" resultType="java.util.HashMap">
+		SELECT A.NAME,A.id_number,case when(SUM(A.lack_work) ISNULL) then '0' ELSE SUM(A.lack_work ) end as sumDay,b.unit,b.unit_id
+		FROM affair_attendance_child A
+		LEFT JOIN affair_attendance b ON b.ID = A.att_id
+		WHERE
+			A.del_flag = '0'
+			<if test="year != null and year != ''">
+			and b.year =#{year}
+            </if>
+		GROUP BY
+			A.NAME,
+			A.id_number,
+			b.unit,
+			b.unit_id
+	</select>
+
+	<select id="findSumLackDayByUnitId" resultType="java.util.HashMap">
+		SELECT A.NAME,A.id_number,case when(SUM(A.lack_work) ISNULL) then '0' ELSE SUM(A.lack_work ) end as sumDay,b.unit,b.unit_id
+		FROM affair_attendance_child A
+		LEFT JOIN affair_attendance b ON b.ID = A.att_id
+		WHERE
+			A.del_flag = '0'
+			<if test="unitId != null and unitId != ''">
+			and b.unit_id =#{unitId}
+            </if>
+            <if test="year != null and year != ''">
+			and b.year =#{year}
+            </if>
+		GROUP BY
+			A.NAME,
+			A.id_number,
+			b.unit,
+			b.unit_id
+	</select>
+
+    <select id="selectAllIdNumber" resultType="java.lang.String">
+		SELECT DISTINCT
+			( id_number )
+		FROM
+			affair_attendance_child
+		WHERE
+			del_flag = '0'
+	</select>
+
+	<select id="selectDegree" resultType="Map">
+			SELECT count(id)
+			FROM
+				affair_attendance_child aac
+			WHERE
+				aac.del_flag = '0'
+				AND aac.att_id = #{keyId}
+				AND aac.att_id = #{keyId}
+
+	</select>
+
+	<select id="selectNum" resultType="java.lang.Integer">
+		SELECT  COUNT(1) AS num,A.id_number AS idNumber
+		FROM
+		affair_attendance_child
+		A LEFT JOIN affair_attendance b ON A.att_id = b.ID
+		WHERE
+		A.del_flag = '0'
+		AND (
+		A.day_1 = #{status}
+		OR A.day_2 = #{status}
+		OR A.day_3 = #{status}
+		OR A.day_4 = #{status}
+		OR A.day_5 = #{status}
+		OR A.day_6 = #{status}
+		OR A.day_7 = #{status}
+		OR A.day_8 = #{status}
+		OR A.day_9 = #{status}
+		OR A.day_10 = #{status}
+		OR A.day_11 = #{status}
+		OR A.day_12 = #{status}
+		OR A.day_13 = #{status}
+		OR A.day_14 = #{status}
+		OR A.day_15 = #{status}
+		OR A.day_16 = #{status}
+		OR A.day_17 = #{status}
+		OR A.day_18 = #{status}
+		OR A.day_19 = #{status}
+		OR A.day_20 = #{status}
+		OR A.day_21 = #{status}
+		OR A.day_22 = #{status}
+		OR A.day_23 = #{status}
+		OR A.day_24 = #{status}
+		OR A.day_25 = #{status}
+		OR A.day_26 = #{status}
+		OR A.day_27 = #{status}
+		OR A.day_28 = #{status}
+		OR A.day_29 = #{status}
+		OR A.day_30 = #{status}
+		OR A.day_31 = #{status}
+		)
+		<if test="year != null and year != ''">
+			AND b.year = #{year}
+			<if test="month != null and month != ''">
+				AND b.mouth = #{month}
+			</if>
+		</if>
+		<if test="unitId != null and unitId != ''">
+			AND b.unit_id = #{unitId}
+		</if>
+		GROUP BY
+		A.id_number
+	</select>
+
+	<select id="selectNameById" resultType="java.lang.String">
+		select
+			name
+		from
+			affair_attendance_child
+		where
+			del_flag = '0'
+			and id_number = #{idNumber}
+	</select>
+    <select id="selectHappenTimeById" resultType="java.util.Date">
+	 	select
+			update _date
+		from
+			affair_attendance_child
+		where
+			del_flag = '0'
+			and id_number = #{idNumber}
+	</select>
+	<select id="selectTimeById" resultType="java.util.Date">
+ 		SELECT createDate
+		FROM
+			affair_attendance_child
+		WHERE
+			del_flag = '0'
+			AND id_number = #{idNubmer}
+	</select>
+	<select id="findPersonAttendanceByIdNumber"
+			resultType="com.thinkgem.jeesite.modules.affair.entity.AffairAttendanceChild">
+		select <include refid="affairAttendanceChildColumns"/>
+		from affair_attendance_child a
+		LEFT JOIN affair_attendance b ON a.att_id = b.id
+		where a.id_number =#{idNumber}
+		and b.unit_id = #{unitId}
+		and b.year = #{year}
+		and b.mouth =#{month}
+		and a.del_flag = '0'
+		and b.del_flag = '0'
+		LIMIT  1
+	</select>
+
+	<select id="findPersonById" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairAttendanceChild">
+		select * from affair_attendance_child a LEFT JOIN affair_attendance b ON a.att_id = b.id
+		where a.id_number =#{idNumber}
+		and b.unit_id = #{unitId}
+		and b.year = #{year}
+		and b.mouth =#{month}
+		and a.del_flag = '0'
+		and b.del_flag = '0'
+	</select>
+	<select id="selectNumberUnit" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairAttendanceChild">
+		select <include refid="affairAttendanceChildColumns"/>
+		from affair_attendance_child a
+		where a.att_id = #{keyId}
+		and(
+		A.day_1 = #{status}
+		OR A.day_2 = #{status}
+		OR A.day_3 = #{status}
+		OR A.day_4 = #{status}
+		OR A.day_5 = #{status}
+		OR A.day_6 = #{status}
+		OR A.day_7 = #{status}
+		OR A.day_8 = #{status}
+		OR A.day_9 = #{status}
+		OR A.day_10 = #{status}
+		OR A.day_11 = #{status}
+		OR A.day_12 = #{status}
+		OR A.day_13 = #{status}
+		OR A.day_14 = #{status}
+		OR A.day_15 = #{status}
+		OR A.day_16 = #{status}
+		OR A.day_17 = #{status}
+		OR A.day_18 = #{status}
+		OR A.day_19 = #{status}
+		OR A.day_20 = #{status}
+		OR A.day_21 = #{status}
+		OR A.day_22 = #{status}
+		OR A.day_23 = #{status}
+		OR A.day_24 = #{status}
+		OR A.day_25 = #{status}
+		OR A.day_26 = #{status}
+		OR A.day_27 = #{status}
+		OR A.day_28 = #{status}
+		OR A.day_29 = #{status}
+		OR A.day_30 = #{status}
+		OR A.day_31 = #{status}
+		)
+	</select>
+
+	<select id="selectBean" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairAttendanceChild">
+		SELECT
+			*
+		FROM
+			affair_attendance_child
+			A LEFT JOIN affair_attendance b on a.att_id = b."id"
+		WHERE
+			a.del_flag = '0'
+			AND a.id_number = #{idNumber}
+			AND b."year" = #{year}
+			AND b.mouth = #{month}
+			AND (A.day_1 = #{state}
+				OR A.day_2 = #{state}
+				OR A.day_3 = #{state}
+				OR A.day_4 = #{state}
+				OR A.day_5 = #{state}
+				OR A.day_6 = #{state}
+				OR A.day_7 = #{state}
+				OR A.day_8 = #{state}
+				OR A.day_9 = #{state}
+				OR A.day_10 = #{state}
+				OR A.day_11 = #{state}
+				OR A.day_12 = #{state}
+				OR A.day_13 = #{state}
+				OR A.day_14 = #{state}
+				OR A.day_15 = #{state}
+				OR A.day_16 = #{state}
+				OR A.day_17 = #{state}
+				OR A.day_18 = #{state}
+				OR A.day_19 = #{state}
+				OR A.day_20 = #{state}
+				OR A.day_21 = #{state}
+				OR A.day_22 = #{state}
+				OR A.day_23 = #{state}
+				OR A.day_24 = #{state}
+				OR A.day_25 = #{state}
+			)
+	</select>
+	<select id="selectBeanYear" resultType="java.lang.Integer">
+		SELECT COUNT
+			( * )
+		FROM
+			affair_attendance_child
+			A LEFT JOIN affair_attendance b on a.att_id = b."id"
+		WHERE
+			a.del_flag = '0'
+			AND a.id_number = #{idNumber}
+			AND b."year" = #{year}
+			AND b.mouth BETWEEN '1' AND '11'
+			AND (A.day_1 = #{state}
+				OR A.day_2 = #{state}
+				OR A.day_3 = #{state}
+				OR A.day_4 = #{state}
+				OR A.day_5 = #{state}
+				OR A.day_6 = #{state}
+				OR A.day_7 = #{state}
+				OR A.day_8 = #{state}
+				OR A.day_9 = #{state}
+				OR A.day_10 = #{state}
+				OR A.day_11 = #{state}
+				OR A.day_12 = #{state}
+				OR A.day_13 = #{state}
+				OR A.day_14 = #{state}
+				OR A.day_15 = #{state}
+				OR A.day_16 = #{state}
+				OR A.day_17 = #{state}
+				OR A.day_18 = #{state}
+				OR A.day_19 = #{state}
+				OR A.day_20 = #{state}
+				OR A.day_21 = #{state}
+				OR A.day_22 = #{state}
+				OR A.day_23 = #{state}
+				OR A.day_24 = #{state}
+				OR A.day_25 = #{state}
+				OR A.day_26 = #{state}
+				OR A.day_27 = #{state}
+				OR A.day_28 = #{state}
+				OR A.day_29 = #{state}
+				OR A.day_30 = #{state}
+				OR A.day_31 = #{state}
+			)
+	</select>
+	<select id="selectBeanLastForeDay" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairAttendanceChild">
+		SELECT
+			*
+		FROM
+			affair_attendance_child
+			A LEFT JOIN affair_attendance b on a.att_id = b."id"
+		WHERE
+			a.del_flag = '0'
+			AND a.id_number = #{idNumber}
+			AND b."year" = #{year}
+			AND b.mouth = #{month}
+			AND (
+				   A.day_26 = #{state}
+				OR A.day_27 = #{state}
+				OR A.day_28 = #{state}
+				OR A.day_29 = #{state}
+				OR A.day_30 = #{state}
+				OR A.day_31 = #{state}
+			)
+	</select>
+	<select id="selectLaNumber" resultType="java.lang.Integer">
+		SELECT COUNT
+			( * )
+		FROM
+			affair_attendance_child
+			A LEFT JOIN affair_attendance b on a.att_id = b."id"
+		WHERE
+			a.del_flag = '0'
+			AND a.id_number = #{idNumber}
+			AND b."year" = #{year}
+			AND b.mouth = '12'
+			AND (
+				 A.day_2 = #{state}
+				OR A.day_3 = #{state}
+				OR A.day_4 = #{state}
+				OR A.day_5 = #{state}
+				OR A.day_6 = #{state}
+				OR A.day_7 = #{state}
+				OR A.day_8 = #{state}
+				OR A.day_9 = #{state}
+				OR A.day_10 = #{state}
+				OR A.day_11 = #{state}
+				OR A.day_12 = #{state}
+				OR A.day_13 = #{state}
+				OR A.day_14 = #{state}
+				OR A.day_15 = #{state}
+				OR A.day_16 = #{state}
+				OR A.day_17 = #{state}
+				OR A.day_18 = #{state}
+				OR A.day_19 = #{state}
+				OR A.day_20 = #{state}
+				OR A.day_21 = #{state}
+				OR A.day_22 = #{state}
+				OR A.day_23 = #{state}
+				OR A.day_24 = #{state}
+				OR A.day_25 = #{state}
+				OR A.day_26 = #{state}
+				OR A.day_27 = #{state}
+				OR A.day_28 = #{state}
+				OR A.day_29 = #{state}
+				OR A.day_30 = #{state}
+				OR A.day_31 = #{state}
+			)
+	</select>
+	<select id="selectBeanTnumber" resultType="java.lang.Integer">
+		SELECT COUNT
+			( * )
+		FROM
+			affair_attendance_child
+			A LEFT JOIN affair_attendance b on a.att_id = b."id"
+		WHERE
+			a.del_flag = '0'
+			AND a.id_number = #{idNumber}
+			AND b."year" = #{year}
+			AND b.mouth = '12'
+			AND A.day_1 = #{state}
+	</select>
+	<select id="selectMjBeanYear" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairAttendanceChild">
+		SELECT
+			  *
+		FROM
+			affair_attendance_child
+			A LEFT JOIN affair_attendance b on a.att_id = b."id"
+		WHERE
+			a.del_flag = '0'
+			AND a.id_number = #{idNumber}
+			AND b."year" = #{year}
+			AND b.mouth Between #{one} and #{elev}
+			AND (
+				A.day_1 = #{state}
+				OR A.day_2 = #{state}
+				OR A.day_3 = #{state}
+				OR A.day_4 = #{state}
+				OR A.day_5 = #{state}
+				OR A.day_6 = #{state}
+				OR A.day_7 = #{state}
+				OR A.day_8 = #{state}
+				OR A.day_9 = #{state}
+				OR A.day_10 = #{state}
+				OR A.day_11 = #{state}
+				OR A.day_12 = #{state}
+				OR A.day_13 = #{state}
+				OR A.day_14 = #{state}
+				OR A.day_15 = #{state}
+				OR A.day_16 = #{state}
+				OR A.day_17 = #{state}
+				OR A.day_18 = #{state}
+				OR A.day_19 = #{state}
+				OR A.day_20 = #{state}
+				OR A.day_21 = #{state}
+				OR A.day_22 = #{state}
+				OR A.day_23 = #{state}
+				OR A.day_24 = #{state}
+				OR A.day_25 = #{state}
+				OR A.day_26 = #{state}
+				OR A.day_27 = #{state}
+				OR A.day_28 = #{state}
+				OR A.day_29 = #{state}
+				OR A.day_30 = #{state}
+				OR A.day_31 = #{state}
+			)
+	</select>
+	<select id="selectMjLastBeanYear" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairAttendanceChild">
+		SELECT
+			  *
+		FROM
+			affair_attendance_child
+			A LEFT JOIN affair_attendance b on a.att_id = b."id"
+		WHERE
+			a.del_flag = '0'
+			AND a.id_number = #{idNumber}
+			AND b."year" = #{year}
+			AND b.mouth Between #{one} AND #{elev}
+			AND (
+				 A.day_2 = #{state}
+				OR A.day_3 = #{state}
+				OR A.day_4 = #{state}
+				OR A.day_5 = #{state}
+				OR A.day_6 = #{state}
+				OR A.day_7 = #{state}
+				OR A.day_8 = #{state}
+				OR A.day_9 = #{state}
+				OR A.day_10 = #{state}
+				OR A.day_11 = #{state}
+				OR A.day_12 = #{state}
+				OR A.day_13 = #{state}
+				OR A.day_14 = #{state}
+				OR A.day_15 = #{state}
+				OR A.day_16 = #{state}
+				OR A.day_17 = #{state}
+				OR A.day_18 = #{state}
+				OR A.day_19 = #{state}
+				OR A.day_20 = #{state}
+				OR A.day_21 = #{state}
+				OR A.day_22 = #{state}
+				OR A.day_23 = #{state}
+				OR A.day_24 = #{state}
+				OR A.day_25 = #{state}
+				OR A.day_26 = #{state}
+				OR A.day_27 = #{state}
+				OR A.day_28 = #{state}
+				OR A.day_29 = #{state}
+				OR A.day_30 = #{state}
+				OR A.day_31 = #{state}
+			)
+	</select>
+    <select id="selectLastBean" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairAttendanceChild">
+		SELECT
+			  *
+		FROM
+			affair_attendance_child
+			A LEFT JOIN affair_attendance b on a.att_id = b."id"
+		WHERE
+			a.del_flag = '0'
+			AND a.id_number = #{idNumber}
+			AND b."year" = #{lastYear}
+			AND b.mouth = 12
+			AND (
+			 	A.day_10 = #{state}
+				OR A.day_11 = #{state}
+				OR A.day_12 = #{state}
+				OR A.day_13 = #{state}
+				OR A.day_14 = #{state}
+				OR A.day_15 = #{state}
+				OR A.day_16 = #{state}
+				OR A.day_17 = #{state}
+				OR A.day_18 = #{state}
+				OR A.day_19 = #{state}
+				OR A.day_20 = #{state}
+				OR A.day_21 = #{state}
+				OR A.day_22 = #{state}
+				OR A.day_23 = #{state}
+				OR A.day_24 = #{state}
+				OR A.day_25 = #{state}
+				OR A.day_26 = #{state}
+				OR A.day_27 = #{state}
+				OR A.day_28 = #{state}
+				OR A.day_29 = #{state}
+				OR A.day_30 = #{state}
+				OR A.day_31 = #{state}
+			)
+	</select>
+	<select id="selectThisYearBean"	resultType="com.thinkgem.jeesite.modules.affair.entity.AffairAttendanceChild">
+		SELECT
+			  *
+		FROM
+			affair_attendance_child
+			A LEFT JOIN affair_attendance b on a.att_id = b."id"
+		WHERE
+			a.del_flag = '0'
+			AND a.id_number = #{idNumber}
+			AND b."year" = #{y}
+			AND b.mouth BETWEEN 1 AND 11
+			AND (
+				 A.day_1 = #{state}
+				OR A.day_2 = #{state}
+				OR A.day_3 = #{state}
+				OR A.day_4 = #{state}
+				OR A.day_5 = #{state}
+				OR A.day_6 = #{state}
+				OR A.day_7 = #{state}
+				OR A.day_8 = #{state}
+				OR A.day_9 = #{state}
+				OR A.day_10 = #{state}
+				OR A.day_11 = #{state}
+				OR A.day_12 = #{state}
+				OR A.day_13 = #{state}
+				OR A.day_14 = #{state}
+				OR A.day_15 = #{state}
+				OR A.day_16 = #{state}
+				OR A.day_17 = #{state}
+				OR A.day_18 = #{state}
+				OR A.day_19 = #{state}
+				OR A.day_20 = #{state}
+				OR A.day_21 = #{state}
+				OR A.day_22 = #{state}
+				OR A.day_23 = #{state}
+				OR A.day_24 = #{state}
+				OR A.day_25 = #{state}
+				OR A.day_26 = #{state}
+				OR A.day_27 = #{state}
+				OR A.day_28 = #{state}
+				OR A.day_29 = #{state}
+				OR A.day_30 = #{state}
+				OR A.day_31 = #{state}
+			)
+	</select>
+
+	<select id="findPersonInfo" resultType="AffairLaborSort">
+		SELECT a.name,a.id_number
+		FROM affair_labor_sort a
+		LEFT JOIN affair_labor_office o ON o.id = a.unit_id
+		WHERE
+		a.del_flag = '0'
+		AND (a.unit_id = #{unitId} or o.parent_id = #{unitId})
+		ORDER BY a.sort ASC
+	</select>
+    <select id="selectMjThisMonth" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairAttendanceChild">
+	SELECT
+		*
+	FROM
+		affair_attendance_child A
+		LEFT JOIN affair_attendance b ON A.att_id = b."id"
+		LEFT JOIN sys_user u ON A.id_number = u.NO
+		LEFT JOIN sys_user_role ur ON ur.user_id = u."id"
+	WHERE
+		A.del_flag = '0'
+		AND ur.role_id = #{roid}
+		AND b."year" = #{year}
+		AND b.mouth = #{month}
+		AND (
+			A.day_1 =  #{state}
+			OR A.day_2 =  #{state}
+			OR A.day_3 =  #{state}
+			OR A.day_4 =  #{state}
+			OR A.day_5 =  #{state}
+			OR A.day_6 =  #{state}
+			OR A.day_7 =  #{state}
+			OR A.day_8 =  #{state}
+			OR A.day_9 =  #{state}
+			OR A.day_10 = #{state}
+			OR A.day_11 = #{state}
+			OR A.day_12 = #{state}
+			OR A.day_13 = #{state}
+			OR A.day_14 = #{state}
+			OR A.day_15 = #{state}
+			OR A.day_16 = #{state}
+			OR A.day_17 = #{state}
+			OR A.day_18 = #{state}
+			OR A.day_19 = #{state}
+			OR A.day_20 = #{state}
+			OR A.day_21 = #{state}
+			OR A.day_22 = #{state}
+			OR A.day_23 = #{state}
+			OR A.day_24 = #{state}
+			OR A.day_25 = #{state}
+			OR A.day_26 = #{state}
+			OR A.day_27 = #{state}
+			OR A.day_28 = #{state}
+			OR A.day_29 = #{state}
+			OR A.day_30 = #{state}
+			OR A.day_31 = #{state}
+		)
+	</select>
+	<select id="selectMjLastMonth" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairAttendanceChild">
+	SELECT
+		*
+	FROM
+		affair_attendance_child A
+		LEFT JOIN affair_attendance b ON A.att_id = b."id"
+		LEFT JOIN sys_user u ON A.id_number = u.NO
+		LEFT JOIN sys_user_role ur ON ur.user_id = u."id"
+	WHERE
+		A.del_flag = '0'
+		AND ur.role_id = #{roid}
+		AND b."year" = #{year}
+		AND b.mouth = #{month}
+		AND (
+			  A.day_2 =  #{state}
+			OR A.day_3 =  #{state}
+			OR A.day_4 =  #{state}
+			OR A.day_5 =  #{state}
+			OR A.day_6 =  #{state}
+			OR A.day_7 =  #{state}
+			OR A.day_8 =  #{state}
+			OR A.day_9 =  #{state}
+			OR A.day_10 = #{state}
+			OR A.day_11 = #{state}
+			OR A.day_12 = #{state}
+			OR A.day_13 = #{state}
+			OR A.day_14 = #{state}
+			OR A.day_15 = #{state}
+			OR A.day_16 = #{state}
+			OR A.day_17 = #{state}
+			OR A.day_18 = #{state}
+			OR A.day_19 = #{state}
+			OR A.day_20 = #{state}
+			OR A.day_21 = #{state}
+			OR A.day_22 = #{state}
+			OR A.day_23 = #{state}
+			OR A.day_24 = #{state}
+			OR A.day_25 = #{state}
+			OR A.day_26 = #{state}
+			OR A.day_27 = #{state}
+			OR A.day_28 = #{state}
+			OR A.day_29 = #{state}
+			OR A.day_30 = #{state}
+			OR A.day_31 = #{state}
+		)
+	</select>
+    <select id="selectMjLastYear" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairAttendanceChild">
+	SELECT
+		*
+	FROM
+		affair_attendance_child A
+		LEFT JOIN affair_attendance b ON A.att_id = b."id"
+		LEFT JOIN sys_user u ON A.id_number = u.NO
+		LEFT JOIN sys_user_role ur ON ur.user_id = u."id"
+	WHERE
+		A.del_flag = '0'
+		AND ur.role_id = #{roid}
+		AND b."year" = #{lastYear}
+		AND b.mouth = '12'
+		AND (
+			 A.day_2 =  #{state}
+			OR A.day_3 =  #{state}
+			OR A.day_4 =  #{state}
+			OR A.day_5 =  #{state}
+			OR A.day_6 =  #{state}
+			OR A.day_7 =  #{state}
+			OR A.day_8 =  #{state}
+			OR A.day_9 =  #{state}
+			OR A.day_10 = #{state}
+			OR A.day_11 = #{state}
+			OR A.day_12 = #{state}
+			OR A.day_13 = #{state}
+			OR A.day_14 = #{state}
+			OR A.day_15 = #{state}
+			OR A.day_16 = #{state}
+			OR A.day_17 = #{state}
+			OR A.day_18 = #{state}
+			OR A.day_19 = #{state}
+			OR A.day_20 = #{state}
+			OR A.day_21 = #{state}
+			OR A.day_22 = #{state}
+			OR A.day_23 = #{state}
+			OR A.day_24 = #{state}
+			OR A.day_25 = #{state}
+			OR A.day_26 = #{state}
+			OR A.day_27 = #{state}
+			OR A.day_28 = #{state}
+			OR A.day_29 = #{state}
+			OR A.day_30 = #{state}
+			OR A.day_31 = #{state}
+		)
+	</select>
+	<select id="selectMjThisYear" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairAttendanceChild">
+	SELECT
+		*
+	FROM
+		affair_attendance_child A
+		LEFT JOIN affair_attendance b ON A.att_id = b."id"
+		LEFT JOIN sys_user u ON A.id_number = u.NO
+		LEFT JOIN sys_user_role ur ON ur.user_id = u."id"
+	WHERE
+		A.del_flag = '0'
+		AND ur.role_id = #{roid}
+		AND b."year" = #{year}
+		AND b.mouth BETWEEN 1 AND 11
+		AND (
+			A.day_1 =  #{state}
+			OR A.day_2 =  #{state}
+			OR A.day_3 =  #{state}
+			OR A.day_4 =  #{state}
+			OR A.day_5 =  #{state}
+			OR A.day_6 =  #{state}
+			OR A.day_7 =  #{state}
+			OR A.day_8 =  #{state}
+			OR A.day_9 =  #{state}
+			OR A.day_10 = #{state}
+			OR A.day_11 = #{state}
+			OR A.day_12 = #{state}
+			OR A.day_13 = #{state}
+			OR A.day_14 = #{state}
+			OR A.day_15 = #{state}
+			OR A.day_16 = #{state}
+			OR A.day_17 = #{state}
+			OR A.day_18 = #{state}
+			OR A.day_19 = #{state}
+			OR A.day_20 = #{state}
+			OR A.day_21 = #{state}
+			OR A.day_22 = #{state}
+			OR A.day_23 = #{state}
+			OR A.day_24 = #{state}
+			OR A.day_25 = #{state}
+			OR A.day_26 = #{state}
+			OR A.day_27 = #{state}
+			OR A.day_28 = #{state}
+			OR A.day_29 = #{state}
+			OR A.day_30 = #{state}
+			OR A.day_31 = #{state}
+		)
+	</select>
+	<select id="selectHaveBugsIdNumber" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairAttendanceChild">
+		SELECT
+			 A.NAME,
+			 A.id_number,
+			count(*)
+		FROM
+			affair_attendance_child
+			A LEFT JOIN affair_attendance b ON A.att_id = b."id"
+			LEFT JOIN sys_user u ON u.NO = A.id_number
+			LEFT JOIN sys_user_role ur ON ur.user_id = u."id"
+		WHERE
+			A.del_flag = '0'
+			AND b.del_flag = '0'
+			AND u.del_flag = '0'
+			AND ur.role_id = #{policeRoleId}
+			AND (
+				(
+					b."year" = #{lastYear}
+					AND b.mouth BETWEEN 1
+					AND 11
+					AND (
+						A.day_2 = '9'
+						OR A.day_3 = '9'
+						OR A.day_4 = '9'
+						OR A.day_5 = '9'
+						OR A.day_6 = '9'
+						OR A.day_7 = '9'
+						OR A.day_8 = '9'
+						OR A.day_9 = '9'
+						OR A.day_10 = '9'
+						OR A.day_11 = '9'
+						OR A.day_12 = '9'
+						OR A.day_13 = '9'
+						OR A.day_14 = '9'
+						OR A.day_15 = '9'
+						OR A.day_16 = '9'
+						OR A.day_17 = '9'
+						OR A.day_18 = '9'
+						OR A.day_19 = '9'
+						OR A.day_20 = '9'
+						OR A.day_21 = '9'
+						OR A.day_22 = '9'
+						OR A.day_23 = '9'
+						OR A.day_24 = '9'
+						OR A.day_25 = '9'
+						OR A.day_26 = '9'
+						OR A.day_27 = '9'
+						OR A.day_28 = '9'
+						OR A.day_29 = '9'
+						OR A.day_30 = '9'
+						OR A.day_31 = '9'
+					)
+				)
+				OR (
+					b."year" = #{year}
+					AND b.mouth BETWEEN 1
+					AND 11
+					AND (
+						A.day_1 = '9'
+						OR A.day_2 = '9'
+						OR A.day_3 = '9'
+						OR A.day_4 = '9'
+						OR A.day_5 = '9'
+						OR A.day_6 = '9'
+						OR A.day_7 = '9'
+						OR A.day_8 = '9'
+						OR A.day_9 = '9'
+						OR A.day_10 = '9'
+						OR A.day_11 = '9'
+						OR A.day_12 = '9'
+						OR A.day_13 = '9'
+						OR A.day_14 = '9'
+						OR A.day_15 = '9'
+						OR A.day_16 = '9'
+						OR A.day_17 = '9'
+						OR A.day_18 = '9'
+						OR A.day_19 = '9'
+						OR A.day_20 = '9'
+						OR A.day_21 = '9'
+						OR A.day_22 = '9'
+						OR A.day_23 = '9'
+						OR A.day_24 = '9'
+						OR A.day_25 = '9'
+						OR A.day_26 = '9'
+						OR A.day_27 = '9'
+						OR A.day_28 = '9'
+						OR A.day_29 = '9'
+						OR A.day_30 = '9'
+						OR A.day_31 = '9'
+					)
+				)
+				OR ( b."year" = #{year} AND b.mouth = 12 AND A.day_1 = '9' )
+			)
+		GROUP BY
+		A.NAME,
+		A.id_number;
+	</select>
+    <select id="selectOTBeanTnumber" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairAttendanceChild">
+		SELECT
+		*
+	FROM
+		affair_attendance_child A
+		LEFT JOIN affair_attendance b ON A.att_id = b."id"
+		LEFT JOIN sys_user u ON A.id_number = u.NO
+	WHERE
+		A.del_flag = '0'
+		AND a.id_number = #{idNumber}
+		AND b."year" = #{year}
+		AND b.mouth = 12
+		AND (
+			   A.day_1 =  #{state}
+			OR A.day_2 =  #{state}
+			OR A.day_3 =  #{state}
+			OR A.day_4 =  #{state}
+			OR A.day_5 =  #{state}
+			OR A.day_6 =  #{state}
+			OR A.day_7 =  #{state}
+			OR A.day_8 =  #{state}
+			OR A.day_9 =  #{state}
+			OR A.day_10 = #{state}
+		)
+	</select>
+    <select id="selectZjcBean" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairAttendanceChild">
+		SELECT
+		*
+	FROM
+		affair_attendance_child A
+		LEFT JOIN affair_attendance b ON A.att_id = b."id"
+		LEFT JOIN sys_user u ON A.id_number = u.NO
+		LEFT JOIN sys_user_role ur ON ur.user_id = u."id"
+	WHERE
+		A.del_flag = '0'
+		AND a.id_number = #{idNumber}
+		AND b."year" = #{year}
+		AND b.mouth = #{month}
+		AND (
+			A.day_1 =  #{state}
+			OR A.day_2 =  #{state}
+			OR A.day_3 =  #{state}
+			OR A.day_4 =  #{state}
+			OR A.day_5 =  #{state}
+			OR A.day_6 =  #{state}
+			OR A.day_7 =  #{state}
+			OR A.day_8 =  #{state}
+			OR A.day_9 =  #{state}
+			OR A.day_10 = #{state}
+			OR A.day_11 = #{state}
+			OR A.day_12 = #{state}
+			OR A.day_13 = #{state}
+			OR A.day_14 = #{state}
+			OR A.day_15 = #{state}
+			OR A.day_16 = #{state}
+			OR A.day_17 = #{state}
+			OR A.day_18 = #{state}
+			OR A.day_19 = #{state}
+			OR A.day_20 = #{state}
+			OR A.day_21 = #{state}
+			OR A.day_22 = #{state}
+			OR A.day_23 = #{state}
+			OR A.day_24 = #{state}
+			OR A.day_25 = #{state}
+			OR A.day_26 = #{state}
+			OR A.day_27 = #{state}
+			OR A.day_28 = #{state}
+			OR A.day_29 = #{state}
+			OR A.day_30 = #{state}
+			OR A.day_31 = #{state}
+		)
+	</select>
+</mapper>

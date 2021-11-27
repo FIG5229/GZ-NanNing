@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairExamManagementDao">
+    
+	<sql id="affairExamManagementColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.id_number AS "idNumber",
+		a.sex AS "sex",
+		a.age AS "age",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.job AS "job",
+		a.join_date AS "joinDate",
+		a.content AS "content",
+		a.score AS "score",
+		a.remark AS "remark",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.qx_unit_id AS "qxUnitId",
+		a.look_id AS "lookId"
+	</sql>
+	
+	<sql id="affairExamManagementJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairExamManagement">
+		SELECT 
+			<include refid="affairExamManagementColumns"/>
+		FROM affair_exam_management a
+		<include refid="affairExamManagementJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairExamManagement">
+		SELECT 
+			<include refid="affairExamManagementColumns"/>
+		FROM affair_exam_management a
+		<include refid="affairExamManagementJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE '%'||#{name}||'%'
+			</if>
+			<if test="sex != null and sex != ''">
+				AND a.sex = #{sex}
+			</if>
+			<if test="unitId != null and unitId != ''">
+				AND a.unit_id = #{unitId}
+			</if>
+			<if test="job != null and job != ''">
+				AND a.job LIKE '%'||#{job}||'%'
+			</if>
+			<choose>
+				<when test="beginJoinDate != null and beginJoinDate != '' and endJoinDate != null and endJoinDate != ''">
+					AND a.join_date between #{beginJoinDate} and #{endJoinDate}
+				</when>
+				<when test="beginJoinDate != null and beginJoinDate != ''">
+					AND a.join_date >= #{beginJoinDate}
+				</when>
+				<when test="endJoinDate != null and endJoinDate != ''">
+					AND  #{endJoinDate} >= a.join_date
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			<choose>
+				<when test="lookId != null and lookId != ''">
+					AND ( o.ID = #{qxUnitId} OR o.parent_ids LIKE'%,'||#{qxUnitId}||',%' OR u.ID = #{createBy.id} or a.look_id=#{lookId})
+				</when>
+				<otherwise>
+					AND ( o.ID = #{qxUnitId} OR u.ID = #{createBy.id} or a.qx_unit_id=#{qxUnitId})
+				</otherwise>
+			</choose>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairExamManagement">
+		SELECT 
+			<include refid="affairExamManagementColumns"/>
+		FROM affair_exam_management a
+		<include refid="affairExamManagementJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_exam_management(
+			id,
+			name,
+			id_number,
+			sex,
+			age,
+			unit,
+			unit_id,
+			job,
+			join_date,
+			content,
+			score,
+			remark,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			qx_unit_id,
+			look_id
+		) VALUES (
+			#{id},
+			#{name},
+			#{idNumber},
+			#{sex},
+			#{age},
+			#{unit},
+			#{unitId},
+			#{job},
+			#{joinDate},
+			#{content},
+			#{score},
+			#{remark},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{unitId},
+			#{lookId}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_exam_management SET 	
+			name = #{name},
+			id_number = #{idNumber},
+			sex = #{sex},
+			age = #{age},
+			unit = #{unit},
+			unit_id = #{unitId},
+			job = #{job},
+			join_date = #{joinDate},
+			content = #{content},
+			score = #{score},
+			remark = #{remark},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			qx_unit_id = #{unitId},
+			look_id = #{lookId}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_exam_management SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_exam_management SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+	
+</mapper>

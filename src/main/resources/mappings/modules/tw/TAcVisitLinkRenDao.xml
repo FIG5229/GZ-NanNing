@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.tw.dao.TAcVisitLinkRenDao">
+    
+	<sql id="tAcVisitLinkRenColumns">
+		a.guid AS "guid",
+		a.ac_id AS "acId",
+		a.ren_id AS "renId"
+	</sql>
+	
+	<sql id="tAcVisitLinkRenJoins">
+	</sql>
+    
+	<select id="get" resultType="TAcVisitLinkRen">
+		SELECT 
+			<include refid="tAcVisitLinkRenColumns"/>
+		FROM t_ac_visit_link_ren a
+		<include refid="tAcVisitLinkRenJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="TAcVisitLinkRen">
+		SELECT 
+			<include refid="tAcVisitLinkRenColumns"/>
+		FROM t_ac_visit_link_ren a
+		<include refid="tAcVisitLinkRenJoins"/>
+		<where>
+			
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="TAcVisitLinkRen">
+		SELECT 
+			<include refid="tAcVisitLinkRenColumns"/>
+		FROM t_ac_visit_link_ren a
+		<include refid="tAcVisitLinkRenJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+    <select id="selectAllRecode" resultType="java.lang.String">
+		SELECT
+			ac_id
+		FROM
+			t_ac_visit_link_ren
+		WHERE
+			ren_id = #{id}
+	</select>
+
+    <insert id="insert">
+		INSERT INTO t_ac_visit_link_ren(
+			guid,
+			ac_id,
+			ren_id
+		) VALUES (
+			#{guid},
+			#{acId},
+			#{renId}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE t_ac_visit_link_ren SET 	
+			guid = #{guid},
+			ac_id = #{acId},
+			ren_id = #{renId}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM t_ac_visit_link_ren
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.tw.dao.AcMobileDataDao">
+    
+	<sql id="acMobileDataColumns">
+		a.guid AS "guid",
+		a.ac_type AS "acType",
+		a.ac_date AS "acDate",
+		a.user_id AS "user.id",
+		a.location AS "location",
+		a.unit_code AS "unitCode",
+		a.resion AS "resion",
+		a.result AS "result",
+		a.person AS "person",
+		a.has_media AS "hasMedia",
+		a.odometer AS "odometer",
+		a.railway_name AS "railwayName",
+		a.x AS "x",
+		a.y AS "y",
+		a.code AS "code",
+		a.col_type AS "colType",
+		u4.name AS "user.name"
+	</sql>
+	
+	<sql id="acMobileDataJoins">
+		LEFT JOIN sys_user u4 ON u4.id = a.user_id
+	</sql>
+    
+	<select id="get" resultType="AcMobileData">
+		SELECT 
+			<include refid="acMobileDataColumns"/>
+		FROM ac_mobile_data a
+		<include refid="acMobileDataJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AcMobileData">
+		SELECT 
+			<include refid="acMobileDataColumns"/>
+		FROM ac_mobile_data a
+		<include refid="acMobileDataJoins"/>
+		<where>
+			
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AcMobileData">
+		SELECT 
+			<include refid="acMobileDataColumns"/>
+		FROM ac_mobile_data a
+		<include refid="acMobileDataJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+    <select id="selectAllExcption" resultType="com.thinkgem.jeesite.modules.tw.entity.AcMobileData">
+		SELECT
+			*
+		FROM
+			( ac_report ac LEFT JOIN ac_mobile_data A ON ac.f_guid = A.ac_type )
+			LEFT JOIN user_p_view u ON A.user_id = u.username
+		WHERE
+			A.ac_date LIKE #{checkTime}
+			AND u.fullunitname LIKE #{unit}
+			AND a.ac_type = '警情上报'
+	</select>
+
+    <select id="selectNum" resultType="java.lang.Integer">
+		SELECT COUNT
+			( * )
+		FROM
+			ac_mobile_data
+		WHERE
+			guid = #{idN}
+			AND ac_type = '回访调查'
+			AND ac_date BETWEEN #{yearL} AND #{yearT}
+	</select>
+
+
+    <insert id="insert">
+		INSERT INTO ac_mobile_data(
+			guid,
+			ac_type,
+			ac_date,
+			user_id,
+			location,
+			unit_code,
+			resion,
+			result,
+			person,
+			has_media,
+			odometer,
+			railway_name,
+			x,
+			y,
+			code,
+			col_type
+		) VALUES (
+			#{guid},
+			#{acType},
+			#{acDate},
+			#{user.id},
+			#{location},
+			#{unitCode},
+			#{resion},
+			#{result},
+			#{person},
+			#{hasMedia},
+			#{odometer},
+			#{railwayName},
+			#{x},
+			#{y},
+			#{code},
+			#{colType}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE ac_mobile_data SET 	
+			guid = #{guid},
+			ac_type = #{acType},
+			ac_date = #{acDate},
+			user_id = #{user.id},
+			location = #{location},
+			unit_code = #{unitCode},
+			resion = #{resion},
+			result = #{result},
+			person = #{person},
+			has_media = #{hasMedia},
+			odometer = #{odometer},
+			railway_name = #{railwayName},
+			x = #{x},
+			y = #{y},
+			code = #{code},
+			col_type = #{colType}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM ac_mobile_data
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

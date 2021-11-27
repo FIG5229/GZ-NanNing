@@ -1,0 +1,1433 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairPartyMemberDao">
+
+	<sql id="affairPartyMemberColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.card_num AS "cardNum",
+		a.sex AS "sex",
+		a.party_branch AS "partyBranch",
+		a.party_branch_id AS "partyBranchId",
+		a.personnel_category AS "personnelCategory",
+		a.nation AS "nation",
+		a.birthplace AS "birthplace",
+		a.is_taiwan AS "isTaiwan",
+		a.birth AS "birth",
+		a.education AS "education",
+		a.join_date AS "joinDate",
+		a.turn_date AS "turnDate",
+		a.work_place AS "workPlace",
+		a.work_date AS "workDate",
+		a.phone_num AS "phoneNum",
+		a.telephone AS "telephone",
+		a.home_address AS "homeAddress",
+		a.marital_status AS "maritalStatus",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.delete_reason AS "deleteReason",
+		a.police_no AS "policeNo",
+		a.status2 AS "status2",
+		a.person AS "person",
+		a.personnel_category2 AS "personnelCategory2",
+		a.personnel_type AS "personnelType",
+		a.sort AS "sort"
+	</sql>
+
+	<sql id="affairPartyMemberJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+
+	<select id="get" resultType="AffairPartyMember">
+		SELECT
+			<include refid="affairPartyMemberColumns"/>
+		FROM affair_party_member a
+		<include refid="affairPartyMemberJoins"/>
+		WHERE a.id = #{id}
+	</select>
+
+	<select id="findList" resultType="AffairPartyMember">
+		SELECT
+			<include refid="affairPartyMemberColumns"/>
+		FROM affair_party_member a
+		<include refid="affairPartyMemberJoins"/>
+		LEFT JOIN affair_general_situation s ON s.id = a.party_branch_id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE concat('%',#{name},'%')
+			</if>
+			<if test="cardNum != null and cardNum != ''">
+				AND a.card_num LIKE concat('%',#{cardNum},'%')
+			</if>
+			<if test="sex != null and sex != ''">
+				AND a.sex = #{sex}
+			</if>
+			<if test="partyBranchId != null and partyBranchId != ''">
+				AND (a.party_branch_id = #{partyBranchId} OR s.parent_ids LIKE CONCAT('%,', #{partyBranchId}, ',%'))
+			</if>
+			<if test="personnelCategory != null and personnelCategory != ''">
+				AND a.personnel_category = #{personnelCategory}
+			</if>
+			<choose>
+                <when test="joinStartDate != null and joinStartDate != '' and joinEndDate != null and joinEndDate != ''">
+                    AND a.join_date between #{joinStartDate} and #{joinEndDate}
+                </when>
+                <when test="joinStartDate != null and joinStartDate != ''">
+					AND a.join_date >= #{joinStartDate}
+				</when>
+				<when test="joinEndDate != null and joinEndDate != ''">
+					AND  #{joinEndDate} >= a.join_date
+				</when>
+                <otherwise>
+
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="turnStartDate != null and turnStartDate != '' and turnEndDate != null and turnEndDate != ''">
+                    AND a.turn_date between #{turnStartDate} and #{turnEndDate}
+                </when>
+				<when test="turnStartDate != null and turnStartDate != ''">
+					AND a.turn_date >= #{turnStartDate}
+				</when>
+				<when test="turnEndDate != null and turnEndDate != ''">
+					AND  #{turnEndDate} >= a.turn_date
+				</when>
+                <otherwise>
+
+                </otherwise>
+            </choose>
+			<!-- 数据范围过滤
+			${sqlMap.dsf}-->
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				<!--ORDER BY a.delete_reason ASC,a.update_date DESC-->
+				ORDER BY
+				<!--a.sort ASC-->
+				cast(nullif(split_part(a.sort, '-', 1),'') as integer),
+				cast(nullif(split_part(a.sort, '-', 2),'')as integer) ,
+				cast(nullif(split_part(a.sort, '-', 3),'')as integer) ,
+				cast(nullif(split_part(a.sort, '-', 4),'')as integer)
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findAllList" resultType="AffairPartyMember">
+		SELECT
+			<include refid="affairPartyMemberColumns"/>
+		FROM affair_party_member a
+		<include refid="affairPartyMemberJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<insert id="insert">
+		INSERT INTO affair_party_member(
+			id,
+			name,
+			card_num,
+			sex,
+			party_branch,
+			party_branch_id,
+			personnel_category,
+			nation,
+			birthplace,
+			is_taiwan,
+			birth,
+			education,
+			join_date,
+			turn_date,
+			work_place,
+			work_date,
+			phone_num,
+			telephone,
+			home_address,
+			marital_status,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			delete_reason,
+			police_no,
+			status2,
+			person,
+			personnel_category2,
+			personnel_type,
+			sort
+		) VALUES (
+			#{id},
+			#{name},
+			#{cardNum},
+			#{sex},
+			#{partyBranch},
+			#{partyBranchId},
+			#{personnelCategory},
+			#{nation},
+			#{birthplace},
+			#{isTaiwan},
+			#{birth},
+			#{education},
+			#{joinDate},
+			#{turnDate},
+			#{workPlace},
+			#{workDate},
+			#{phoneNum},
+			#{telephone},
+			#{homeAddress},
+			#{maritalStatus},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{deleteReason},
+			#{policeNo},
+			#{status2},
+			#{person},
+			#{personnelCategory2},
+			#{personnelType},
+			#{sort}
+		)
+	</insert>
+
+	<update id="update">
+		UPDATE affair_party_member SET
+			name = #{name},
+			card_num = #{cardNum},
+			sex = #{sex},
+			party_branch = #{partyBranch},
+			party_branch_id = #{partyBranchId},
+			personnel_category = #{personnelCategory},
+			nation = #{nation},
+			birthplace = #{birthplace},
+			is_taiwan = #{isTaiwan},
+			birth = #{birth},
+			education = #{education},
+			join_date = #{joinDate},
+			turn_date = #{turnDate},
+			work_place = #{workPlace},
+			work_date = #{workDate},
+			phone_num = #{phoneNum},
+			telephone = #{telephone},
+			home_address = #{homeAddress},
+			marital_status = #{maritalStatus},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			delete_reason = #{deleteReason},
+			police_no = #{policeNo},
+			status2 = #{status2},
+			person = #{person},
+			personnel_category2 = #{personnelCategory2},
+			personnel_type = #{personnelType},
+			sort = #{sort}
+		WHERE id = #{id}
+	</update>
+
+	<update id="delete">
+		UPDATE affair_party_member SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_party_member SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+			 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<select id="findInfoByPartyBranchId" resultType="java.util.HashMap">
+		SELECT
+		apm.party_branch "label",
+		count( apm.party_branch )
+		FROM
+		affair_party_member apm
+		WHERE apm.del_flag = '0'
+		<if test="id != null and id != ''">
+		 AND apm.party_branch_id = #{id}
+		</if>
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(apm.turn_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from apm.turn_date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND apm.turn_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND apm.turn_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= apm.turn_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		apm.party_branch
+	</select>
+
+	<select id="findInfoByPartyBranchIds" resultType="java.util.HashMap">
+		SELECT
+		apm.party_branch "label",
+		count( apm.party_branch )
+		FROM
+		affair_party_member apm
+		WHERE apm.del_flag = '0' AND apm.party_branch_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+		 	#{id}
+		 </foreach>
+		)
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(apm.turn_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from apm.turn_date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND apm.turn_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND apm.turn_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= apm.turn_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		apm.party_branch
+	</select>
+
+	<select id="findListByIdNo" resultType="java.lang.String">
+		select id from affair_party_member where card_num = #{idNo} and del_flag = '0'
+	</select>
+
+	<delete id="deleteByIdNo">
+		delete from affair_party_member where card_num = #{idNo}
+	</delete>
+
+	<select id="getGroup" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairPartyMember">
+		SELECT
+		a.party_branch
+		FROM affair_party_member a
+		<include refid="affairPartyMemberJoins"/>
+		WHERE a.card_num = #{idNumber}
+		AND a.del_flag = '0'
+	</select>
+    <select id="findListByPartyBranchId"
+            resultType="com.thinkgem.jeesite.modules.affair.entity.AffairPartyMember">
+		SELECT
+			a.id, a.card_num, a.name
+		FROM affair_party_member a
+		WHERE a.del_flag = '0'
+			AND a.party_branch_id = #{partyBranchId}
+		ORDER BY a.name
+	</select>
+
+	<select id="getPartyBranchIdByIdNo" resultType="java.lang.String">
+		SELECT
+		a.party_branch_id
+		FROM affair_party_member a
+		<include refid="affairPartyMemberJoins"/>
+		WHERE a.card_num = #{idNo}
+		AND a.del_flag = '0'
+	</select>
+
+    <select id="findCategoryInfoById" resultType="java.util.Map">
+		SELECT
+		sd.label  AS "label",
+		count( a.id) AS "count"
+		FROM affair_party_member a left join sys_dict sd on a.personnel_category = sd.value
+		WHERE a.del_flag = '0'  AND sd.del_flag = '0' AND sd.type = 'affair_personnel_category'
+		<if test="id != null and id != ''">
+			AND a.party_branch_id = #{id}
+		</if>
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.join_date, 'yyyy-mm')  = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.join_date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.join_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.join_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.join_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY sd.label
+	</select>
+
+	<select id="findCategoryInfoByIds" resultType="java.util.Map">
+		SELECT
+		sd.label  AS "label",
+		count( a.id) AS "count"
+		FROM affair_party_member a left join sys_dict sd on a.personnel_category = sd.value
+		WHERE a.del_flag = '0'  AND sd.del_flag = '0' AND sd.type = 'affair_personnel_category'
+		AND a.party_branch_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.join_date, 'yyyy-mm')  = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.join_date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.join_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.join_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.join_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY sd.label
+	</select>
+
+	<select id="findSexInfoById" resultType="java.util.Map">
+		SELECT
+		sd.label  AS "label",
+		count( a.id) AS "count"
+		FROM affair_party_member a left join sys_dict sd on a.sex = sd.value
+		WHERE a.del_flag = '0'  AND sd.del_flag = '0' AND sd.type = 'sex'
+		<if test="id != null and id != ''">
+			AND a.party_branch_id = #{id}
+		</if>
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.join_date, 'yyyy-mm')  = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.join_date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.join_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.join_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.join_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY sd.label
+	</select>
+
+	<select id="findSexInfoByIds" resultType="java.util.Map">
+		SELECT
+		sd.label  AS "label",
+		count( a.id) AS "count"
+		FROM affair_party_member a left join sys_dict sd on a.sex = sd.value
+		WHERE a.del_flag = '0'  AND sd.del_flag = '0' AND sd.type = 'sex'
+		AND a.party_branch_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.join_date, 'yyyy-mm')  = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.join_date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.join_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.join_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.join_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY sd.label
+	</select>
+
+	<select id="findNationInfoById" resultType="java.util.Map">
+		SELECT
+		sd.label  AS "label",
+		count( a.id) AS "count"
+		FROM affair_party_member a left join sys_dict sd on a.nation = sd.value
+		WHERE a.del_flag = '0'  AND sd.del_flag = '0' AND sd.type = 'nation'
+		<if test="id != null and id != ''">
+			AND a.party_branch_id = #{id}
+		</if>
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.join_date, 'yyyy-mm')  = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.join_date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.join_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.join_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.join_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY sd.label
+	</select>
+
+	<select id="findNationInfoByIds" resultType="java.util.Map">
+		SELECT
+		sd.label  AS "label",
+		count( a.id) AS "count"
+		FROM affair_party_member a left join sys_dict sd on a.nation = sd.value
+		WHERE a.del_flag = '0'  AND sd.del_flag = '0' AND sd.type = 'nation'
+		AND a.party_branch_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.join_date, 'yyyy-mm')  = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.join_date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.join_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.join_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.join_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY sd.label
+	</select>
+
+	<select id="findListByIdNumber" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairPartyMember">
+		select
+		<include refid="affairPartyMemberColumns"/>
+		 from affair_party_member a where a.card_num = #{idNo} and a.del_flag = '0'
+	</select>
+
+    <select id="getAllInfo" resultType="java.util.Map">
+		select
+		a.name AS "name",
+		a.card_num AS "cardNum"
+		from affair_party_member a where  a.del_flag = '0'
+	</select>
+
+	<select id="getPMDatasByCardNum" resultType="java.util.Map">
+		SELECT name AS "name", card_num AS "cardNum", personnel_category AS "personnelCategory", personnel_category2 AS "personnelCategory2", personnel_type AS "personnelType" FROM affair_party_member
+		WHERE card_num NOT IN(
+			<foreach collection="cardNums" item="cardNum" index="index" separator=",">
+			#{cardNum}
+		</foreach>
+		)
+		AND party_branch_id=#{partBranchId}
+		AND del_flag = '0'
+	</select>
+
+	<select id="getPMDatas" resultType="java.util.Map">
+		SELECT name AS "name", card_num AS "cardNum", personnel_category AS "personnelCategory", personnel_category2 AS "personnelCategory2", personnel_type AS "personnelType"
+		FROM affair_party_member
+		WHERE del_flag = '0' and party_branch_id=#{partBranchId}
+	</select>
+
+	<select id="getPartyBranchIdByIds" resultType="java.util.Map">
+		SELECT
+		a.party_branch_id AS "partyBranchId", a.card_num AS "cardNum"
+		FROM affair_party_member a
+		WHERE a.id IN (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+		AND a.del_flag = '0'
+	</select>
+
+	<select id="findWorkPlaceInfoById" resultType="java.util.Map">
+		SELECT
+		a.work_place AS "workPlace",
+		count( a.id) AS "count"
+		FROM affair_party_member a
+		WHERE a.del_flag = '0' and a.work_place !=''
+		<if test="id != null and id != ''">
+			AND a.party_branch_id = #{id}
+		</if>
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.join_date, 'yyyy-mm')  = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.join_date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.join_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.join_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.join_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY a.work_place
+	</select>
+	<select id="findWorkPlaceInfoByIds" resultType="java.util.Map">
+		SELECT
+		a.work_place AS "workPlace",
+		count( a.id) AS "count"
+		FROM affair_party_member a
+		WHERE a.del_flag = '0' and a.work_place !=''
+		AND a.party_branch_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.join_date, 'yyyy-mm')  = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.join_date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.join_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.join_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.join_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY a.work_place
+	</select>
+
+	<select id="echartWorkPlaceFindPageByPbId" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairPartyMember">
+		SELECT
+		<include refid="affairPartyMemberColumns"/>
+		FROM affair_party_member a
+		WHERE a.del_flag = '0'
+		<choose>
+			<when test='flag != null and flag == "1"'>
+				AND a.work_place !='' AND a.work_place NOT LIKE concat('%','休','%')
+			</when>
+			<otherwise>
+				AND a.work_place !='' AND a.work_place LIKE concat('%','休','%')
+			</otherwise>
+		</choose>
+		<if test="pbId != null and pbId != ''">
+			AND a.party_branch_id = #{pbId}
+		</if>
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.join_date, 'yyyy-mm')  = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.join_date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.join_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.join_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.join_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		ORDER BY a.delete_reason ASC,a.update_date DESC
+	</select>
+
+	<select id="echartWorkPlaceFindPageByPbIds" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairPartyMember">
+		SELECT
+		<include refid="affairPartyMemberColumns"/>
+		FROM affair_party_member a
+		WHERE a.del_flag = '0'
+		<choose>
+			<when test='flag != null and flag == "1"'>
+				AND a.work_place !='' AND a.work_place NOT LIKE concat('%','休','%')
+			</when>
+			<otherwise>
+				AND a.work_place !='' AND a.work_place LIKE concat('%','休','%')
+			</otherwise>
+		</choose>
+		AND a.party_branch_id in (
+		<foreach collection="pbIds" item="pbId" index="index" separator=",">
+			#{pbId}
+		</foreach>
+		)
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.join_date, 'yyyy-mm')  = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.join_date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.join_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.join_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.join_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		ORDER BY a.delete_reason ASC,a.update_date DESC
+	</select>
+
+    <select id="echartCategoryFindPageByPbId"
+            resultType="com.thinkgem.jeesite.modules.affair.entity.AffairPartyMember">
+		SELECT
+		<include refid="affairPartyMemberColumns"/>
+		FROM affair_party_member a
+		LEFT JOIN sys_dict d ON a.personnel_category = d.value
+		WHERE a.del_flag = '0' AND d.type = 'affair_personnel_category' AND d.label = #{flag} AND d.del_flag = '0'
+		<if test="pbId != null and pbId != ''">
+			AND a.party_branch_id = #{pbId}
+		</if>
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.join_date, 'yyyy-mm')  = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.join_date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.join_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.join_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.join_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		ORDER BY a.delete_reason ASC,a.update_date DESC
+	</select>
+
+	<select id="echartCategoryFindPageByPbIds"
+			resultType="com.thinkgem.jeesite.modules.affair.entity.AffairPartyMember">
+		SELECT
+		<include refid="affairPartyMemberColumns"/>
+		FROM affair_party_member a
+		LEFT JOIN sys_dict d ON a.personnel_category = d.value
+		WHERE a.del_flag = '0' AND d.type = 'affair_personnel_category' AND d.label = #{flag} AND d.del_flag = '0'
+		AND a.party_branch_id in (
+		<foreach collection="pbIds" item="pbId" index="index" separator=",">
+			#{pbId}
+		</foreach>
+		)
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.join_date, 'yyyy-mm')  = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.join_date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.join_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.join_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.join_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		ORDER BY a.delete_reason ASC,a.update_date DESC
+	</select>
+
+	<select id="echartNationFindPageByPbId"
+			resultType="com.thinkgem.jeesite.modules.affair.entity.AffairPartyMember">
+		SELECT
+		<include refid="affairPartyMemberColumns"/>
+		FROM affair_party_member a
+		LEFT JOIN sys_dict d ON a.nation = d.value
+		WHERE a.del_flag = '0' AND d.type = 'nation' AND d.label = #{flag} AND d.del_flag = '0'
+		<if test="pbId != null and pbId != ''">
+			AND a.party_branch_id = #{pbId}
+		</if>
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.join_date, 'yyyy-mm')  = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.join_date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.join_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.join_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.join_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		ORDER BY a.delete_reason ASC,a.update_date DESC
+	</select>
+
+	<select id="echartNationFindPageByPbIds"
+			resultType="com.thinkgem.jeesite.modules.affair.entity.AffairPartyMember">
+		SELECT
+		<include refid="affairPartyMemberColumns"/>
+		FROM affair_party_member a
+		LEFT JOIN sys_dict d ON a.nation = d.value
+		WHERE a.del_flag = '0' AND d.type = 'nation' AND d.label = #{flag} AND d.del_flag = '0'
+		AND a.party_branch_id in (
+		<foreach collection="pbIds" item="pbId" index="index" separator=",">
+			#{pbId}
+		</foreach>
+		)
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.join_date, 'yyyy-mm')  = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.join_date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.join_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.join_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.join_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		ORDER BY a.delete_reason ASC,a.update_date DESC
+	</select>
+
+	<select id="echartSexFindPageByPbId"
+			resultType="com.thinkgem.jeesite.modules.affair.entity.AffairPartyMember">
+		SELECT
+		<include refid="affairPartyMemberColumns"/>
+		FROM affair_party_member a
+		LEFT JOIN sys_dict d ON a.sex = d.value
+		WHERE a.del_flag = '0' AND d.type = 'sex' AND d.label = #{flag} AND d.del_flag = '0'
+		<if test="pbId != null and pbId != ''">
+			AND a.party_branch_id = #{pbId}
+		</if>
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.join_date, 'yyyy-mm')  = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.join_date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.join_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.join_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.join_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		ORDER BY a.delete_reason ASC,a.update_date DESC
+	</select>
+
+	<select id="echartSexFindPageByPbIds"
+			resultType="com.thinkgem.jeesite.modules.affair.entity.AffairPartyMember">
+		SELECT
+		<include refid="affairPartyMemberColumns"/>
+		FROM affair_party_member a
+		LEFT JOIN sys_dict d ON a.sex = d.value
+		WHERE a.del_flag = '0' AND d.type = 'sex' AND d.label = #{flag} AND d.del_flag = '0'
+		AND a.party_branch_id in (
+		<foreach collection="pbIds" item="pbId" index="index" separator=",">
+			#{pbId}
+		</foreach>
+		)
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.join_date, 'yyyy-mm')  = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.join_date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.join_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.join_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.join_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		ORDER BY a.delete_reason ASC,a.update_date DESC
+	</select>
+
+	<select id="byIdNumber" resultType="AffairPartyMember">
+		SELECT
+		<include refid="affairPartyMemberColumns"/>
+		FROM affair_party_member a
+		<include refid="affairPartyMemberJoins"/>
+		WHERE  a.card_num=#{cardNum}
+		and a.del_flag = '0'
+	</select>
+
+	<select id="zhuanzheng" resultType="AffairPartyMember">
+		SELECT
+		<include refid="affairPartyMemberColumns"/>
+		FROM affair_party_member a
+		<include refid="affairPartyMemberJoins"/>
+		LEFT JOIN affair_general_situation s ON s.id = a.party_branch_id
+		WHERE a.del_flag = '0'
+		AND a.turn_date IS NULL
+		AND a.join_date &lt;= NOW() - INTERVAL '14 MONTH'
+		<if test="name != null and name != ''">
+			AND a.name LIKE concat('%',#{name},'%')
+		</if>
+		<if test="cardNum != null and cardNum != ''">
+			AND a.card_num LIKE concat('%',#{cardNum},'%')
+		</if>
+		<if test="sex != null and sex != ''">
+			AND a.sex = #{sex}
+		</if>
+		<if test="partyBranchId != null and partyBranchId != ''">
+			AND a.party_branch_id = #{partyBranchId}
+		</if>
+		<if test="treeId != null and treeId != ''">
+			AND (a.party_branch_id = #{treeId} OR s.parent_ids LIKE CONCAT('%,', #{treeId}, ',%'))
+		</if>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<update id="shenHe">
+		UPDATE affair_party_member SET
+			status2 = #{affairPartyMember.status2},
+			person = #{affairPartyMember.person},
+			turn_date = NOW(),
+			update_date = #{affairPartyMember.updateDate}
+			where id = #{affairPartyMember.id}
+	</update>
+
+	<!--查询党员 入党积极分子 入党发展对象 党代表（上级、局、处、其他） 人数 合并到一起-->
+	<select id="countPartyMember" resultType="map">
+		select count(1) as num ,'全局党员数' as label
+		from affair_party_member a
+		where a.del_flag = '0'
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.join_date, 'yyyy-mm')   &lt;= #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.join_date) &lt;=  #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.join_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.join_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.join_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		union all
+		SELECT COUNT( 1 ) AS num,s.label  as label
+		FROM	affair_party_member A
+		LEFT JOIN sys_dict s ON A.personnel_category = s."value"
+		WHERE a.del_flag = '0'and  s."type" = 'affair_personnel_category'
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.join_date, 'yyyy-mm')   &lt;= #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.join_date)  &lt;= #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.join_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.join_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.join_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		group by label
+		union all
+		--入党积极分子
+		SELECT COUNT( 1 ) as num,'入党积极分子'  as label FROM affair_activist a
+		where a.del_flag = '0'
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.approval_date, 'yyyy-mm')  = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.approval_date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.approval_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.approval_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.approval_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		union all
+		--入党发展对象
+		SELECT COUNT( 1 )as num ,'入党发展对象'  as label FROM	 affair_develop_object a
+		where a.del_flag = '0'
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.approval_date, 'yyyy-mm')  = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.approval_date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.approval_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.approval_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.approval_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		union all
+		--党代表
+		SELECT
+			(
+				( SELECT COUNT ( 1 ) FROM affair_sj_party_congress_representative a where a.del_flag = '0'
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.create_date, 'yyyy-mm')  = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.create_date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.create_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.create_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.create_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>) +
+				( SELECT COUNT ( 1 ) FROM affair_ju_party_congress_representative b where b.del_flag = '0'
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(b.create_date, 'yyyy-mm')  = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from b.create_date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND b.create_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND b.create_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= b.create_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>) +
+				( SELECT COUNT ( 1 ) FROM affair_chu_party_congress_representative c where c.del_flag = '0'
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(c.create_date, 'yyyy-mm')  = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from c.create_date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND c.create_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND c.create_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= c.create_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>) +
+				( SELECT COUNT ( 1 ) FROM affair_other_party_representative d where d.del_flag = '0'
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(d.create_date, 'yyyy-mm')  = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from d.create_date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND d.create_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND d.create_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= d.create_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>)
+			) AS num ,'党代表' as label
+		GROUP BY label
+		UNION all
+		--在职离退党员
+		select  count(1) as num ,sd.label as label
+		from affair_party_member a
+		left join sys_dict sd on sd."value" = a.personnel_type
+		where a.del_flag='0' and sd."type" = 'affair_personnel_type'
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.join_date, 'yyyy-mm')   &lt;= #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.join_date)  &lt;= #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.join_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.join_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.join_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY sd.label
+		UNION all
+		--女性党员
+		select  count(DISTINCT(a."id")) as num ,sd.label as label
+		from affair_party_member a
+		left join sys_dict sd on sd."value" = a.sex
+		where a.del_flag='0' and sd."type" = 'sex' and a.sex = '2'
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.join_date, 'yyyy-mm')   &lt;= #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.join_date)  &lt;= #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.join_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.join_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.join_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY sd.label
+		UNION all
+		--少数民族党员数
+		select  count(1) as num ,'少数民族' as label
+		from affair_party_member a
+		left join sys_dict sd on sd."value" = a.nation
+		where a.del_flag='0' and sd."type" = 'nation' and a.sex &lt;&gt;  '1'
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.create_date, 'yyyy-mm')  &lt;= #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.create_date) &lt;= #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.create_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.create_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.create_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+
+	</select>
+
+	<select id="findPartyMemberPage" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairPartyMember">
+		select <include refid="affairPartyMemberColumns"/>
+		from affair_party_member a
+		left join sys_dict sd ON A.personnel_category = sd."value"
+		where a.del_flag = '0' and sd."type" = 'affair_personnel_category'
+		<if test="name != null and name != ''">
+			and sd.label = #{name}
+		</if>
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.join_date, 'yyyy-mm')   &lt;= #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.join_date)  &lt;= #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.join_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.join_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.join_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findPartyMemberList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairPartyMember">
+		select <include refid="affairPartyMemberColumns"/>
+		from affair_party_member a
+		where a.del_flag = '0'
+		<if test="sex != null and sex != ''">
+			and a.sex = #{sex}
+		</if>
+		<if test="personnelType != null and personnelType !=''">
+			and a.personnel_type = #{personnelType}
+		</if>
+		<if test="personnelCategory != null and  personnelCategory != ''">
+			and a.personnel_category = #{personnelCategory}
+		</if>
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.join_date, 'yyyy-mm')  &lt;= #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.join_date) &lt;= #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.join_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.join_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.join_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findPartyNationList" resultType="AffairPartyMember">
+		select <include refid="affairPartyMemberColumns"/>
+		FROM affair_party_member a
+		where a.del_flag = '0' and a.nation &lt;&gt; '1'
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.join_date, 'yyyy-mm')  &lt;= #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.join_date) &lt;= #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.join_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.join_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.join_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.delete_reason ASC,a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="peopleList" resultType="java.util.HashMap">
+		select
+		a.name,
+		a.card_num
+		from
+		affair_party_member a
+		where
+		a.del_flag = '0'
+		AND a.party_branch = #{org}
+	</select>
+
+    <select id="selectNoSJNameList" resultType="java.lang.String">
+		select
+		a.name
+		from
+		affair_party_member a
+		where
+		a.del_flag = '0'
+		AND a.party_branch_id = #{unitId}
+		AND a.name != #{name}
+	</select>
+    <select id="selectUnit" resultType="java.lang.String">
+		select
+			 party_branch
+		from
+			affair_party_member
+		where
+			card_num = #{id}
+	</select>
+
+    <select id="selectUnitId" resultType="java.lang.String">
+		select
+			 party_branch_id
+		from
+			affair_party_member
+		where
+			party_branch = #{unit}
+	</select>
+
+    <select id="selectAllPeople" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairPartyMember">
+			SELECT
+				*
+			FROM
+				affair_party_member
+			WHERE
+				del_flag = '0'
+				AND party_branch_id = #{unitId}
+				AND to_char ( "join_date", 'yyyy-mm-dd' ) BETWEEN #{yearL} AND #{yearT}
+	</select>
+
+	<select id="selThreeDayAfterBirthday"
+			resultType="com.thinkgem.jeesite.modules.affair.entity.AffairPartyMember">
+		select <include refid="affairPartyMemberColumns"/>
+		from affair_party_member a
+		WHERE a.del_flag = '0'
+		AND to_char("join_date", 'mm-dd' ) = #{threeDayAfter}
+	</select>
+
+	<select id="getNumByPartyId" resultType="java.lang.Integer">
+	 select count(*) from affair_party_member a where a.del_flag = '0' and a.party_branch_id = #{partyId}
+	 </select>
+
+</mapper>

@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.tw.dao.Ren001Dao">
+    
+	<sql id="ren001Columns">
+		a.id AS "id",
+		a.xm AS "xm",
+		a.cym AS "cym",
+		a.zjlx AS "zjlx",
+		a.zjh AS "zjh",
+		a.xb AS "xb",
+		a.xx AS "xx",
+		a.mz AS "mz",
+		a.gj AS "gj",
+		a.hyzk AS "hyzk",
+		a.zc AS "zc",
+		a.csrq AS "csrq",
+		a.sg AS "sg",
+		a.whcd AS "whcd",
+		a.zzmm AS "zzmm",
+		a.zjxy AS "zjxy",
+		a.hjdssqx AS "hjdssqx",
+		a.xzzssqx AS "xzzssqx",
+		a.hjdxz AS "hjdxz",
+		a.xzzxz AS "xzzxz",
+		a.gddh AS "gddh",
+		a.qtlxhm AS "qtlxhm",
+		a.sjhm AS "sjhm",
+		a.cjsj AS "cjsj",
+		a.cjr AS "cjr",
+		a.cjrjh AS "cjrjh",
+		a.cjdw AS "cjdw",
+		a.xgsj AS "xgsj",
+		a.xgr AS "xgr",
+		a.xgrjh AS "xgrjh",
+		a.xgdw AS "xgdw",
+		a.xgdwdm AS "xgdwdm",
+		a.nl AS "nl",
+		a.sfczrk AS "sfczrk",
+		a.impmark AS "impmark",
+		a.hjd AS "hjd",
+		a.xmpy AS "xmpy",
+		a.chpy AS "chpy",
+		a.tz AS "tz",
+		a.bm AS "bm",
+		a.cym2 AS "cym2",
+		a.hjdpcs AS "hjdpcs",
+		a.jzdpcs AS "jzdpcs",
+		a.jg AS "jg",
+		a.kpfs AS "kpfs",
+		a.ly AS "ly",
+		a.wxh AS "wxh",
+		a.qqh AS "qqh",
+		a.zfbzh AS "zfbzh",
+		a.wbh AS "wbh",
+		a.qtwlxx AS "qtwlxx",
+		a.cjdwdm AS "cjdwdm"
+	</sql>
+	
+	<sql id="ren001Joins">
+	</sql>
+    
+	<select id="get" resultType="Ren001">
+		SELECT 
+			<include refid="ren001Columns"/>
+		FROM ren_001 a
+		<include refid="ren001Joins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="Ren001">
+		SELECT 
+			<include refid="ren001Columns"/>
+		FROM ren_001 a
+		<include refid="ren001Joins"/>
+		<where>
+			
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="Ren001">
+		SELECT 
+			<include refid="ren001Columns"/>
+		FROM ren_001 a
+		<include refid="ren001Joins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+    <select id="selectAllPeople" resultType="com.thinkgem.jeesite.modules.tw.entity.Ren001">
+		SELECT
+			*
+		FROM
+			ren_001 r
+			LEFT JOIN ren_kz_016 K ON r."id" = K.rid
+		WHERE
+			r.cjdwdm = #{code}
+			AND K.zazdryjb LIKE concat('%',#{dj},'%')
+			AND K.sclx LIKE '精神病'
+	</select>
+
+    <insert id="insert">
+		INSERT INTO ren_001(
+			id,
+			xm,
+			cym,
+			zjlx,
+			zjh,
+			xb,
+			xx,
+			mz,
+			gj,
+			hyzk,
+			zc,
+			csrq,
+			sg,
+			whcd,
+			zzmm,
+			zjxy,
+			hjdssqx,
+			xzzssqx,
+			hjdxz,
+			xzzxz,
+			gddh,
+			qtlxhm,
+			sjhm,
+			cjsj,
+			cjr,
+			cjrjh,
+			cjdw,
+			xgsj,
+			xgr,
+			xgrjh,
+			xgdw,
+			xgdwdm,
+			nl,
+			sfczrk,
+			impmark,
+			hjd,
+			xmpy,
+			chpy,
+			tz,
+			bm,
+			cym2,
+			hjdpcs,
+			jzdpcs,
+			jg,
+			kpfs,
+			ly,
+			wxh,
+			qqh,
+			zfbzh,
+			wbh,
+			qtwlxx,
+			cjdwdm
+		) VALUES (
+			#{id},
+			#{xm},
+			#{cym},
+			#{zjlx},
+			#{zjh},
+			#{xb},
+			#{xx},
+			#{mz},
+			#{gj},
+			#{hyzk},
+			#{zc},
+			#{csrq},
+			#{sg},
+			#{whcd},
+			#{zzmm},
+			#{zjxy},
+			#{hjdssqx},
+			#{xzzssqx},
+			#{hjdxz},
+			#{xzzxz},
+			#{gddh},
+			#{qtlxhm},
+			#{sjhm},
+			#{cjsj},
+			#{cjr},
+			#{cjrjh},
+			#{cjdw},
+			#{xgsj},
+			#{xgr},
+			#{xgrjh},
+			#{xgdw},
+			#{xgdwdm},
+			#{nl},
+			#{sfczrk},
+			#{impmark},
+			#{hjd},
+			#{xmpy},
+			#{chpy},
+			#{tz},
+			#{bm},
+			#{cym2},
+			#{hjdpcs},
+			#{jzdpcs},
+			#{jg},
+			#{kpfs},
+			#{ly},
+			#{wxh},
+			#{qqh},
+			#{zfbzh},
+			#{wbh},
+			#{qtwlxx},
+			#{cjdwdm}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE ren_001 SET 	
+			xm = #{xm},
+			cym = #{cym},
+			zjlx = #{zjlx},
+			zjh = #{zjh},
+			xb = #{xb},
+			xx = #{xx},
+			mz = #{mz},
+			gj = #{gj},
+			hyzk = #{hyzk},
+			zc = #{zc},
+			csrq = #{csrq},
+			sg = #{sg},
+			whcd = #{whcd},
+			zzmm = #{zzmm},
+			zjxy = #{zjxy},
+			hjdssqx = #{hjdssqx},
+			xzzssqx = #{xzzssqx},
+			hjdxz = #{hjdxz},
+			xzzxz = #{xzzxz},
+			gddh = #{gddh},
+			qtlxhm = #{qtlxhm},
+			sjhm = #{sjhm},
+			cjsj = #{cjsj},
+			cjr = #{cjr},
+			cjrjh = #{cjrjh},
+			cjdw = #{cjdw},
+			xgsj = #{xgsj},
+			xgr = #{xgr},
+			xgrjh = #{xgrjh},
+			xgdw = #{xgdw},
+			xgdwdm = #{xgdwdm},
+			nl = #{nl},
+			sfczrk = #{sfczrk},
+			impmark = #{impmark},
+			hjd = #{hjd},
+			xmpy = #{xmpy},
+			chpy = #{chpy},
+			tz = #{tz},
+			bm = #{bm},
+			cym2 = #{cym2},
+			hjdpcs = #{hjdpcs},
+			jzdpcs = #{jzdpcs},
+			jg = #{jg},
+			kpfs = #{kpfs},
+			ly = #{ly},
+			wxh = #{wxh},
+			qqh = #{qqh},
+			zfbzh = #{zfbzh},
+			wbh = #{wbh},
+			qtwlxx = #{qtwlxx},
+			cjdwdm = #{cjdwdm}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM ren_001
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

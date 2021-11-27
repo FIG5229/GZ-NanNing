@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairPoliceHomeDao">
+    
+	<sql id="affairPoliceHomeColumns">
+		a.id AS "id",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.point_unit AS "pointUnit",
+		a.point_unit_id AS "pointUnitId",
+		a.project AS "project",
+		a.device AS "device",
+		a.nums AS "nums",
+		a.price AS "price",
+		a.sum AS "sum",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.file_path AS "filePath",
+		a.content AS "content",
+		a.jing_ban AS "jingBan",
+		a.unit_sh_ren AS "unitShRen",
+		a.chu_sh_opinion AS "chuShOpinion",
+		a.ju_sh_opinion AS "juShOpinion",
+		a.point_date AS "pointDate"
+	</sql>
+	
+	<sql id="affairPoliceHomeJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairPoliceHome">
+		SELECT 
+			<include refid="affairPoliceHomeColumns"/>
+		FROM affair_police_home a
+		<include refid="affairPoliceHomeJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	<select id="getOne" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairPoliceHome">
+		SELECT
+			<include refid="affairPoliceHomeColumns"/>
+		FROM affair_police_home a
+		<include refid="affairPoliceHomeJoins"/>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		<if test="project != null and project != ''">
+			and a.project = #{project}
+		</if>
+		<if test="pointUnit != null and pointUnit != ''">
+			and a.point_unit = #{pointUnit}
+		</if>
+		<if test="pointDate != null and pointDate != ''">
+			and a.point_date = #{pointDate}
+		</if>
+		<if test="unit != null and unit != ''">
+			and a.unit = #{unit}
+		</if>
+		order BY a.update_date DESC
+		limit 1
+
+	</select>
+	
+	<select id="findList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairPoliceHome">
+		SELECT 
+			<include refid="affairPoliceHomeColumns"/>
+		FROM affair_police_home a
+		<include refid="affairPoliceHomeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="pointDate != null and pointDate != ''">
+				AND a.point_date = #{pointDate}
+			</if>
+			<if test="unit != null and unit != ''">
+				AND a.unit = #{unit}
+			</if>
+			<if test="pointUnit != null and pointUnit != ''">
+				AND a.point_unit = #{pointUnit}
+			</if>
+			<if test="project != null and project != ''">
+				AND a.project = #{project}
+			</if>
+			<!--${sqlMap.dsf}
+			<if test="userId != null and userId != ''">
+				or( a.point_unit_id = #{userId} and a.del_flag = #{DEL_FLAG_NORMAL})
+			</if>-->
+			<if test="userId != null and userId != ''">
+				AND ( o.ID = #{userId} OR o.parent_ids LIKE'%,'||#{userId}||',%' OR u.ID = #{userId} or a.point_unit_id=#{userId})
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.point_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairPoliceHome">
+		SELECT 
+			<include refid="affairPoliceHomeColumns"/>
+		FROM affair_police_home a
+		<include refid="affairPoliceHomeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_police_home(
+			id,
+			unit,
+			unit_id,
+			point_unit,
+			point_unit_id,
+			project,
+			device,
+			nums,
+			price,
+			sum,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			file_path,
+			content,
+			jing_ban,
+		    unit_sh_ren,
+		    chu_sh_opinion ,
+		    ju_sh_opinion,
+		    point_date
+
+		) VALUES (
+			#{id},
+			#{unit},
+			#{unitId},
+			#{pointUnit},
+			#{pointUnitId},
+			#{project},
+			#{device},
+			#{nums},
+			#{price},
+			#{sum},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{filePath},
+			#{content},
+			#{jingBan},
+			#{unitShRen},
+			#{chuShOpinion},
+			#{juShOpinion},
+			#{pointDate}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_police_home SET 	
+			unit = #{unit},
+			unit_id = #{unitId},
+			point_unit = #{pointUnit},
+			point_unit_id = #{pointUnitId},
+			project = #{project},
+			device = #{device},
+			nums = #{nums},
+			price = #{price},
+			sum = #{sum},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			file_path = #{filePath},
+			content = #{content},
+			jing_ban = #{jingBan},
+		    unit_sh_ren = #{unitShRen},
+		    chu_sh_opinion = #{chuShOpinion},
+		    ju_sh_opinion = #{juShOpinion},
+		    point_date = #{pointDate}
+		WHERE id = #{id}
+	</update>
+	<!--list页专用删除-->
+	<update id="delete">
+		UPDATE affair_police_home SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	<update id="deleteByIds">
+		UPDATE affair_police_home SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<select id="findInfoByCreateOrgId" resultType="java.util.HashMap">
+		SELECT count(id)
+		from affair_police_home aph
+		WHERE
+		aph.del_flag = '0'
+		<if test="id != null and id != ''">
+			AND aph.create_org_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from aph.create_date) = #{year}
+			</when>
+			<when test="mStartDate != null and mEndDate != null">
+				AND date_trunc('day', aph.create_date) between  #{mStartDate,jdbcType=DATE} and #{mEndDate,jdbcType=DATE}
+			</when>
+			<when test="mStartDate != null">
+				AND aph.create_date >= #{mStartDate,jdbcType=DATE}
+			</when>
+			<when test="mEndDate != null">
+				AND  #{mEndDate,jdbcType=DATE} >= date_trunc('day', aph.create_date)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findInfoByCreateOrgIds" resultType="java.util.HashMap">
+		SELECT count(id)
+		from affair_police_home aph
+		WHERE
+		aph.del_flag = '0'
+		AND	aph.create_org_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from aph.create_date) = #{year}
+			</when>
+			<when test="mStartDate != null and mEndDate != null">
+				AND date_trunc('day', aph.create_date) between  #{mStartDate,jdbcType=DATE} and #{mEndDate,jdbcType=DATE}
+			</when>
+			<when test="mStartDate != null">
+				AND aph.create_date >= #{mStartDate,jdbcType=DATE}
+			</when>
+			<when test="mEndDate != null">
+				AND  #{mEndDate,jdbcType=DATE} >= date_trunc('day', aph.create_date)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+	<!--这是List页面专用查询,当建设时间，所属单位，小家建设名称，建设项目相同时，只取一条id最大的字段-->
+	<sql id="affairPoliceHomeList">
+        MAX(a.id) AS "id",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.point_unit AS "pointUnit",
+		a.point_unit_id AS "pointUnitId",
+		a.project AS "project",
+		a.point_date AS "pointDate"
+	</sql>
+	<!--这是List页面专用查询,当建设时间，所属单位，小家建设名称，建设项目相同时，只取一条id最大的字段-->
+	<select id="findInList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairPoliceHome">
+		SELECT
+		<include refid="affairPoliceHomeList"/>
+		FROM affair_police_home a
+		<include refid="affairPoliceHomeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="pointDate != null and pointDate != ''">
+				AND a.point_date = #{pointDate}
+			</if>
+			<if test="unit != null and unit != ''">
+				AND a.unit = #{unit}
+			</if>
+			<if test="pointUnit != null and pointUnit != ''">
+				AND a.point_unit = #{pointUnit}
+			</if>
+			<if test="project != null and project != ''">
+				AND a.project = #{project}
+			</if>
+			${sqlMap.dsf}
+			<if test="userId != null and userId != ''">
+				or a.point_unit_id = #{userId}
+			</if>
+		</where>
+		group by a.unit,
+		a.unit_id,
+		a.point_unit,
+		a.point_unit_id,
+		a.project,
+		a.point_date
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+		</choose>
+	</select>
+</mapper>

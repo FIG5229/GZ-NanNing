@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.sys.dao.SysIndexDao">
+    
+	<sql id="sysIndexColumns">
+		a.id AS "id",
+		a.role_id AS "roleId",
+		a.name AS "name",
+		a.index_code AS "indexCode",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="sysIndexJoins">
+	</sql>
+    
+	<select id="get" resultType="SysIndex">
+		SELECT 
+			<include refid="sysIndexColumns"/>
+		FROM sys_index a
+		<include refid="sysIndexJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="SysIndex">
+		SELECT 
+			<include refid="sysIndexColumns"/>
+		FROM sys_index a
+		<include refid="sysIndexJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+			</if>
+			<if test="indexCode != null and indexCode != ''">
+				AND a.index_code = #{indexCode}
+			</if>
+			<if test="roleId != null and roleId != ''">
+				AND a.role_id = #{roleId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="SysIndex">
+		SELECT 
+			<include refid="sysIndexColumns"/>
+		FROM sys_index a
+		<include refid="sysIndexJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO sys_index(
+			id,
+			role_id,
+			name,
+			index_code,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{roleId},
+			#{name},
+			#{indexCode},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE sys_index SET 	
+			role_id = #{roleId},
+			name = #{name},
+			index_code = #{indexCode},
+			create_org_id = #{createOrgId},
+			create_id_no = #{createIdNo},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE sys_index SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	<update id="deleteByIds">
+		UPDATE sys_index SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<select id="selectIds" resultType="SysIndex">
+		select id,name from sys_role where del_flag = '0'
+	</select>
+
+	<select id="selectName" resultType="String">
+		select name from sys_role where id = #{id} AND del_flag = '0'
+	</select>
+
+	<select id="findListByRoles" resultType="SysIndex">
+		SELECT
+		<include refid="sysIndexColumns"/>
+		FROM sys_index a
+		<include refid="sysIndexJoins"/>
+		<where>
+			a.del_flag = '0'
+			AND a.role_id in
+			<foreach item="roleId" index="index" collection="list" open="(" separator="," close=")">
+				#{roleId}
+			</foreach>
+		</where>
+	</select>
+
+	<select id="selectBeanByRoles" resultType="com.thinkgem.jeesite.modules.sys.entity.SysIndex">
+		SELECT
+		<include refid="sysIndexColumns"/>
+		FROM sys_index a
+		<include refid="sysIndexJoins"/>
+		<where>
+			a.del_flag = '0'
+			AND a.role_id = #{idNumber}
+		</where>
+	</select>
+</mapper>

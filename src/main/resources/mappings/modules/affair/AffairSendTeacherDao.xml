@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairSendTeacherDao">
+
+    <sql id="affairSendTeacherColumns">
+		a.id AS "id",
+		a.user_name AS "userName",
+		a.number AS "number",
+		a.name AS "name",
+		a.name_id AS "nameId",
+		a.id_number AS "idNumber",
+		a.police_classification AS "policeClassification",
+		a.police_rank AS "policeRank",
+		a.person_type AS "personType",
+		a.post_level AS "postLevel",
+		a.management_type AS "managementType",
+		a.post AS "post",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.region AS "region",
+		a.region_id AS "regionId",
+		a.began_date AS "beganDate",
+		a.result_date AS "resultDate",
+		a.send_day AS "sendDay",
+		a.send_period AS "sendPeriod",
+		a.count AS "count",
+		a.send_unit AS "sendUnit",
+		a.send_content AS "sendContent",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.send_unit_id AS "sendUnitId"
+	</sql>
+
+    <sql id="affairSendTeacherJoins">
+		LEFT JOIN sys_office o ON o.id = a.unit_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+
+    <select id="get" resultType="AffairSendTeacher">
+        SELECT
+        <include refid="affairSendTeacherColumns"/>
+        FROM affair_send_teacher a
+        <include refid="affairSendTeacherJoins"/>
+        WHERE a.id = #{id}
+    </select>
+
+    <select id="findList" resultType="AffairSendTeacher">
+        SELECT
+        <include refid="affairSendTeacherColumns"/>
+        FROM affair_send_teacher a
+        <include refid="affairSendTeacherJoins"/>
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="userName != null and userName != ''">
+                AND a.user_name = #{userName}
+            </if>
+            <if test="number != null and number != ''">
+                AND a.number = #{number}
+            </if>
+            <if test="name != null and name != ''">
+                AND a.name LIKE
+                <if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+                <if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+            </if>
+            <if test="idNumber != null and idNumber != ''">
+                AND a.id_number = #{idNumber}
+            </if>
+            <if test="policeClassification != null and policeClassification != ''">
+                AND a.police_classification = #{policeClassification}
+            </if>
+            <if test="policeRank != null and policeRank != ''">
+                AND a.police_rank = #{policeRank}
+            </if>
+            <if test="personType != null and personType != ''">
+                AND a.person_type = #{personType}
+            </if>
+            <if test="postLevel != null and postLevel != ''">
+                AND a.post_level = #{postLevel}
+            </if>
+            <if test="managementType != null and managementType != ''">
+                AND a.management_type = #{managementType}
+            </if>
+            <if test="post != null and post != ''">
+                AND a.post = #{post}
+            </if>
+			<if test="unitId != null and unitId != ''">
+				AND (a.unit_id = #{unitId} or o.parent_ids like '%,'||#{unitId}||',%')
+			</if>
+            <if test="region != null and region != ''">
+                AND a.region = #{region}
+            </if>
+			${sqlMap.dsf}
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="findAllList" resultType="AffairSendTeacher">
+        SELECT
+        <include refid="affairSendTeacherColumns"/>
+        FROM affair_send_teacher a
+        <include refid="affairSendTeacherJoins"/>
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <insert id="insert">
+		INSERT INTO affair_send_teacher(
+			id,
+			user_name,
+			number,
+			name,
+			name_id,
+			id_number,
+			police_classification,
+			police_rank,
+			person_type,
+			post_level,
+			management_type,
+			post,
+			unit,
+			unit_id,
+			region,
+			region_id,
+			began_date,
+			result_date,
+			send_day,
+			send_period,
+			count,
+			send_unit,
+			send_content,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			send_unit_id
+		) VALUES (
+			#{id},
+			#{userName},
+			#{number},
+			#{name},
+			#{nameId},
+			#{idNumber},
+			#{policeClassification},
+			#{policeRank},
+			#{personType},
+			#{postLevel},
+			#{managementType},
+			#{post},
+			#{unit},
+			#{unitId},
+			#{region},
+			#{regionId},
+			#{beganDate},
+			#{resultDate},
+			#{sendDay},
+			#{sendPeriod},
+			#{count},
+			#{sendUnit},
+			#{sendContent},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{sendUnitId}
+		)
+	</insert>
+
+    <update id="update">
+		UPDATE affair_send_teacher SET 	
+			user_name = #{userName},
+			number = #{number},
+			name = #{name},
+			name_id = #{nameId},
+			id_number = #{idNumber},
+			police_classification = #{policeClassification},
+			police_rank = #{policeRank},
+			person_type = #{personType},
+			post_level = #{postLevel},
+			management_type = #{managementType},
+			post = #{post},
+			unit = #{unit},
+			unit_id = #{unitId},
+			region = #{region},
+			region_id = #{regionId},
+			began_date = #{beganDate},
+			result_date = #{resultDate},
+			send_day = #{sendDay},
+			send_period = #{sendPeriod},
+			count = #{count},
+			send_unit = #{sendUnit},
+			send_content = #{sendContent},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			send_unit_id = #{sendUnitId}
+		WHERE id = #{id}
+	</update>
+
+    <update id="delete">
+		UPDATE affair_send_teacher SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+
+    <update id="deleteByIds">
+        UPDATE affair_send_teacher SET
+        del_flag = '1'
+        WHERE id in
+        <foreach collection="ids" item="item" index="index"
+                 open="(" separator="," close=")">#{item}
+        </foreach>
+    </update>
+
+    <select id="findByIds" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairSendTeacher">
+        select
+        <include refid="affairSendTeacherColumns"/>
+        from affair_send_teacher a where id in
+        <foreach collection="ids" item="item" index="index"
+                 open="(" separator="," close=")">#{item}
+        </foreach>
+    </select>
+    <select id="findofficeId" resultType="java.lang.String">
+		select id from sys_office where name = #{unit}
+	</select>
+
+</mapper>

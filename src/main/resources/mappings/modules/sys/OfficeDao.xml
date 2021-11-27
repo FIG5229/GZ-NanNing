@@ -1,0 +1,672 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.sys.dao.OfficeDao">
+
+	<sql id="officeColumns">
+		a.id,
+		a.parent_id AS "parent.id",
+		a.parent_ids,
+		a.area_id AS "area.id",
+		a.code,
+		a.name,
+		a.sort,
+		a.type,
+		a.grade,
+		a.address,
+		a.zip_code,
+		a.master,
+		a.phone,
+		a.fax,
+		a.email,
+		a.remarks,
+		a.create_by AS "createBy.id",
+		a.create_date,
+		a.update_by AS "updateBy.id",
+		a.update_date,
+		a.del_flag,
+		a.useable AS useable,
+		a.primary_person AS "primaryPerson.id",
+		a.deputy_person AS "deputyPerson.id",
+		p.name AS "parent.name",
+		ar.name AS "area.name",
+		ar.parent_ids AS "area.parentIds",
+		pp.name AS "primaryPerson.name",
+		dp.name AS "deputyPerson.name",
+		a.full_name AS "fullName",
+		a.abbreviation AS "abbreviation",
+		a.relationship AS "relationship",
+		a.character_type AS "characterType",
+		a.level AS "level",
+		a.unit_area AS "unitArea",
+		a.hierarchy1 AS "hierarchy1",
+		a.super_unit_name AS "superUnitName",
+		a.super_unit_code AS "superUnitCode",
+		a.dep_polic AS "depPolic",
+		a.unit_type AS "unitType",
+		a.leader AS "leader",
+		a.found_date AS "foundDate",
+		a.approval_file_no AS "approvalFileNo",
+		a.cancel_date AS "cancelDate",
+		a.cancel_file_no AS "cancelFileNo",
+		a.cancel_org AS "cancelOrg",
+		a.unit_dm AS "unitDm",
+		a.cncel_identification AS "cncelIdentification",
+		a.police_station_type AS "policeStationType",
+		a.hu_num AS "huNum",
+		a.hierarchy2 AS "hierarchy2",
+		a.empty_unit AS "emptyUnit",
+		a.person_num AS "personNum",
+		a.sys_code AS "sysCode",
+		a.legal_identification AS "legalIdentification",
+		a.register_org AS "registerOrg",
+		a.scope AS "scope",
+		a.source AS "source",
+		a.approval_org AS "approvalOrg",
+		a.org_update AS "orgUpdate",
+		a.build_situation AS "buildSituation"
+	</sql>
+
+	<sql id="officeJoins">
+		LEFT JOIN sys_office p ON p.id = a.parent_id
+		LEFT JOIN sys_area ar ON ar.id = a.area_id
+		LEFT JOIN SYS_USER pp ON pp.id = a.primary_person
+		LEFT JOIN SYS_USER dp ON dp.id = a.deputy_person
+    </sql>
+
+	<select id="get" resultType="Office">
+		SELECT
+			<include refid="officeColumns"/>
+		FROM sys_office a
+		<include refid="officeJoins"/>
+		WHERE a.id = #{id}
+	</select>
+
+	<select id="getOrgRelation" resultType="Map">
+		SELECT
+		*
+		FROM sys_offices a
+		WHERE a.id = #{id}
+	</select>
+
+	<select id="findList" resultType="Office">
+		SELECT
+			<include refid="officeColumns"/>
+		FROM sys_office a
+		<include refid="officeJoins"/>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		<!-- 数据范围过滤 -->
+		${sqlMap.dsf}
+		OR a.id = #{currentUser.office.id}
+		ORDER BY a.code
+	</select>
+
+	<select id="findAllList" resultType="Office">
+		SELECT
+			<include refid="officeColumns"/>
+		FROM sys_office a
+		<include refid="officeJoins"/>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		ORDER BY a.code
+	</select>
+
+	<select id="findByParentIdsLike" resultType="Office">
+		SELECT
+			<include refid="officeColumns"/>
+		FROM sys_office a
+		<include refid="officeJoins"/>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		<if test="id != null and id != ''">
+			AND (a.id = #{id} OR a.parent_ids LIKE '%,'||#{id}||',%')
+		</if>
+		ORDER BY a.code
+	</select>
+
+	<insert id="insert">
+		INSERT INTO sys_office(
+			id,
+			parent_id,
+			parent_ids,
+			area_id,
+			code,
+			name,
+			sort,
+			type,
+			grade,
+			address,
+			zip_code,
+			master,
+			phone,
+			fax,
+			email,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			useable,
+			primary_person,
+			deputy_person,
+			full_name,
+			abbreviation,
+			relationship,
+			character_type,
+			level,
+			unit_area,
+			hierarchy1,
+			super_unit_name,
+			super_unit_code,
+			dep_polic,
+			unit_type,
+			leader,
+			found_date,
+			approval_file_no,
+			cancel_date,
+			cancel_file_no,
+			cancel_org,
+			unit_dm,
+			cncel_identification,
+			police_station_type,
+			hu_num,
+			hierarchy2,
+			empty_unit,
+			person_num,
+			sys_code,
+			legal_identification,
+			register_org,
+			scope,
+			source,
+			approval_org,
+			org_update,
+			build_situation
+		) VALUES (
+			#{id},
+			#{parent.id},
+			#{parentIds},
+			#{area.id},
+			#{code},
+			#{name},
+			#{sort},
+			#{type},
+			#{grade},
+			#{address},
+			#{zipCode},
+			#{master},
+			#{phone},
+			#{fax},
+			#{email},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{useable},
+			#{primaryPerson.id},
+			#{deputyPerson.id},
+			#{fullName},
+			#{abbreviation},
+			#{relationship},
+			#{characterType},
+			#{level},
+			#{unitArea},
+			#{hierarchy1},
+			#{superUnitName},
+			#{superUnitCode},
+			#{depPolic},
+			#{unitType},
+			#{leader},
+			#{foundDate},
+			#{approvalFileNo},
+			#{cancelDate},
+			#{cancelFileNo},
+			#{cancelOrg},
+			#{unitDm},
+			#{cncelIdentification},
+			#{policeStationType},
+			#{huNum},
+			#{hierarchy2},
+			#{emptyUnit},
+			#{personNum},
+			#{sysCode},
+			#{legalIdentification},
+			#{registerOrg},
+			#{scope},
+			#{source},
+			#{approvalOrg},
+			#{orgUpdate},
+			#{buildSituation}
+		)
+	</insert>
+
+	<update id="update">
+		UPDATE sys_office SET
+			parent_id = #{parent.id},
+			parent_ids = #{parentIds},
+			area_id = #{area.id},
+			code = #{code},
+			name = #{name},
+			type = #{type},
+			grade = #{grade},
+			address = #{address},
+			zip_code = #{zipCode},
+			master = #{master},
+			phone = #{phone},
+			fax = #{fax},
+			email = #{email},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			useable=#{useable},
+			primary_person=#{primaryPerson.id},
+			deputy_person=#{deputyPerson.id},
+			full_name = #{fullName},
+			abbreviation = #{abbreviation},
+			relationship = #{relationship},
+			character_type = #{characterType},
+			level = #{level},
+			unit_area = #{unitArea},
+			hierarchy1 = #{hierarchy1},
+			super_unit_name = #{superUnitName},
+			super_unit_code = #{superUnitCode},
+			dep_polic = #{depPolic},
+			unit_type = #{unitType},
+			leader = #{leader},
+			found_date = #{foundDate},
+			approval_file_no = #{approvalFileNo},
+			cancel_date = #{cancelDate},
+			cancel_file_no = #{cancelFileNo},
+			cancel_org = #{cancelOrg},
+			unit_dm = #{unitDm},
+			cncel_identification = #{cncelIdentification},
+			police_station_type = #{policeStationType},
+			hu_num = #{huNum},
+			hierarchy2 = #{hierarchy2},
+			empty_unit = #{emptyUnit},
+			person_num = #{personNum},
+			sys_code = #{sysCode},
+			legal_identification = #{legalIdentification},
+			register_org = #{registerOrg},
+			scope = #{scope},
+			source = #{source},
+			approval_org = #{approvalOrg},
+			org_update = #{orgUpdate},
+			build_situation = #{buildSituation}
+		WHERE id = #{id}
+	</update>
+
+	<update id="updateParentIds">
+		UPDATE sys_office SET
+			parent_id = #{parent.id},
+			parent_ids = #{parentIds}
+		WHERE id = #{id}
+	</update>
+
+	<update id="delete">
+		UPDATE sys_office SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id} OR parent_ids LIKE '%,'||#{id}||',%'
+	</update>
+
+	<select id="findOneById" resultType="com.thinkgem.jeesite.modules.sys.entity.Office">
+		SELECT
+		a.id,
+		a.parent_id AS "parent.id",
+		a.parent_ids,
+		a.area_id AS "area.id",
+		a.code,
+		a.name,
+		a.sort,
+		a.type,
+		a.grade,
+		a.address,
+		a.zip_code,
+		a.master,
+		a.phone,
+		a.fax,
+		a.email,
+		a.remarks,
+		a.create_by AS "createBy.id",
+		a.create_date,
+		a.update_by AS "updateBy.id",
+		a.update_date,
+		a.del_flag,
+		a.useable AS useable,
+		a.primary_person AS "primaryPerson.id",
+		a.deputy_person AS "deputyPerson.id"
+		FROM sys_office a
+		WHERE a.id = #{id}
+	</select>
+
+	<select id="findByName" resultType="java.lang.String">
+		SELECT a.id as id
+		FROM sys_office a
+		WHERE a.name = #{name} and a.del_flag = '0'
+	</select>
+
+
+    <select id="findChildById" resultType="com.thinkgem.jeesite.modules.sys.entity.Office">
+    <choose>
+       <when test='"1" == id'>
+           SELECT a.id,a.name
+           FROM sys_office a
+           WHERE a.parent_ids NOT LIKE '0,1,34,%' AND a.parent_ids NOT LIKE '0,1,95,%' AND a.parent_ids NOT LIKE '0,1,156,%'  AND a.del_flag = '0'
+           AND a.id NOT IN ('1','34','95','156')
+           ORDER BY a.update_date ASC
+       </when>
+        <otherwise>
+            SELECT a.id,a.name
+            FROM sys_office a
+            WHERE a.parent_ids LIKE '%,'||#{id}||',%' OR a.id = #{id} AND a.del_flag = '0' ORDER BY a.update_date ASC
+        </otherwise>
+    </choose>
+    </select>
+
+	<select id="findCodesByParentId" resultType="java.lang.String">
+		SELECT code
+		FROM sys_office
+		WHERE parent_id = #{id}
+	</select>
+
+	<select id="findCodeById" resultType="java.lang.String">
+		SELECT code
+		FROM sys_office
+		WHERE id = #{id}
+	</select>
+
+	<select id="findIdsByParentId" resultType="java.lang.String">
+		SELECT id
+		FROM sys_office
+		WHERE parent_id = #{id}
+
+	</select>
+
+    <select id="findListByName" resultType="java.lang.String">
+		SELECT a.id as id
+		FROM sys_office a
+		WHERE a.name = #{name} and a.del_flag = '0'
+	</select>
+
+	<select id="findListUserByName" resultType="java.lang.String">
+		SELECT a.id as id
+		FROM sys_user a
+		WHERE a.name = #{name} and a.del_flag = '0'
+	</select>
+
+	<select id="findParentIdById" resultType="java.lang.String">
+		select parent_ids from sys_office
+		where id = #{id} and del_flag = '0'
+	</select>
+
+	<select id="findNameById" resultType="java.lang.String">
+		select
+		a.name
+		from sys_office a
+		where
+		a.id = #{id}
+	</select>
+
+	<select id="findAllOffice" resultType="java.util.HashMap">
+		select
+		a.id,
+		a.name
+		from sys_office a
+		where a.del_flag = '0'
+	</select>
+
+	<select id="findExamObjTree" resultType="map">
+		select a.* from (
+		WITH RECURSIVE examTree(id,parentId,name) AS (
+		select id,parent_id,name from sys_office where id in (
+		SELECT DISTINCT o."id" AS "parentId"
+		FROM exam_workflow_datas A
+		LEFT JOIN sys_user u ON u."id" = A.fill_person_id
+		LEFT JOIN sys_office o ON o."id" = u.office_id
+		JOIN sys_office oo ON oo."id" = o.parent_id
+		WHERE
+		workflow_id = #{workflowId}
+		<choose>
+			<!--未自评-->
+			<when test="type == '1'.toString()">
+				and a.status &lt; '2'
+			</when>
+			<!--已自评-->
+			<when test="type == '2'.toString()">
+				and a.status  &gt;= '2'
+			</when>
+			<!--未初核-->
+			<when test="type == '3'.toString()">
+				and a.status = '2'
+			</when>
+			<!--已初核-->
+			<when test="type == '4'.toString()">
+				and a.status &gt;= '3'
+			</when>
+		</choose>
+		<if test="userId != null and userId != ''">
+			<choose>
+				<when test="type == '3'.toString()">
+					and a.exam_person_id = #{userId}
+				</when>
+				<otherwise>
+					AND
+					(a.fill_person = #{userId}
+					or a.exam_person = #{userId}
+					or a.exam_person_id = #{userId}
+					or a.depart_sign = #{userId}
+					or a.depart_sign_id = #{userId}
+					or a.part_bureaus_sign = #{userId}
+					or a.part_bureaus_sign_id = #{userId}
+					or a.adjust_person = #{userId}
+					or a.adjust_person_id = #{userId}
+					or a.main_bureaus_sign = #{userId}
+					or a.main_bureaus_sign_id = #{userId}
+					)
+				</otherwise>
+			</choose>
+		</if>
+		<if test="companyId != null and companyId != ''">
+			and o.parent_ids like '%${companyId}%'
+		</if>
+		)
+		UNION ALL
+		SELECT o.id,o.parent_id,o.name from sys_office o
+		INNER JOIN examTree e on e.parentId =o.id
+		)
+		SELECT  DISTINCT id,parentId,name
+		FROM
+		examTree
+		union all
+
+		SELECT DISTINCT A
+		.fill_person_id AS "id",
+		o."id" AS "parentId",
+		u."name" AS "name"
+		FROM
+		exam_workflow_datas
+		A LEFT JOIN sys_user u ON u."id" = A.fill_person_id
+		LEFT JOIN sys_office o ON o."id" = u.office_id
+		JOIN sys_office oo ON oo."id" = o.parent_id
+		WHERE
+		workflow_id = #{workflowId}
+		<choose>
+			<!--未自评-->
+			<when test="type == '1'.toString()">
+				and a.status &lt; '2'
+			</when>
+			<!--已自评-->
+			<when test="type == '2'.toString()">
+				and a.status  &gt;= '2'
+			</when>
+			<!--未初核-->
+			<when test="type == '3'.toString()">
+				and a.status = '2'
+			</when>
+			<!--已初核-->
+			<when test="type == '4'.toString()">
+				and a.status &gt;= '3'
+			</when>
+		</choose>
+		<if test="userId != null and userId != ''">
+			<choose>
+				<when test="type == '3'.toString()">
+					and a.exam_person_id = #{userId}
+				</when>
+				<otherwise>
+					AND
+					(a.fill_person = #{userId}
+					or a.exam_person = #{userId}
+					or a.exam_person_id = #{userId}
+					or a.depart_sign = #{userId}
+					or a.depart_sign_id = #{userId}
+					or a.part_bureaus_sign = #{userId}
+					or a.part_bureaus_sign_id = #{userId}
+					or a.adjust_person = #{userId}
+					or a.adjust_person_id = #{userId}
+					or a.main_bureaus_sign = #{userId}
+					or a.main_bureaus_sign_id = #{userId}
+					)
+				</otherwise>
+			</choose>
+		</if>
+		<if test="companyId != null and companyId != ''">
+			and o.parent_ids like '%${companyId}%'
+		</if>
+		) a
+		left join sys_office o on a.id = o.id
+		order by o.code
+	</select>
+
+    <select id="selectChuUnit" resultType="com.thinkgem.jeesite.modules.sys.entity.Office">
+			SELECT
+				*
+			FROM
+				sys_office
+			WHERE
+				NAME LIKE'%南宁处%'
+				OR NAME LIKE'%北海处%'
+				OR NAME LIKE'%柳州处%'
+	</select>
+
+	<select id="selectChuUnitChu" resultType="com.thinkgem.jeesite.modules.sys.entity.Office">
+			SELECT
+				*
+			FROM
+				sys_office
+			WHERE
+				NAME LIKE'%南宁处工会%'
+				OR NAME LIKE'%北海处工会%'
+				OR NAME LIKE'%柳州处工会%'
+				AND del_flag = '0'
+	</select>
+
+	<select id="findCodeByUnitId" resultType="java.lang.String">
+		select
+		b.code
+		from sys_offices a
+		left join sys_office b on a.id = b.id
+		where
+		a.id = #{unitId}
+	</select>
+
+	<select id="findUserIdByCode" resultType="java.lang.String">
+		select
+		a.id
+		from sys_user a
+		where
+		a.no = #{id}
+	</select>
+	<select id="selectPartyBranch" resultType="java.lang.String">
+		SELECT
+			party_id
+		FROM
+			sys_offices
+		WHERE
+			id = #{unitId}
+	</select>
+	<select id="selectUnitId" resultType="java.util.Map">
+		SELECT
+			id,
+			name
+		FROM
+			sys_offices
+		WHERE
+			party_id = #{idNumber}
+	</select>
+
+	<select id="selectCode" resultType="java.lang.String">
+		SELECT
+			code
+		FROM
+			sys_office
+		WHERE
+			NAME = #{name}
+			AND del_flag = '0'
+	</select>
+	<select id="selectChuXuanchuanshi" resultType="com.thinkgem.jeesite.modules.sys.entity.Office">
+		SELECT
+			*
+		FROM
+			"sys_office"
+		WHERE
+			NAME LIKE'%宣传教育室%'
+			AND del_flag = '0'
+	</select>
+	<select id="selectJkcUnit" resultType="com.thinkgem.jeesite.modules.sys.entity.Office">
+		select
+		 	*
+		 from
+		 	sys_office a
+		where
+			 a.del_flag = '0'
+			AND (a.parent_ids like '%,34,%' or a.parent_ids like '%,95,%' or a.parent_ids like '%,156,%')
+
+	</select>
+	<select id="getChuUnit" resultType="com.thinkgem.jeesite.modules.sys.entity.Office">
+			select *
+			from sys_office a
+			where a.del_flag = '0'
+			and a.id &lt;&gt; #{chuId}
+			and a.parent_ids like '%,'||#{chuId}||',%'
+			<if test='type != null and type != "" and type == "1"'>
+				and a.name not like '%派出所%'
+			</if>
+			<if test='type != null and type != "" and type == "2"'>
+				and a.name like '%派出所%'
+			</if>
+	</select>
+    <select id="selectChuUnitList" resultType="com.thinkgem.jeesite.modules.sys.entity.Office">
+		select *
+			from sys_office a
+			where a.del_flag = '0'
+			and a.id &lt;&gt; #{chuId}
+			and a.parent_ids like '%,'||#{chuId}||',%'
+	</select>
+
+    <select id="selectUnitName" resultType="java.lang.String">
+		SELECT NAME
+		FROM sys_office a
+		WHERE a.id = #{idNumber}
+	</select>
+	<select id="selectUnitCode" resultType="java.lang.String">
+		SELECT code
+		FROM sys_office a
+		WHERE a.id = #{idNumber}
+	</select>
+    <select id="selectBeanById" resultType="com.thinkgem.jeesite.modules.sys.entity.Office">
+		SELECT *
+		FROM sys_office a
+		WHERE a.id = #{id}
+		and a.del_flag = '0'
+	</select>
+
+	<select id="findUnitIdByCode" resultType="com.thinkgem.jeesite.modules.sys.entity.Office">
+	    select * from sys_office a where a.code =#{code} and a.del_flag = '0'
+    </select>
+
+    <select id="findUserById" resultType="com.thinkgem.jeesite.modules.sys.entity.User">
+    select a.* from sys_user a
+    left join sys_office o on a.no = o.code where a.del_flag = '0' and o.del_flag = '0' and o.id  = #{unitId} limit 1
+    </select>
+
+</mapper>

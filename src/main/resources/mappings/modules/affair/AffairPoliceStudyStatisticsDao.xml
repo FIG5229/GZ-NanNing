@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairPoliceStudyStatisticsDao">
+    
+	<sql id="affairPoliceStudyStatisticsColumns">
+		a.id AS "id",
+		a.nick_name AS "nickName",
+		a.name AS "name",
+		a.alarm AS "alarm",
+		a.unit_id AS "unitId",
+		a.unit_name AS "unitName",
+		a.course_pass_rate AS "coursePassRate",
+		a.course_num AS "courseNum",
+		a.pass_course_num AS "passCourseNum",
+		a.study_total_number AS "studyTotalNumber",
+		a.study_total_date AS "studyTotalDate",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="affairPoliceStudyStatisticsJoins">
+		LEFT JOIN sys_office o5 ON o5.id = a.unit_id
+	</sql>
+    
+	<select id="get" resultType="AffairPoliceStudyStatistics">
+		SELECT 
+			<include refid="affairPoliceStudyStatisticsColumns"/>
+		FROM affair_police_study_statistics a
+		<include refid="affairPoliceStudyStatisticsJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairPoliceStudyStatistics">
+		SELECT 
+			<include refid="affairPoliceStudyStatisticsColumns"/>
+		FROM affair_police_study_statistics a
+		<include refid="affairPoliceStudyStatisticsJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="nickName != null and nickName != ''">
+				AND a.nick_name = #{nickName}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+			</if>
+			<if test="alarm != null and alarm != ''">
+				AND a.alarm = #{alarm}
+			</if>
+			<if test="unitId != null and unitId != ''">
+				AND a.unit_id = #{unitId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairPoliceStudyStatistics">
+		SELECT 
+			<include refid="affairPoliceStudyStatisticsColumns"/>
+		FROM affair_police_study_statistics a
+		<include refid="affairPoliceStudyStatisticsJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_police_study_statistics(
+			id,
+			nick_name,
+			name,
+			alarm,
+			unit_id,
+			unit_name,
+			course_pass_rate,
+			course_num,
+			pass_course_num,
+			study_total_number,
+			study_total_date,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{nickName},
+			#{name},
+			#{alarm},
+			#{unitId},
+			#{unitName},
+			#{coursePassRate},
+			#{courseNum},
+			#{passCourseNum},
+			#{studyTotalNumber},
+			#{studyTotalDate},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_police_study_statistics SET 	
+			nick_name = #{nickName},
+			name = #{name},
+			alarm = #{alarm},
+			unit_id = #{unitId},
+			unit_name = #{unitName},
+			course_pass_rate = #{coursePassRate},
+			course_num = #{courseNum},
+			pass_course_num = #{passCourseNum},
+			study_total_number = #{studyTotalNumber},
+			study_total_date = #{studyTotalDate},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_police_study_statistics SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_police_study_statistics SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+</mapper>

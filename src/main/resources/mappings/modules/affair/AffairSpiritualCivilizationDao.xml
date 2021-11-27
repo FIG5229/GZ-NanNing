@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairSpiritualCivilizationDao">
+    
+	<sql id="affairSpiritualCivilizationColumns">
+		a.id AS "id",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.annual AS "annual",
+		a.approval_levels AS "approvalLevels",
+		a.approval_time AS "approvalTime",
+		a.adjunct AS "adjunct",
+		a.description AS "description",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="affairSpiritualCivilizationJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairSpiritualCivilization">
+		SELECT 
+			<include refid="affairSpiritualCivilizationColumns"/>
+		FROM affair_spiritual_civilization a
+		<include refid="affairSpiritualCivilizationJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairSpiritualCivilization">
+		SELECT 
+			<include refid="affairSpiritualCivilizationColumns"/>
+		FROM affair_spiritual_civilization a
+		<include refid="affairSpiritualCivilizationJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="unit != null and unit != ''">
+				AND a.unit LIKE
+				<if test="dbName == 'oracle'">'%'||#{unit}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{unit}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{unit},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{unit}||'%'</if>
+			</if>
+			<if test="annual != null and annual != ''">
+				AND a.annual LIKE
+				<if test="dbName == 'oracle'">'%'||#{annual}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{annual}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{annual},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{annual}||'%'</if>
+			</if>
+			<if test="unitId != null and unitId != ''">
+				AND a.unit_id = #{unitId}
+			</if>
+			<if test="userId != null and userId != ''">
+				or a.create_by = #{userId}
+			</if>
+		</where>
+		/*${sqlMap.dsf}*/
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairSpiritualCivilization">
+		SELECT 
+			<include refid="affairSpiritualCivilizationColumns"/>
+		FROM affair_spiritual_civilization a
+		<include refid="affairSpiritualCivilizationJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_spiritual_civilization(
+			id,
+			unit,
+			unit_id,
+			annual,
+			approval_levels,
+			approval_time,
+			adjunct,
+			description,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{unit},
+			#{unitId},
+			#{annual},
+			#{approvalLevels},
+			#{approvalTime},
+			#{adjunct},
+			#{description},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_spiritual_civilization SET 	
+			unit = #{unit},
+			unit_id = #{unitId},
+			annual = #{annual},
+			approval_levels = #{approvalLevels},
+			approval_time = #{approvalTime},
+			adjunct = #{adjunct},
+			description = #{description},
+			create_org_id = #{createOrgId},
+			create_id_no = #{createIdNo},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_spiritual_civilization SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_spiritual_civilization SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+	
+</mapper>

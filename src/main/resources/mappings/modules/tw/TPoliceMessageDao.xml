@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.tw.dao.TPoliceMessageDao">
+    
+	<sql id="tPoliceMessageColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.id_card AS "idCard",
+		a.iphone_number AS "iphoneNumber",
+		a.wechat_id AS "wechatId",
+		a.police_address AS "policeAddress",
+		a.pilice_ip AS "piliceIp",
+		a.train_number AS "trainNumber",
+		a.coach AS "coach",
+		a.station_name AS "stationName",
+		a.station_site AS "stationSite",
+		a.police_message AS "policeMessage",
+		a.create_time AS "createTime",
+		a.organization_id AS "organizationId",
+		a.police_way AS "policeWay",
+		a.police_date AS "policeDate",
+		a.seat_number AS "seatNumber",
+		a.case_status AS "caseStatus",
+		a.dispose_time AS "disposeTime",
+		a.process_time AS "processTime",
+		a.receipt_message AS "receiptMessage",
+		a.receipt_people AS "receiptPeople",
+		a.receipt_time AS "receiptTime",
+		a.status1 AS "status1",
+		a.status2 AS "status2",
+		a.status3 AS "status3",
+		a.receipt_status AS "receiptStatus",
+		a.feedback_status AS "feedbackStatus",
+		a.district AS "district",
+		a.case_message AS "caseMessage",
+		a.receipt_people_id AS "receiptPeopleId",
+		a.case_time AS "caseTime",
+		a.process_organization AS "processOrganization",
+		a.process_message AS "processMessage",
+		a.alert_name AS "alertName",
+		a.longitude AS "longitude",
+		a.latitude AS "latitude",
+		a.police_type AS "policeType",
+		a.supervise_organization AS "superviseOrganization",
+		a.supervise_time AS "superviseTime",
+		a.supervise_status AS "superviseStatus",
+		a.supervise_name AS "superviseName",
+		a.overtime_status AS "overtimeStatus",
+		a.line_name AS "lineName",
+		a.line_position AS "linePosition",
+		a.process_people AS "processPeople",
+		a.process_type AS "processType",
+		a.process_case AS "processCase",
+		a.receipt_type AS "receiptType",
+		a.from_station AS "fromStation",
+		a.to_station AS "toStation",
+		a.district_name AS "districtName",
+		a.interior_area_name AS "interiorAreaName"
+	</sql>
+	
+	<sql id="tPoliceMessageJoins">
+	</sql>
+    
+	<select id="get" resultType="TPoliceMessage">
+		SELECT 
+			<include refid="tPoliceMessageColumns"/>
+		FROM t_police_message a
+		<include refid="tPoliceMessageJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="TPoliceMessage">
+		SELECT 
+			<include refid="tPoliceMessageColumns"/>
+		FROM t_police_message a
+		<include refid="tPoliceMessageJoins"/>
+		<where>
+			
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="TPoliceMessage">
+		SELECT 
+			<include refid="tPoliceMessageColumns"/>
+		FROM t_police_message a
+		<include refid="tPoliceMessageJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+
+
+    <insert id="insert">
+		INSERT INTO t_police_message(
+			id,
+			name,
+			id_card,
+			iphone_number,
+			wechat_id,
+			police_address,
+			pilice_ip,
+			train_number,
+			coach,
+			station_name,
+			station_site,
+			police_message,
+			create_time,
+			organization_id,
+			police_way,
+			police_date,
+			seat_number,
+			case_status,
+			dispose_time,
+			process_time,
+			receipt_message,
+			receipt_people,
+			receipt_time,
+			status1,
+			status2,
+			status3,
+			receipt_status,
+			feedback_status,
+			district,
+			case_message,
+			receipt_people_id,
+			case_time,
+			process_organization,
+			process_message,
+			alert_name,
+			longitude,
+			latitude,
+			police_type,
+			supervise_organization,
+			supervise_time,
+			supervise_status,
+			supervise_name,
+			overtime_status,
+			line_name,
+			line_position,
+			process_people,
+			process_type,
+			process_case,
+			receipt_type,
+			from_station,
+			to_station,
+			district_name,
+			interior_area_name
+		) VALUES (
+			#{id},
+			#{name},
+			#{idCard},
+			#{iphoneNumber},
+			#{wechatId},
+			#{policeAddress},
+			#{piliceIp},
+			#{trainNumber},
+			#{coach},
+			#{stationName},
+			#{stationSite},
+			#{policeMessage},
+			#{createTime},
+			#{organizationId},
+			#{policeWay},
+			#{policeDate},
+			#{seatNumber},
+			#{caseStatus},
+			#{disposeTime},
+			#{processTime},
+			#{receiptMessage},
+			#{receiptPeople},
+			#{receiptTime},
+			#{status1},
+			#{status2},
+			#{status3},
+			#{receiptStatus},
+			#{feedbackStatus},
+			#{district},
+			#{caseMessage},
+			#{receiptPeopleId},
+			#{caseTime},
+			#{processOrganization},
+			#{processMessage},
+			#{alertName},
+			#{longitude},
+			#{latitude},
+			#{policeType},
+			#{superviseOrganization},
+			#{superviseTime},
+			#{superviseStatus},
+			#{superviseName},
+			#{overtimeStatus},
+			#{lineName},
+			#{linePosition},
+			#{processPeople},
+			#{processType},
+			#{processCase},
+			#{receiptType},
+			#{fromStation},
+			#{toStation},
+			#{districtName},
+			#{interiorAreaName}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE t_police_message SET 	
+			name = #{name},
+			id_card = #{idCard},
+			iphone_number = #{iphoneNumber},
+			wechat_id = #{wechatId},
+			police_address = #{policeAddress},
+			pilice_ip = #{piliceIp},
+			train_number = #{trainNumber},
+			coach = #{coach},
+			station_name = #{stationName},
+			station_site = #{stationSite},
+			police_message = #{policeMessage},
+			create_time = #{createTime},
+			organization_id = #{organizationId},
+			police_way = #{policeWay},
+			police_date = #{policeDate},
+			seat_number = #{seatNumber},
+			case_status = #{caseStatus},
+			dispose_time = #{disposeTime},
+			process_time = #{processTime},
+			receipt_message = #{receiptMessage},
+			receipt_people = #{receiptPeople},
+			receipt_time = #{receiptTime},
+			status1 = #{status1},
+			status2 = #{status2},
+			status3 = #{status3},
+			receipt_status = #{receiptStatus},
+			feedback_status = #{feedbackStatus},
+			district = #{district},
+			case_message = #{caseMessage},
+			receipt_people_id = #{receiptPeopleId},
+			case_time = #{caseTime},
+			process_organization = #{processOrganization},
+			process_message = #{processMessage},
+			alert_name = #{alertName},
+			longitude = #{longitude},
+			latitude = #{latitude},
+			police_type = #{policeType},
+			supervise_organization = #{superviseOrganization},
+			supervise_time = #{superviseTime},
+			supervise_status = #{superviseStatus},
+			supervise_name = #{superviseName},
+			overtime_status = #{overtimeStatus},
+			line_name = #{lineName},
+			line_position = #{linePosition},
+			process_people = #{processPeople},
+			process_type = #{processType},
+			process_case = #{processCase},
+			receipt_type = #{receiptType},
+			from_station = #{fromStation},
+			to_station = #{toStation},
+			district_name = #{districtName},
+			interior_area_name = #{interiorAreaName}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM t_police_message
+		WHERE id = #{id}
+	</update>
+
+	<select id="selectAllList" resultType="com.thinkgem.jeesite.modules.tw.entity.TPoliceMessage">
+		SELECT
+		        create_time,
+		        process_people,
+		        process_time,
+		        process_organization
+		FROM
+		        t_police_message
+		WHERE
+		 CAST(create_time as varchar(8000)) BETWEEN #{yearL} AND #{yearT}
+	</select>
+
+
+</mapper>

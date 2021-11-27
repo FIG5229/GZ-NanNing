@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairPersonnelMessageDao">
+    
+	<sql id="affairPersonnelMessageColumns">
+		a.id AS "id",
+		a.username AS "username",
+		a.id_number AS "idNumber",
+		a.gender AS "gender",
+		a.nation AS "nation",
+		a.birth_date AS "birthDate",
+		a.politics_status AS "politicsStatus",
+		a.education_background AS "educationBackground",
+		a.degree AS "degree",
+		a.organization AS "organization",
+		a.post AS "post",
+		a.work_time AS "workTime",
+		a.phone AS "phone",
+		a.arrival_time AS "arrivalTime",
+		a.arrival_train_number AS "arrivalTrainNumber",
+		a.arrival_station_airport AS "arrivalStationAirport",
+		a.official_accounts AS "officialAccounts",
+		a.return_time AS "returnTime",
+		a.return_train_number AS "returnTrainNumber",
+		a.return_station_airport AS "returnStationAirport",
+		a.is_reserve_return_ticket AS "isReserveReturnTicket",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.create_org_id AS "createBy.office.id",
+		a.create_id_no AS "createIdNo",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.update_org_id AS "updateBy.office.id",
+		a.update_id_no AS "updateIdNo",
+		a.del_flag AS "delFlag",
+		a.class_manage_id AS "classManageId"
+	</sql>
+	
+	<sql id="affairPersonnelMessageJoins">
+	</sql>
+    
+	<select id="get" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairPersonnelMessage">
+		SELECT 
+			<include refid="affairPersonnelMessageColumns"/>
+		FROM affair_personnel_message a
+		<include refid="affairPersonnelMessageJoins"/>
+		WHERE a.id = #{id}
+	</select>
+
+	<select id="findList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairPersonnelMessage">
+		SELECT
+		<include refid="affairPersonnelMessageColumns"/>
+		FROM affair_personnel_message a
+		<include refid="affairPersonnelMessageJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="username != null and username != ''">
+				AND a.username = #{username}
+			</if>
+			<if test="birthDate != null and birthDate != ''">
+				AND a.birth_date = #{birthDate}
+			</if>
+			<if test="organization != null and organization != ''">
+				AND a.organization = #{organization}
+			</if>
+			<if test="post != null and post != ''">
+				AND a.post = #{post}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairPersonnelMessage">
+		SELECT 
+			<include refid="affairPersonnelMessageColumns"/>
+		FROM affair_personnel_message a
+		<include refid="affairPersonnelMessageJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_personnel_message(
+			id,
+			username,
+			id_number,
+			gender,
+			nation,
+			birth_date,
+			politics_status,
+			education_background,
+			degree,
+			organization,
+			post,
+			work_time,
+			phone,
+			arrival_time,
+			arrival_train_number,
+			arrival_station_airport,
+			official_accounts,
+			return_time,
+			return_train_number,
+			return_station_airport,
+			is_reserve_return_ticket,
+			create_by,
+			create_date,
+			create_org_id,
+			create_id_no,
+			update_by,
+			update_date,
+			update_org_id,
+			update_id_no,
+			del_flag,
+			class_manage_id
+		) VALUES (
+			#{id},
+			#{username},
+			#{idNumber},
+			#{gender},
+			#{nation},
+			#{birthDate},
+			#{politicsStatus},
+			#{educationBackground},
+			#{degree},
+			#{organization},
+			#{post},
+			#{workTime},
+			#{phone},
+			#{arrivalTime},
+			#{arrivalTrainNumber},
+			#{arrivalStationAirport},
+			#{officialAccounts},
+			#{returnTime},
+			#{returnTrainNumber},
+			#{returnStationAirport},
+			#{isReserveReturnTicket},
+			#{createBy.id},
+			#{createDate},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{updateBy.id},
+			#{updateDate},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{delFlag},
+			#{classManageId}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_personnel_message SET 	
+			username = #{username},
+			id_number = #{idNumber},
+			gender = #{gender},
+			nation = #{nation},
+			birth_date = #{birthDate},
+			politics_status = #{politicsStatus},
+			education_background = #{educationBackground},
+			degree = #{degree},
+			organization = #{organization},
+			post = #{post},
+			work_time = #{workTime},
+			phone = #{phone},
+			arrival_time = #{arrivalTime},
+			arrival_train_number = #{arrivalTrainNumber},
+			arrival_station_airport = #{arrivalStationAirport},
+			official_accounts = #{officialAccounts},
+			return_time = #{returnTime},
+			return_train_number = #{returnTrainNumber},
+			return_station_airport = #{returnStationAirport},
+			is_reserve_return_ticket = #{isReserveReturnTicket},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			class_manage_id = #{classManageId}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_personnel_message SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_personnel_message SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<select id="findPageTwo" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairPersonnelMessage">
+
+		select * from affair_personnel_message a
+		<where>
+		a.del_flag = '0'
+		<if test="classManageId != null and classManageId != ''">
+			AND a.class_manage_id = #{classManageId}
+		</if>
+		</where>
+	</select>
+	
+</mapper>

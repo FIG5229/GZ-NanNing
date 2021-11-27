@@ -1,0 +1,491 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairXunLiDao">
+
+
+
+    <select id="findList" resultType="AffairXunLi">
+		SELECT
+		pre.police_id_number,
+		pre.personnel_type,
+		pre.name,
+		pre.sex,
+		pre.id_number,
+		pre.workunit_name AS "organization",
+		pre.workunit_id AS "organizationId"
+		/*job.organization,
+		job.police_rank,
+		job.administrative_post,
+		job.police_classification,
+		job.job_level,
+		job.region,
+		job.management_class*/
+		FROM
+		personnel_base pre
+		/*LEFT JOIN affair_job_training job ON pre.id_number = job.username*/
+		LEFT JOIN sys_user u ON u.no = pre.id_number
+		LEFT JOIN sys_office o ON o.id = pre.workunit_id
+		<where>
+            pre.del_flag = '0' <!--AND job.del_flag = '0' -->
+           <!-- <if test="username != null and username != ''">
+                AND mes.username = #{username}
+            </if>-->
+            <if test="policeIdNumber != null and policeIdNumber != ''">
+                AND pre.police_id_number = #{policeIdNumber}
+            </if>
+			<!--<if test="organization != null and organization != ''">
+				AND pre.workunit_id = #{organizationId}
+			</if>-->
+			<if test="organization != null and organization != ''">
+				AND (pre.workunit_id = #{organizationId} or o.parent_ids like '%,'||#{organizationId}||',%')
+			</if>
+			<if test="name != null and name != ''">
+				AND pre.name LIKE
+				<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+			</if>
+			<if test="personnelType != null and personnelType != ''">
+				AND pre.personnel_type = #{personnelType}
+			</if>
+			<if test="idNumber != null and idNumber != ''">
+				AND pre.id_number = #{idNumber}
+			</if>
+           <!-- <if test="policeRank != null and policeRank != ''">
+                AND job.police_rank = #{policeRank}
+            </if>
+            <if test="policeClassification != null and policeClassification != ''">
+                AND job.police_classification = #{policeClassification}
+            </if>
+            <if test="managementClass != null and managementClass != ''">
+                AND job.management_class = #{managementClass}
+            </if>
+            <if test="administrativePost != null and administrativePost != ''">
+                AND job.administrative_post = #{administrativePost}
+            </if>
+            <if test="jobLevel != null and jobLevel != ''">
+                AND job.job_level = #{jobLevel}
+            </if>
+            <if test="organization != null and organization != ''">
+                AND job.organization = #{organization}
+            </if>
+            <if test="region != null and region != ''">
+                AND job.region = #{region}
+            </if>-->
+			and pre.status in ('1','10','19','2','3','4','5','6')
+            ${sqlMap.dsf}
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+        </choose>
+    </select>
+
+    <select id="findPersonnel" resultType="AffairXunLi">
+		SELECT DISTINCT
+			pre.id_number,
+			pre.police_id_number,
+			pre.STATUS,
+			pre.education,
+			pre.birthday,
+			pre.personnel_type,
+			pre.blood_type,
+			pre.work_date,
+			pre.politics_face,
+			pre."name",
+			pre.sex,
+			pre.nation,
+			pre.phone_number,
+			pre.is_xggb,
+			pre.category,
+			pre.health_status,
+			pre.public_security_date,
+			pre.organization_date
+		FROM
+			personnel_base pre
+		WHERE
+			pre.id_number = #{idNumber} and pre.del_flag = '0'
+	</select>
+
+	<select id="findXueWei" resultType="AffairXunLi">
+		SELECT DISTINCT
+			mes.degree
+		FROM
+			affair_personnel_message mes
+		WHERE
+			mes.id_number = #{idNumber} and mes.del_flag = '0'
+	</select>
+	<select id="findJob" resultType="AffairXunLi">
+		SELECT DISTINCT
+			job.username,
+			job.police_rank,
+			job.administrative_post,
+			job.police_classification,
+			job.management_class
+		FROM
+			affair_job_training job
+		WHERE
+			job.username = #{idNumber} and job.del_flag = '0'
+	</select>
+	<select id="findMes" resultType="AffairXunLi">
+		SELECT DISTINCT
+			mes.degree
+		FROM
+			affair_personnel_message mes
+		WHERE
+			mes.id_number = #{idNumber} and mes.del_flag = '0'
+	</select>
+	<select id="findTra" resultType="AffairXunLi">
+		SELECT DISTINCT
+			tra.post_level
+		FROM
+			affair_train_combat tra
+		WHERE
+			tra.id_number = #{idNumber}
+			AND tra.del_flag = '0'
+	</select>
+	<select id="findXueLi" resultType="AffairXunLi">
+		SELECT DISTINCT
+			xue.school_name
+		FROM
+			personnel_xueli xue
+		WHERE
+			xue.id_number =  #{idNumber}
+			AND xue.del_flag = '0'
+	</select>
+
+    <select id="findXunLiTrainOutSource" resultType="AffairXunLiDetails">
+		select outs.external_name,outs.external_type,outs.completion,outs.unit,outs.began_date,outs.result_date,outs.institution_code,outs.unit_level,outs.quit_status,outs.unit_name,outs.train_site,outs.certificate_code,outs.unit_job
+		from personnel_base pre right join affair_train_outsource outs
+		on pre.id_number = outs.id_number where pre.id_number = #{idNumber}
+		and pre.del_flag ='0'
+		and outs.del_flag = '0';
+	</select>
+
+    <select id="findXunLiExchangeLearning" resultType="AffairXunLiDetails">
+		select swap.swap_name,swap.size_type,swap.date,swap.job_type,swap.study_type,swap.service_condition,swap.study_identity
+		from personnel_base pre right join affair_swap_exercise swap
+		on pre.id_number = swap.id_number where pre.id_number = #{idNumber}
+		AND pre.del_flag = '0'
+		AND swap.del_flag = '0';
+	</select>
+
+    <select id="findXunLiJob" resultType="AffairXunLiDetails">
+		select
+			job.drill_date_begin,
+			job.drill_date_over,
+			job.xunlian_time,
+			job.item_classification,
+			job.drill_general_situation
+		from
+			personnel_base pre
+			right join affair_job_training job on pre.id_number = job.username
+		where
+			pre.id_number =  #{idNumber}
+			AND pre.del_flag = '0'
+			AND job.del_flag = '0';
+	</select>
+
+    <select id="findPageTwo" resultType="java.util.Map">
+		SELECT DISTINCT
+			pre.name,
+			pre.sex,
+			pre.nation,
+			pre.birthday,
+			pre.public_security_date,
+			pre.politics_face,
+			pre.phone_number,
+			outs.external_name,
+			outs.external_type,
+			outs.COMPLETION,
+			outs.unit,
+			outs.began_date,
+			outs.result_date,
+			outs.institution_code,
+			outs.unit_level,
+			outs.quit_status,
+			outs.unit_name,
+			outs.train_site,
+			outs.certificate_code,
+			outs.unit_job,
+			job.item_classification,
+			job.drill_date_begin,
+			job.drill_date_over,
+			job.administrative_post,
+			job.drill_general_situation,
+			job.xunlian_time,
+			acm.NAME as peiXunName,
+			acm.TYPE,
+			acm.CONTENT,
+			acm.site,
+			acm.train_object
+		FROM
+			affair_class_manage acm,affair_personnel_message apm,personnel_base pre
+			RIGHT JOIN affair_train_outsource outs ON pre.id_number = outs.id_number
+			RIGHT JOIN affair_job_training job ON pre.id_number = job.username
+		WHERE
+			pre.id_number = #{idNumber}
+			and acm.ID = apm.class_manage_id
+			and pre.id_number = apm.id_number
+			AND pre.del_flag = '0'
+			AND outs.del_flag = '0'
+			AND job.del_flag = '0'
+			AND acm.del_flag = '0'
+			AND apm.del_flag = '0'
+	</select>
+	<select id="findPerson" resultType="com.thinkgem.jeesite.modules.personnel.entity.PersonnelBase">
+		SELECT DISTINCT
+			pre.name,
+			pre.sex,
+			pre.nation,
+			pre.birthday,
+			pre.public_security_date,
+			pre.politics_face,
+			pre.phone_number,
+			pre.job_abbreviation
+		FROM
+			personnel_base pre
+		WHERE
+			pre.id_number = #{idNumber}
+			AND pre.del_flag = '0'
+	</select>
+	<select id="findOuts" resultType="map">
+		SELECT DISTINCT
+			outs.external_name,
+			outs.external_type,
+			outs.COMPLETION,
+			outs.unit,
+			outs.began_date,
+			outs.result_date,
+			outs.institution_code,
+			outs.unit_level,
+			outs.quit_status,
+			outs.unit_name,
+			outs.train_site,
+			outs.certificate_code,
+			outs.unit_job
+		FROM
+			personnel_base pre
+			left JOIN affair_train_outsource outs ON pre.id_number = outs.id_number
+		WHERE
+			pre.id_number = #{idNumber}
+			AND pre.del_flag = '0'
+			AND outs.del_flag = '0'
+	</select>
+	<select id="findJobs" resultType="map">
+		SELECT DISTINCT
+			job.item_classification,
+			job.drill_date_begin,
+			job.drill_date_over,
+			job.administrative_post,
+			job.drill_general_situation,
+			job.xunlian_time,
+			job_level,
+			management_class
+		FROM
+			personnel_base pre
+			RIGHT JOIN affair_job_training job ON pre.id_number = job.username
+		WHERE
+			pre.id_number = #{idNumber}
+			AND pre.del_flag = '0'
+			AND job.del_flag = '0'
+	</select>
+	<select id="findAcms" resultType="map">
+		SELECT DISTINCT
+			acm.NAME as peiXunName,
+			acm.TYPE,
+			acm.CONTENT,
+			acm.site,
+			acm.train_object
+		FROM
+			affair_class_manage acm,personnel_base pre
+			RIGHT JOIN affair_personnel_message apm ON pre.id_number = apm.id_number
+		WHERE
+			pre.id_number = #{idNumber}
+			and acm.ID = apm.class_manage_id
+			AND pre.del_flag = '0'
+			AND acm.del_flag = '0'
+			AND apm.del_flag = '0'
+	</select>
+
+    <select id="findXunLiOnlineCourse" resultType="AffairXunLiDetails">
+		select job.item_classification,job.drill_date_begin,job.drill_date_over,job.drill_general_situation
+		from personnel_base pre right join affair_job_training job
+		on pre.id_number = job.id_number where pre.id_number = #{idNumber}
+		AND pre.del_flag = '0'
+		AND job.del_flag = '0';
+	</select>
+
+    <select id="findXunLiExamination" resultType="AffairXunLi">
+        select ent.exam_name,ent.exam_type,ent.exam_time,ent.score from personnel_base pre right join affair_exam_entering ent on pre.id_number = ent.id_number where pre.id_number = #{idNumber} AND pre.del_flag = '0'
+		AND ent.del_flag = '0';
+    </select>
+    <select id="findXunLiExaminationTwo" resultType="AffairXunLi">
+        select ent.exam_name,ent.exam_type,ent.exam_time,ent.appendfile,ent.score from personnel_base pre right join affair_exam_entering ent on pre.id_number = ent.id_number where pre.id_number = #{idNumber} AND pre.del_flag = '0'
+		AND ent.del_flag = '0';
+    </select>
+
+    <update id="insertOne">
+		UPDATE affair_exam_entering SET
+			appendfile = #{appendfile}
+		WHERE id_number = #{idNumber}
+	</update>
+
+
+    <insert id="insertTwo">
+		INSERT INTO affair_exam_entering(
+			id,
+			alarm,
+			organ,
+			exam_name,
+			exam_type,
+			exam_subject,
+			score,
+			is_pass,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			exam_time,
+			id_number
+		) VALUES (
+			#{id},
+			#{alarm},
+			#{organ},
+			#{examName},
+			#{examType},
+			#{examSubject},
+			#{score},
+			#{isPass},
+			#{createBy.id},
+			#{createOrgId},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateOrgId},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{examTime},
+			#{idNumber}
+		)
+	</insert>
+
+    <insert id="insert">
+		INSERT INTO affair_exam_entering(
+			id,
+			alarm,
+			organ,
+			exam_name,
+			exam_type,
+			exam_subject,
+			score,
+			is_pass,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			exam_time
+		) VALUES (
+			#{id},
+			#{alarm},
+			#{organ},
+			#{examName},
+			#{examType},
+			#{examSubject},
+			#{score},
+			#{isPass},
+			#{createBy.id},
+			#{createOrgId},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateOrgId},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{examTime}
+		)
+	</insert>
+
+
+	<select id="findXunLiTrainin" resultType="AffairXunLiDetails">
+		SELECT
+			acm.name,
+			acm.type,
+			acm.content,
+			acm.site,
+			acm.train_object
+		from affair_class_manage acm left join affair_personnel_message apm on acm.id = apm.class_manage_id where apm.id_number = #{idNumber}
+		AND acm.del_flag = '0'
+		AND apm.del_flag = '0';
+	</select>
+	<select id="findDates" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairXunLi">
+		SELECT DISTINCT
+			pre.sex,
+			pre.politics_face,
+			pre.nation,
+			pre.birthday,
+			pre.public_security_date,
+			outs.began_date,
+			outs.result_date,
+			job.drill_date_begin,
+			job.drill_date_over,
+			acm."type",
+			outs.external_type,
+			job.item_classification
+		FROM
+			affair_class_manage acm,affair_personnel_message apm,personnel_base pre
+			RIGHT JOIN affair_train_outsource outs ON pre.id_number = outs.id_number
+			RIGHT JOIN affair_job_training job ON pre.id_number = job.username
+		WHERE
+			pre.id_number = #{idNumber}
+			and acm.ID = apm.class_manage_id
+			and pre.id_number = apm.id_number
+			AND pre.del_flag = '0'
+			AND outs.del_flag = '0'
+			AND job.del_flag = '0'
+			AND acm.del_flag = '0'
+	</select>
+
+	<select id="findOutsDates" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairXunLi">
+		SELECT DISTINCT
+			pre.birthday,
+			pre.public_security_date,
+			outs.began_date,
+			outs.result_date
+		FROM
+			personnel_base pre
+			RIGHT JOIN affair_train_outsource outs ON pre.id_number = outs.id_number
+		WHERE
+			pre.id_number = #{idNumber}
+			AND pre.del_flag = '0'
+			AND outs.del_flag = '0'
+	</select>
+
+	<select id="findJobsDates" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairXunLi">
+		SELECT DISTINCT
+			job.drill_date_begin,
+			job.drill_date_over
+		FROM
+			personnel_base pre
+			RIGHT JOIN affair_job_training job ON pre.id_number = job.username
+		WHERE
+			pre.id_number = #{idNumber}
+			AND pre.del_flag = '0'
+			AND job.del_flag = '0'
+	</select>
+
+</mapper>

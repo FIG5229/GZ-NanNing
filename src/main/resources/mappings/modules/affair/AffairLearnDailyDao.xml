@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairLearnDailyDao">
+    
+	<sql id="affairLearnDailyColumns">
+		a.id AS "id",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.content AS "content",
+		a.learn_time AS "learnTime",
+		a.modality AS "modality",
+		a.site AS "site",
+		a.compere AS "compere",
+		a.centre_spokesman AS "centreSpokesman",
+		a.supplementary_speaker AS "supplementarySpeaker",
+		a.registrar AS "registrar",
+		a.participant AS "participant",
+		a.should_be_to AS "shouldBeTo",
+		a.attendance AS "attendance",
+		a.adjunct AS "adjunct",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.participant_id AS "participantId"
+	</sql>
+	
+	<sql id="affairLearnDailyJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairLearnDaily">
+		SELECT 
+			<include refid="affairLearnDailyColumns"/>
+		FROM affair_learn_daily a
+		<include refid="affairLearnDailyJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairLearnDaily">
+		SELECT 
+			<include refid="affairLearnDailyColumns"/>
+		FROM affair_learn_daily a
+		<include refid="affairLearnDailyJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="unit != null and unit != ''">
+				AND a.unit = #{unit}
+			</if>
+			<if test="site != null and site != ''">
+				AND a.site = #{site}
+			</if>
+			<if test="compere != null and compere != ''">
+				AND a.compere = #{compere}
+			</if>
+			<if test="centreSpokesman != null and centreSpokesman != ''">
+				AND a.centre_spokesman = #{centreSpokesman}
+			</if>
+			<if test="modality != null and modality != ''">
+				AND a.modality = #{modality}
+			</if>
+			<if test="content != null and content != ''">
+				AND a.content LIKE concat('%',#{content},'%')
+			</if>
+			<choose>
+				<when test="enterDateStart != null and enterDateStart != '' and enterDateEnd != null and enterDateEnd != ''">
+					AND a.learn_time between #{enterDateStart} and #{enterDateEnd}
+				</when>
+				<otherwise>
+					<if test="enterDateStart != null and enterDateStart != ''">
+						AND a.learn_time  >= #{enterDateStart}
+					</if>
+					<if test="enterDateEnd != null and enterDateEnd != ''">
+						AND #{enterDateEnd} >= a.learn_time
+					</if>
+				</otherwise>
+			</choose>
+
+			<if test="userId != '' and userId != null">
+				AND ( o.ID = #{userId} OR o.parent_ids LIKE'%,'||#{userId}||',%' OR u.ID = #{createBy.id} or a.unit_id = #{userId} or u.office_id = #{userId})
+			</if>
+
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairLearnDaily">
+		SELECT 
+			<include refid="affairLearnDailyColumns"/>
+		FROM affair_learn_daily a
+		<include refid="affairLearnDailyJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_learn_daily(
+			id,
+			unit,
+			unit_id,
+			content,
+			learn_time,
+			modality,
+			site,
+			compere,
+			centre_spokesman,
+			supplementary_speaker,
+			registrar,
+			participant,
+			should_be_to,
+			attendance,
+			adjunct,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			participant_id
+		) VALUES (
+			#{id},
+			#{unit},
+			#{unitId},
+			#{content},
+			#{learnTime},
+			#{modality},
+			#{site},
+			#{compere},
+			#{centreSpokesman},
+			#{supplementarySpeaker},
+			#{registrar},
+			#{participant},
+			#{shouldBeTo},
+			#{attendance},
+			#{adjunct},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{participantId}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_learn_daily SET 	
+			unit = #{unit},
+			unit_id = #{unitId},
+			content = #{content},
+			learn_time = #{learnTime},
+			modality = #{modality},
+			site = #{site},
+			compere = #{compere},
+			centre_spokesman = #{centreSpokesman},
+			supplementary_speaker = #{supplementarySpeaker},
+			registrar = #{registrar},
+			participant = #{participant},
+			should_be_to = #{shouldBeTo},
+			attendance = #{attendance},
+			adjunct = #{adjunct},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			participant_id = #{participantId}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_learn_daily SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+
+	<update id="deleteByIds">
+		UPDATE affair_learn_daily SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<select id="selectAllYear" resultType="java.lang.String">
+		SELECT DISTINCT
+			( to_char( date, 'yyyy' ) )
+		FROM
+			affair_learn_daily
+		WHERE
+			del_flag = '0'
+	</select>
+
+	<select id="selectAllMonth" resultType="java.lang.String">
+		SELECT DISTINCT
+			( to_char( date, 'MM' ) )
+		FROM
+			affair_learn_daily
+		WHERE
+			del_flag = '0'
+	</select>
+
+    <select id="selectNum" resultType="java.lang.Integer">
+		SELECT COUNT
+			( ID )
+		FROM
+			affair_learn_daily
+		WHERE
+			del_flag = '0'
+			AND unit_id = #{idNumber}
+			AND to_char ( "learn_time", 'yyyy-mm-dd' ) Between #{yearL} and #{yearT}
+
+	</select>
+
+    <select id="selectName" resultType="java.lang.String">
+		select unit
+		FROM
+			affair_learn_daily
+		WHERE
+			del_flag = '0'
+			AND unit_id = #{idNumber}
+	</select>
+
+    <select id="selectNumber" resultType="java.lang.Integer">
+		SELECT COUNT
+			( ID )
+		FROM
+			affair_learn_daily
+		WHERE
+			del_flag = '0'
+			AND unit_id = #{idNumber}
+			AND to_char ( "learn_time", 'yyyy-mm-dd' ) BETWEEN #{yearL} AND #{yearT}
+	</select>
+
+    <select id="selectAllName" resultType="java.lang.String">
+		SELECT DISTINCT
+			( unit )
+		FROM
+			affair_learn_daily
+		WHERE
+			del_flag = '0'
+	</select>
+
+</mapper>

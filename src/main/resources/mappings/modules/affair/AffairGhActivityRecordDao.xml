@@ -1,0 +1,382 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairGhActivityRecordDao">
+    
+	<sql id="affairGhActivityRecordColumns">
+		a.id AS "id",
+		a.title AS "title",
+		a.party_branch AS "partyBranch",
+		a.party_branch_id AS "partyBranchId",
+		a.date AS "date",
+		a.push AS "push",
+		a.content AS "content",
+		a.file_path AS "filePath",
+		a.activities AS "activities",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.check_type AS "checkType",
+		a.three_check_man AS "threeCheckMan",
+		a.two_check_man AS "twoCheckMan",
+		a.one_check_man AS "oneCheckMan",
+        a.submit_man AS "submitMan",
+        a.three_check_id AS "threeCheckId",
+		a.two_check_id AS "twoCheckId",
+		a.one_check_id AS "oneCheckId",
+        a.submit_id AS "submitId"
+	</sql>
+	
+	<sql id="affairGhActivityRecordJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairGhActivityRecord">
+		SELECT 
+			<include refid="affairGhActivityRecordColumns"/>
+		FROM affair_gh_activity_record a
+		<include refid="affairGhActivityRecordJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairGhActivityRecord">
+		SELECT 
+			<include refid="affairGhActivityRecordColumns"/>
+		FROM affair_gh_activity_record a
+		<include refid="affairGhActivityRecordJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="title != null and title != ''">
+				AND a.title LIKE '%'||#{title}||'%'
+			</if>
+			<if test="partyBranchId != null and partyBranchId != ''">
+				AND a.party_branch_id = #{partyBranchId}
+			</if>
+			<choose>
+				<when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+					AND a.date between #{startDate} and #{endDate}
+				</when>
+				<when test="startDate != null and startDate != ''">
+					AND a.date >= #{startDate}
+				</when>
+				<when test="endDate != null and endDate != ''">
+					AND  #{endDate} >= a.date
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			<!-- 数据范围过滤 -->
+			<if test="userId != null and userId != ''">
+				<!--审核特殊查询页面-->
+				AND (a.create_by = #{userId} or submit_id = #{userId} or a.one_check_id = #{userId} or a.two_check_id = #{userId} or a.three_check_id = #{userId})
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairGhActivityRecord">
+		SELECT 
+			<include refid="affairGhActivityRecordColumns"/>
+		FROM affair_gh_activity_record a
+		<include refid="affairGhActivityRecordJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_gh_activity_record(
+			id,
+			title,
+			party_branch,
+			party_branch_id,
+			date,
+			push,
+			content,
+			file_path,
+			activities,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			check_type,
+            three_check_man,
+            two_check_man,
+            one_check_man,
+            submit_man,
+             three_check_id,
+            two_check_id,
+            one_check_id,
+            submit_id
+		) VALUES (
+			#{id},
+			#{title},
+			#{partyBranch},
+			#{partyBranchId},
+			#{date},
+			#{push},
+			#{content},
+			#{filePath},
+			#{activities},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{checkType},
+			#{threeCheckMan},
+            #{twoCheckMan},
+            #{oneCheckMan},
+            #{submitMan},
+            #{threeCheckId},
+            #{twoCheckId},
+            #{oneCheckId},
+            #{submitId}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_gh_activity_record SET 	
+			title = #{title},
+			party_branch = #{partyBranch},
+			party_branch_id = #{partyBranchId},
+			date = #{date},
+			push = #{push},
+			content = #{content},
+			file_path = #{filePath},
+			activities = #{activities},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			check_type = #{checkType},
+	        three_check_man = #{threeCheckMan},
+	        two_check_man = #{twoCheckMan},
+	        one_check_man = #{oneCheckMan},
+	        submit_man = #{submitMan},
+	        three_check_id = #{threeCheckId},
+	        two_check_id = #{twoCheckId},
+	        one_check_id = #{oneCheckId},
+	        submit_id = #{submitId}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_gh_activity_record SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	<update id="deleteByIds">
+		UPDATE affair_gh_activity_record SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<select id="findInfoByCreateOrgId" resultType="java.util.HashMap">
+		SELECT count(id)
+		from affair_gh_activity_record agar
+		WHERE
+		agar.del_flag != '1'
+		<if test="id != null and id != ''">
+			AND create_org_id = #{id} AND agar.del_flag = '0'
+		</if>
+	</select>
+
+	<select id="findInfoByCreateOrgIds" resultType="java.util.HashMap">
+		SELECT count(id)
+		from affair_gh_activity_record agar
+		WHERE
+		agar.del_flag != '1'
+		AND	create_org_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+	</select>
+
+	<select id="findByIds" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairGhActivityRecord">
+		select <include refid="affairGhActivityRecordColumns"/>
+		from affair_gh_activity_record a where id in <foreach collection="ids" item="item" index="index"
+															  open="(" separator="," close=")">#{item}</foreach>
+	</select>
+
+	<select id="countActivity" resultType="map">
+		select count(a.ID) as num,'南宁处' as label from affair_gh_activity_record a
+		left join sys_office o on a.party_branch_id = o.id
+		where   a.del_flag = '0' and (o.id = '34' or o.parent_id ='34'  or o.parent_ids  LIKE '%,' || '34' || ',%')
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.date) = #{year}
+			</when>
+			<when test="beginDate != null and endDate != null">
+				AND a.date between  #{beginDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="beginDate != null">
+				AND a.date >= #{beginDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		union all
+		select count(a.ID) as num,'北海处' as label from affair_gh_activity_record a
+		left join sys_office o on a.party_branch_id = o.id
+		where  a.del_flag = '0' and  (o.id = '156' or o.parent_id ='156'  or o.parent_ids  LIKE '%,' || '156' || ',%')
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.date) = #{year}
+			</when>
+			<when test="beginDate != null and endDate != null">
+				AND a.date between  #{beginDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="beginDate != null">
+				AND a.date >= #{beginDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		union all
+		select count(a.ID) as num,'柳州处' as label from affair_gh_activity_record a
+		left join sys_office o on a.party_branch_id = o.id
+		where  a.del_flag = '0' and  (o.id='95' or o.parent_id ='95'  or o.parent_ids  LIKE '%,' || '95' || ',%')
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.date) = #{year}
+			</when>
+			<when test="beginDate != null and endDate != null">
+				AND a.date between  #{beginDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="beginDate != null">
+				AND a.date >= #{beginDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		union all
+		select count(a.ID) as num,'局机关' as label from affair_gh_activity_record a
+		left join sys_office o on a.party_branch_id = o.id
+		where  a.del_flag = '0' and (o.id = '0' or o.id = '1'and o.id not in('95','156','34') or o.parent_id in ('1','307','312','316') or parent_id like '0')
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.date) = #{year}
+			</when>
+			<when test="beginDate != null and endDate != null">
+				AND a.date between  #{beginDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="beginDate != null">
+				AND a.date >= #{beginDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findActivityDetailList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairGhActivityRecord">
+		select <include refid="affairGhActivityRecordColumns"/>
+		from affair_gh_activity_record a
+		left join sys_office o on a.party_branch_id = o."id"
+		where a.del_flag = '0'
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.date, 'yyyy-mm')  = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.date) = #{year}
+			</when>
+			<when test="dateStart != null and dateEnd != null">
+				AND a.date between  #{dateStart,jdbcType=DATE} and #{dateEnd,jdbcType=DATE}
+			</when>
+			<when test="dateStart != null">
+				AND a.date >= #{dateStart,jdbcType=DATE}
+			</when>
+			<when test="dateEnd != null">
+				AND  #{dateEnd,jdbcType=DATE} >= a.date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+
+		<choose>
+			<when test="label != 'top'">
+				and (o.id =#{label} or o.parent_id =#{label}  or o.parent_ids  LIKE '%,' || '${label}' || ',%')
+			</when>
+			<otherwise>
+				and (o.id = '1' or o.parent_id in ('1','307','312','316') or parent_id like '0')
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="selectGhhd" resultType="java.lang.Integer">
+		SELECT
+			count(*)
+		FROM
+			affair_gh_activity_record
+		WHERE
+			del_flag = '0'
+			AND SUBSTRING (cast ( "date" as VARCHAR ),0,4) BETWEEN #{lastYearDate} AND #{nowYearDate}
+			AND party_branch_id = #{unitId}
+	</select>
+
+</mapper>

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairAttendanceSummaryDao">
+    
+	<sql id="affairAttendanceSummaryColumns">
+		a.id AS "id",
+		a.month AS "month",
+		a.year AS "year",
+		a.name AS "name",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.zq_type AS "zqType",
+		a.zq_days AS "zqDays",
+		a.zq_money AS "zqMoney",
+		a.jb_days AS "jbDays",
+		a.jf_days AS "jfDays",
+		a.jb_money AS "jbMoney",
+		a.xl_type AS "xlType",
+		a.qq_days AS "qqDays",
+		a.xl_money AS "xlMoney",
+		a.summary AS "summary",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="affairAttendanceSummaryJoins">
+	</sql>
+	
+	<select id="findList" resultType="AffairAttendanceSummary">
+		SELECT tc.id AS id , t.year AS year , t.mouth AS month, tc.name AS name , t.unit AS unit , t.unit_id AS unitId ,tc.police_type AS zqType , tc.in_work AS zqDays ,CAST(tc.overtime AS decimal(35,0) ) AS jbDays,tc.line_post AS xlType,
+		tc.lack_work AS qqDays, tc.jf_days AS jfDays,t.create_org_id,t.create_by,tc.id_number AS idNumber
+		FROM  affair_attendance_child tc
+		LEFT JOIN affair_labor_sort s ON s.id_number = tc.id_number,
+		affair_attendance t
+		LEFT JOIN affair_labor_office o ON o.id = t.unit_id
+		LEFT JOIN affair_labor_user u ON u.id = t.create_by
+
+		<where>
+			t.id = tc.att_id
+			AND t.del_flag = '0'
+			AND tc.del_flag = '0'
+			<!--AND S.del_flag = '0'-->
+			AND S.del_flag != '1'
+			<if test="unitId != null and unitId != ''">
+				AND (t.unit_id = #{unitId} OR o.parent_ids LIKE'%,'||#{unitId}||',%')
+			</if>
+			<if test="year != null and year != ''">
+				AND t.year = #{year}
+			</if>
+			<if test="month != null and month != ''">
+				AND t.mouth = #{month}
+			</if>
+			<if test="name != null and name != ''">
+				AND tc.name LIKE '%'||#{name}||'%'
+			</if>
+			<if test="userId != null and userId != ''">
+				AND ( o.ID = #{userId} OR o.parent_ids LIKE'%,'||#{userId}||',%' OR u.ID = #{userId} or t.unit_id=#{userId})
+			</if>
+		</where>
+		ORDER BY o.unit_sort ASC, s.sort ASC
+	</select>
+	
+</mapper>

@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairVolunteerServiceDao">
+    
+	<sql id="affairVolunteerServiceColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.start_date AS "startDate",
+		a.end_date AS "endDate",
+		a.party_branch AS "partyBranch",
+		a.party_branch_id AS "partyBranchId",
+		a.hold_unit AS "holdUnit",
+		a.hold_unit_id AS "holdUnitId",
+		a.place AS "place",
+		a.join_person AS "joinPerson",
+		a.workflow AS "workflow",
+		a.material_path1 AS "materialPath1",
+		a.content AS "content",
+		a.material_path2 AS "materialPath2",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.examine_status AS "examineStatus",
+		a.opinion AS "opinion",
+		a.join_person_id AS "joinPersonId"
+	</sql>
+	
+	<sql id="affairVolunteerServiceJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairVolunteerService">
+		SELECT 
+			<include refid="affairVolunteerServiceColumns"/>
+		FROM affair_volunteer_service a
+		<include refid="affairVolunteerServiceJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairVolunteerService">
+		SELECT 
+			<include refid="affairVolunteerServiceColumns"/>
+		FROM affair_volunteer_service a
+		<include refid="affairVolunteerServiceJoins"/>
+		LEFT JOIN affair_general_situation s
+		ON s.id = a.party_branch_id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE concat('%',#{name},'%')
+			</if>
+			<if test="examineStatus != null and examineStatus != ''">
+				and a.examine_status = #{examineStatus}
+			</if>
+			<choose>
+				<when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+					AND ( date_trunc('day',  a.start_date) between #{startDate} and #{endDate} OR date_trunc('day',  a.end_date) between #{startDate} and #{endDate})
+				</when>
+				<otherwise>
+					<if test="startDate != null and startDate != ''">
+						AND #{startDate} between date_trunc('day',  a.start_date) and date_trunc('day',  a.end_date)
+					</if>
+					<if test="endDate != null and endDate != ''">
+						AND #{endDate} between date_trunc('day',  a.start_date) and date_trunc('day',  a.end_date)
+					</if>
+				</otherwise>
+			</choose>
+			<if test="partyBranchId != null and partyBranchId != ''">
+				AND a.party_branch_id = #{partyBranchId}
+			</if>
+			<if test="holdUnitId != null and holdUnitId != ''">
+				AND a.hold_unit_id = #{holdUnitId}
+			</if>
+			<if test="place != null and place != ''">
+				AND a.place LIKE concat('%',#{place},'%')
+			</if>
+			<if test="joinPerson != null and joinPerson != ''">
+				AND a.join_person LIKE concat('%',#{joinPerson},'%')
+			</if>
+			<if test="treeId != null and treeId != ''">
+				AND (a.party_branch_id = #{treeId} OR s.parent_ids LIKE CONCAT('%,', #{treeId}, ',%'))
+			</if>
+			<!-- 数据范围过滤 -->
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairVolunteerService">
+		SELECT 
+			<include refid="affairVolunteerServiceColumns"/>
+		FROM affair_volunteer_service a
+		<include refid="affairVolunteerServiceJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+    <select id="selectAllYear" resultType="java.lang.String">
+		select
+			DISTINCT	( to_char( start_date, 'yyyy' ) )
+		from
+			affair_volunteer_service
+		where
+		 	del_flag = '0'
+	</select>
+	<select id="selectYearById" resultType="java.lang.String">
+		select
+			DISTINCT	( to_char( start_date, 'yyyy' ) )
+		from
+			affair_volunteer_service
+		where
+		 	del_flag = '0'
+		 	and hold_unit_id = #{idN}
+	</select>
+
+	<select id="selectNameById" resultType="java.lang.String">
+		select
+			hold_unit
+		from
+			affair_volunteer_service
+		where
+		 	del_flag = '0'
+		 	and hold_unit_id = #{idN}
+	</select>
+
+    <select id="selectBeanById" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairVolunteerService">
+		SELECT
+			*
+		FROM
+			affair_volunteer_service
+		WHERE
+			del_flag = '0'
+			AND party_branch_id = #{idN}
+
+	</select>
+
+
+
+
+	<insert id="insert">
+		INSERT INTO affair_volunteer_service(
+			id,
+			name,
+			start_date,
+			end_date,
+			party_branch,
+			party_branch_id,
+			hold_unit,
+			hold_unit_id,
+			place,
+			join_person,
+			workflow,
+			material_path1,
+			content,
+			material_path2,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			examine_status ,
+			opinion,
+			join_person_id
+		) VALUES (
+			#{id},
+			#{name},
+			#{startDate},
+			#{endDate},
+			#{partyBranch},
+			#{partyBranchId},
+			#{holdUnit},
+			#{holdUnitId},
+			#{place},
+			#{joinPerson},
+			#{workflow},
+			#{materialPath1},
+			#{content},
+			#{materialPath2},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{examineStatus},
+			#{opinion},
+			#{joinPersonId}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_volunteer_service SET 	
+			name = #{name},
+			start_date = #{startDate},
+			end_date = #{endDate},
+			party_branch = #{partyBranch},
+			party_branch_id = #{partyBranchId},
+			hold_unit = #{holdUnit},
+			hold_unit_id = #{holdUnitId},
+			place = #{place},
+			join_person = #{joinPerson},
+			workflow = #{workflow},
+			material_path1 = #{materialPath1},
+			content = #{content},
+			material_path2 = #{materialPath2},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			examine_status = #{examineStatus},
+			opinion = #{opinion},
+			join_person_id = #{joinPersonId}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_volunteer_service SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_volunteer_service SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+			 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+	<select id="selectNumByName" resultType="java.lang.Integer">
+                SELECT COUNT
+                        ( * )
+                FROM
+                        affair_volunteer_service
+                WHERE
+                        SUBSTRING (cast ( "start_date" as VARCHAR ),0,4) BETWEEN #{yearL} AND #{yearT}
+                        AND party_branch_id = #{partyId}
+        </select>
+    <select id="selectNumberById" resultType="java.lang.Integer">
+		SELECT COUNT
+                ( * )
+        FROM
+                affair_volunteer_service
+        WHERE
+                SUBSTRING (cast ( "start_date" as VARCHAR ),0,4) BETWEEN #{yearL} AND #{yearT}
+                AND party_branch_id = #{partyOrganizationId}
+	</select>
+
+
+</mapper>

@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairCheckCountDao">
+    
+	<sql id="affairCheckCountColumns">
+		a.id AS "id",
+		a.bj_fuju AS "bjFuju",
+		a.bj_zhengchu AS "bjZhengchu",
+		a.bj_fuchu AS "bjFuchu",
+		a.bj_zhengke AS "bjZhengke",
+		a.bj_keyuan AS "bjKeyuan",
+		a.bj_banshiyuan AS "bjBanshiyuan",
+		a.bj_jianxi AS "bjJianxi",
+		a.bj_xiaoji AS "bjXiaoji",
+		a.sj_fuju AS "sjFuju",
+		a.sj_zhengchu AS "sjZhengchu",
+		a.sj_fuchu AS "sjFuchu",
+		a.sj_zhengke AS "sjZhengke",
+		a.sj_xiaoji AS "sjXiaoji",
+		a.remark AS "remark",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.title AS "title",
+		a.bj_fuke AS "bjFuke"
+	</sql>
+	
+	<sql id="affairCheckCountJoins">
+	</sql>
+    
+	<select id="get" resultType="AffairCheckCount">
+		SELECT 
+			<include refid="affairCheckCountColumns"/>
+		FROM affair_check_count a
+		<include refid="affairCheckCountJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairCheckCount">
+		SELECT 
+			<include refid="affairCheckCountColumns"/>
+		FROM affair_check_count a
+		<include refid="affairCheckCountJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>
+		<!--<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>-->
+	</select>
+	
+	<select id="findAllList" resultType="AffairCheckCount">
+		SELECT 
+			<include refid="affairCheckCountColumns"/>
+		FROM affair_check_count a
+		<include refid="affairCheckCountJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_check_count(
+			id,
+			bj_fuju,
+			bj_zhengchu,
+			bj_fuchu,
+			bj_zhengke,
+			bj_keyuan,
+			bj_banshiyuan,
+			bj_jianxi,
+			bj_xiaoji,
+			sj_fuju,
+			sj_zhengchu,
+			sj_fuchu,
+			sj_zhengke,
+			sj_xiaoji,
+			remark,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			title,
+			bj_fuke
+		) VALUES (
+			#{id},
+			#{bjFuju},
+			#{bjZhengchu},
+			#{bjFuchu},
+			#{bjZhengke},
+			#{bjKeyuan},
+			#{bjBanshiyuan},
+			#{bjJianxi},
+			#{bjXiaoji},
+			#{sjFuju},
+			#{sjZhengchu},
+			#{sjFuchu},
+			#{sjZhengke},
+			#{sjXiaoji},
+			#{remark},
+			#{createBy.id},
+			#{createOrgId},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateOrgId},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{title},
+			#{bjFuke}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_check_count SET 	
+			bj_fuju = #{bjFuju},
+			bj_zhengchu = #{bjZhengchu},
+			bj_fuchu = #{bjFuchu},
+			bj_zhengke = #{bjZhengke},
+			bj_keyuan = #{bjKeyuan},
+			bj_banshiyuan = #{bjBanshiyuan},
+			bj_jianxi = #{bjJianxi},
+			bj_xiaoji = #{bjXiaoji},
+			sj_fuju = #{sjFuju},
+			sj_zhengchu = #{sjZhengchu},
+			sj_fuchu = #{sjFuchu},
+			sj_zhengke = #{sjZhengke},
+			sj_xiaoji = #{sjXiaoji},
+			remark = #{remark},
+			title = #{title},
+			bj_fuke = #{bjFuke}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_check_count SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteAll">
+		UPDATE affair_check_count SET
+			del_flag = 1
+	</update>
+
+</mapper>

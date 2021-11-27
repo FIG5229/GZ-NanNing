@@ -1,0 +1,365 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.exam.dao.ExamCheckChildDao">
+
+    <sql id="examCheckChildColumns">
+		a.id AS "id",
+		a.check_id AS "checkId",
+		a.use_model_name AS "useModelName",
+		a.use_model AS "useModel",
+		a.choose_options AS "chooseOptions",
+		a.duty_unit AS "dutyUnit",
+		a.duty_unit_id AS "dutyUnitId",
+		a.duty_leader AS "dutyLeader",
+		a.duty_leader_id AS "dutyLeaderId",
+		a.duty_person AS "dutyPerson",
+		a.duty_person_id AS "dutyPersonId",
+		a.test_standart AS "testStandart",
+		a.scort_situation AS "scortSituation",
+		a.remark AS "remark",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.duty_unit_score AS "dutyUnitScore",
+		a.duty_leader_score AS "dutyLeaderScore",
+		a.duty_person_score AS "dutyPersonScore",
+		a.row_num as "rowNum",
+		a.type as "type",
+		a.check_date as "checkDate",
+		a.check_person as "checkPerson",
+		a.check_person_id as "checkPersonId",
+		a.check_unit as "checkUnit",
+		a.check_unit_id as "checkUnitId",
+		a.reorganize_info as "reorganizeInfo",
+		a.choose_options_name as "chooseOptionsName",
+		a.appendfile as "appendfile"
+	</sql>
+
+    <sql id="examCheckChildJoins">
+		LEFT JOIN sys_office o ON o.id = a.check_unit_id
+		LEFT JOIN sys_office so ON so.id = a.duty_unit_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+    </sql>
+
+    <select id="get" resultType="ExamCheckChild">
+        SELECT
+        <include refid="examCheckChildColumns"/>
+        FROM exam_check_child a
+        <include refid="examCheckChildJoins"/>
+        WHERE a.id = #{id}
+    </select>
+
+    <select id="findList" resultType="ExamCheckChild">
+        SELECT
+        <include refid="examCheckChildColumns"/>
+        FROM exam_check_child a
+        <include refid="examCheckChildJoins"/>
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="checkId != null and checkId != ''">
+                AND a.check_id = #{checkId}
+            </if>
+			<choose>
+				<when test="beginCheckDate != null and beginCheckDate != '' and endCheckDate != null and endCheckDate != ''">
+					AND a.check_date between #{beginCheckDate} and #{endCheckDate}
+				</when>
+				<when test="beginCheckDate != null and beginCheckDate != ''">
+					AND a.check_date >= #{beginCheckDate}
+				</when>
+				<when test="endCheckDate != null and endCheckDate != ''">
+					AND  #{endCheckDate} >= a.check_date
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			<if test="checkUnitId != null and checkUnitId != ''">
+				AND a.check_unit_id = #{checkUnitId}
+			</if>
+			<if test="checkPersonId != null and checkPersonId != ''">
+				AND a.check_person_id = #{checkPersonId}
+			</if>
+			<if test="dutyUnitId != null and dutyUnitId != ''">
+				AND a.duty_unit_id = #{dutyUnitId}
+			</if>
+			<if test="useModel != null and useModel != ''">
+				AND a.use_model = #{useModel}
+			</if>
+			<!--${sqlMap.dsf}-->
+			<choose>
+				<when test="userOffice != null and userOffice != '' ">
+					AND ( o.ID = #{userOffice} OR so.id = #{userOffice} OR o.parent_ids LIKE'%,'||#{userOffice}||',%'  OR so.parent_ids LIKE'%,'||#{userOffice}||',%' OR u.ID = #{userOffice} or a.duty_unit_id = #{userOffice} or a.check_unit_id = #{userOffice} )
+				</when>
+				<otherwise>
+					AND ( o.ID = #{userOffice} OR u.ID = #{userOffice} or a.duty_unit_id = #{userOffice} or a.check_unit_id = #{userOffice} )
+				</otherwise>
+			</choose>
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.create_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+	<select id="findExamCheckList" resultType="ExamCheckChild">
+        SELECT
+        <include refid="examCheckChildColumns"/>,b.check_date as "checkDate",
+		<choose>
+			<when test="examType != null and examType != ''">
+				u.id as "objId"
+			</when>
+			<otherwise>
+
+			</otherwise>
+		</choose>
+        FROM exam_check_child a
+        left join exam_check b on b.id = a.check_id
+        <choose>
+			<when test="examType == '1'.toString() ||examType == '2'.toString() || examType == '3'.toString() ||examType == '4'.toString() ">
+				left join sys_office o on o.id = a.duty_unit_id
+				left join sys_user u on u.no = o.code
+			</when>
+			<when test="examType == '5'.toString() || examType == '6'.toString()">
+				left join sys_user u on u.id = a.duty_leader_id
+			</when>
+			<when test="examType == '7'.toString()">
+				left join sys_user u on u.id = a.duty_person_id
+			</when>
+			<otherwise>
+
+			</otherwise>
+		</choose>
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="checkId != null and checkId != ''">
+                AND a.check_id = #{checkId}
+            </if>
+			<if test="useModel != null and useModel != ''">
+				AND a.use_model = #{useModel}
+			</if>
+			<if test="chooseOptions != null and chooseOptions != ''">
+				AND a.choose_options = #{chooseOptions}
+			</if>
+			<!--自然月-->
+			<choose>
+				<when test="examCycle == '1'.toString() and monthStr != '1'.toString() and monthStr != '0'.toString()">
+					and substr(to_char(b.check_date,'YYYY-MM-DD'),1,7) = '${year}-${monthStr}'
+				</when>
+				<!--<when test="examCycle == '1'.toString() and month == 1 ">
+					and b.check_date = '${year-1}-01'
+				</when>-->
+				<when test="examCycle == '2'.toString() ">
+					and substr(to_char(b.check_date,'YYYY-MM-DD'),1,4) = '${year}'
+				</when>
+			</choose>
+
+			<!--<choose>
+				<when test="examCycle == '1'.toString() and month != 1 and month != 0">
+					and b.check_date between '${year}-${month-1}-26' and '${year}-${month}-25'
+				</when>
+				<when test="examCycle == '1'.toString() and month == 1 ">
+					and b.check_date between '${year-1}-12-26' and '${year}-${month}-25'
+				</when>
+				<when test="examCycle == '2'.toString() ">
+					and b.check_date between '${year-1}-12-02' and '${year}-12-01'
+				</when>
+			</choose>-->
+			<if test="standardList != null and standardList != ''">
+				and a.use_model in <foreach collection="standardList" item="item" index="index"
+										  open="(" separator="," close=")">#{item}</foreach>
+			</if>
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.create_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="findAllList" resultType="ExamCheckChild">
+        SELECT
+        <include refid="examCheckChildColumns"/>
+        FROM exam_check_child a
+        <include refid="examCheckChildJoins"/>
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <insert id="insert">
+		INSERT INTO exam_check_child(
+			id,
+			check_id,
+			use_model_name,
+			use_model,
+			choose_options,
+			duty_unit,
+			duty_unit_id,
+			duty_leader,
+			duty_leader_id,
+			duty_person,
+			duty_person_id,
+			test_standart,
+			scort_situation,
+			remark,
+			create_by,
+			create_org_id,
+			create_date,
+			update_by,
+			update_org_id,
+			update_date,
+			del_flag,
+			duty_unit_score,
+			duty_leader_score,
+			duty_person_score,
+			row_num,
+			type,
+			check_date,
+			check_person,
+			check_person_id,
+			check_unit,
+			check_unit_id,
+			reorganize_info,
+			choose_options_name,
+			appendfile
+		) VALUES (
+			#{id},
+			#{checkId},
+			#{useModelName},
+			#{useModel},
+			#{chooseOptions},
+			#{dutyUnit},
+			#{dutyUnitId},
+			#{dutyLeader},
+			#{dutyLeaderId},
+			#{dutyPerson},
+			#{dutyPersonId},
+			#{testStandart},
+			#{scortSituation},
+			#{remark},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateDate},
+			#{delFlag},
+			#{dutyUnitScore},
+			#{dutyLeaderScore},
+			#{dutyPersonScore},
+			#{rowNum},
+			#{type},
+			#{checkDate},
+			#{checkPerson},
+			#{checkPersonId},
+			#{checkUnit},
+			#{checkUnitId},
+			#{reorganizeInfo},
+			#{chooseOptionsName},
+			#{appendfile}
+		)
+	</insert>
+
+    <update id="update">
+		UPDATE exam_check_child SET 	
+			use_model_name = #{useModelName},
+			use_model = #{useModel},
+			choose_options = #{chooseOptions},
+			duty_unit = #{dutyUnit},
+			duty_unit_id = #{dutyUnitId},
+			duty_leader = #{dutyLeader},
+			duty_leader_id = #{dutyLeaderId},
+			duty_person = #{dutyPerson},
+			duty_person_id = #{dutyPersonId},
+			test_standart = #{testStandart},
+			scort_situation = #{scortSituation},
+			remark = #{remark},
+			update_by = #{updateBy.id},
+			update_org_id =#{updateBy.office.id},
+			update_date = #{updateDate},
+			duty_unit_score = #{dutyUnitScore},
+			duty_leader_score = #{dutyLeaderScore},
+			duty_person_score = #{dutyPersonScore},
+			row_num = #{rowNum},
+			type = #{type},
+			check_date = #{checkDate},
+			check_person = #{checkPerson},
+			check_person_id = #{checkPersonId},
+			check_unit = #{checkUnit},
+			check_unit_id = #{checkUnitId},
+			reorganize_info = #{reorganizeInfo},
+			choose_options_name =#{chooseOptionsName},
+			appendfile = #{appendfile}
+		WHERE id = #{id}
+	</update>
+
+    <update id="delete">
+		UPDATE exam_check_child SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+    <select id="findSomeByExamCheckId" resultType="com.thinkgem.jeesite.modules.exam.entity.ExamCheckChild">
+		SELECT c.use_model_name, c.duty_unit,c.duty_leader, c.duty_person, c.duty_unit_score, c.duty_leader_score, c.duty_person_score, c.scort_situation from exam_check_child c where c.check_id = #{examCheckId} and c.del_flag = '0'
+	</select>
+    <select id="findUnitListByYearMonth" resultType="com.thinkgem.jeesite.modules.exam.entity.ExamCheckChild">
+		select
+		<include refid="examCheckChildColumns"/>
+		from exam_check_child a
+		where a.check_id in
+		(
+		select id from exam_check
+		where
+		cast(substr(to_char(check_date,'YYYY-MM-DD'),1,4) as INTEGER) = #{yearNum}
+		AND cast( substr(to_char(check_date,'YYYY-MM-DD'),6,2) as INTEGER) &gt;=  #{startMonthNum}
+		AND cast( substr(to_char(check_date,'YYYY-MM-DD'),6,2) as INTEGER) &lt;= #{endMonthNum}
+		AND del_flag = '0'
+		)
+		AND a.del_flag = '0'
+		AND a.duty_unit_id = #{unitId}
+	</select>
+
+	<select id="findList2" resultType="ExamCheckChild">
+		SELECT
+		<include refid="examCheckChildColumns"/>
+		FROM exam_check_child a
+		<include refid="examCheckChildJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			AND a.check_id = #{checkId}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<update id="deleteByCheckId">
+	    UPDATE exam_check_child SET
+			del_flag = '1'
+		WHERE check_id = #{checkId}
+    </update>
+
+</mapper>

@@ -1,0 +1,440 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairCasualtyReportDao">
+    
+	<sql id="affairCasualtyReportColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.id_number AS "idNumber",
+		a.type AS "type",
+		a.dep_police AS "depPolice",
+		a.casualty_date AS "casualtyDate",
+		a.affirm_dep AS "affirmDep",
+		a.affirm_dep_id AS "affirmDepId",
+		a.dep_name AS "depName",
+		a.dep_name_id AS "depNameId",
+		a.affirm_date AS "affirmDate",
+		a.check_dep AS "checkDep",
+		a.check_dep_id AS "checkDepId",
+		a.check_date AS "checkDate",
+		a.certificate_no1 AS "certificateNo1",
+		a.injury_degree AS "injuryDegree",
+		a.level AS "level",
+		a.evaluate_org AS "evaluateOrg",
+		a.jl_status AS "jlStatus",
+		a.is_self_kill AS "isSelfKill",
+		a.reason AS "reason",
+		a.method AS "method",
+		a.zxqw_situation AS "zxqwSituation",
+		a.comparison AS "comparison",
+		a.use_arm AS "useArm",
+		a.plot AS "plot",
+		a.happen_date AS "happenDate",
+		a.character AS "character",
+		a.duty_affirm AS "dutyAffirm",
+		a.wz_situation AS "wzSituation",
+		a.martyr_logo AS "martyrLogo",
+		a.certificate_no2 AS "certificateNo2",
+		a.approval_date AS "approvalDate",
+		a.approval_dep AS "approvalDep",
+		a.rdygxs_file AS "rdygxsFile",
+		a.bmfhrd_file AS "bmfhrdFile",
+		a.lspf_file AS "lspfFile",
+		a.remark AS "remark",
+		a.certificate_path AS "certificatePath",
+		a.opinion AS "opinion",
+		a.sh_status AS "shStatus",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.sh_person AS "shPerson"
+	</sql>
+	
+	<sql id="affairCasualtyReportJoins">
+		LEFT JOIN sys_office o7 ON o7.id = a.affirm_dep
+		LEFT JOIN sys_office o9 ON o9.id = a.dep_name
+	</sql>
+    
+	<select id="get" resultType="AffairCasualtyReport">
+		SELECT 
+			<include refid="affairCasualtyReportColumns"/>
+		FROM affair_casualty_report a
+		<include refid="affairCasualtyReportJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairCasualtyReport">
+		SELECT 
+			<include refid="affairCasualtyReportColumns"/>
+		FROM affair_casualty_report a
+		<include refid="affairCasualtyReportJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE concat('%',#{name},'%')
+			</if>
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+			<choose>
+				<when test="beginCasualtyDate != null and beginCasualtyDate != '' and endCasualtyDate != null and endCasualtyDate != ''">
+					AND a.casualty_date BETWEEN #{beginCasualtyDate} AND #{endCasualtyDate}
+				</when>
+				<when test="beginCasualtyDate != null and beginCasualtyDate != ''">
+					AND a.casualty_date >= #{beginCasualtyDate}
+				</when>
+				<when test="endCasualtyDate != null and endCasualtyDate != ''">
+					AND  #{endCasualtyDate} >= a.casualty_date
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			<if test="affirmDepId != null and affirmDepId != ''">
+				AND a.affirm_dep_id = #{affirmDepId}
+			</if>
+			<if test="depNameId != null and depNameId != ''">
+				AND a.dep_name_id = #{depNameId}
+			</if>
+			<if test="jlStatus != null and jlStatus != ''">
+				AND a.jl_status = #{jlStatus}
+			</if>
+			<if test="shStatus != null and shStatus != ''">
+				AND a.sh_status = #{shStatus}
+			</if>
+			<if test="hasAuth != null and hasAuth != ''">
+				AND a.sh_status  &lt;&gt; '1'
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairCasualtyReport">
+		SELECT 
+			<include refid="affairCasualtyReportColumns"/>
+		FROM affair_casualty_report a
+		<include refid="affairCasualtyReportJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<insert id="insert">
+		INSERT INTO affair_casualty_report(
+			id,
+			name,
+			id_number,
+			type,
+			dep_police,
+			casualty_date,
+			affirm_dep,
+			affirm_dep_id,
+			dep_name,
+			dep_name_id,
+			affirm_date,
+			check_dep,
+			check_dep_id,
+			check_date,
+			certificate_no1,
+			injury_degree,
+			level,
+			evaluate_org,
+			jl_status,
+			is_self_kill,
+			reason,
+			method,
+			zxqw_situation,
+			comparison,
+			use_arm,
+			plot,
+			happen_date,
+			character,
+			duty_affirm,
+			wz_situation,
+			martyr_logo,
+			certificate_no2,
+			approval_date,
+			approval_dep,
+			rdygxs_file,
+			bmfhrd_file,
+			lspf_file,
+			remark,
+			certificate_path,
+			opinion,
+			sh_status,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			sh_person
+		) VALUES (
+			#{id},
+			#{name},
+			#{idNumber},
+			#{type},
+			#{depPolice},
+			#{casualtyDate},
+			#{affirmDep},
+			#{affirmDepId},
+			#{depName},
+			#{depNameId},
+			#{affirmDate},
+			#{checkDep},
+			#{checkDepId},
+			#{checkDate},
+			#{certificateNo1},
+			#{injuryDegree},
+			#{level},
+			#{evaluateOrg},
+			#{jlStatus},
+			#{isSelfKill},
+			#{reason},
+			#{method},
+			#{zxqwSituation},
+			#{comparison},
+			#{useArm},
+			#{plot},
+			#{happenDate},
+			#{character},
+			#{dutyAffirm},
+			#{wzSituation},
+			#{martyrLogo},
+			#{certificateNo2},
+			#{approvalDate},
+			#{approvalDep},
+			#{rdygxsFile},
+			#{bmfhrdFile},
+			#{lspfFile},
+			#{remark},
+			#{certificatePath},
+			#{opinion},
+			#{shStatus},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{shPerson}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_casualty_report SET 	
+			name = #{name},
+			id_number = #{idNumber},
+			type = #{type},
+			dep_police = #{depPolice},
+			casualty_date = #{casualtyDate},
+			affirm_dep = #{affirmDep},
+			dep_name = #{depName},
+			dep_name_id = #{depNameId},
+			affirm_date = #{affirmDate},
+			check_dep = #{checkDep},
+			check_date = #{checkDate},
+			certificate_no1 = #{certificateNo1},
+			injury_degree = #{injuryDegree},
+			level = #{level},
+			evaluate_org = #{evaluateOrg},
+			jl_status = #{jlStatus},
+			is_self_kill = #{isSelfKill},
+			reason = #{reason},
+			method = #{method},
+			zxqw_situation = #{zxqwSituation},
+			comparison = #{comparison},
+			use_arm = #{useArm},
+			plot = #{plot},
+			happen_date = #{happenDate},
+			character = #{character},
+			duty_affirm = #{dutyAffirm},
+			wz_situation = #{wzSituation},
+			martyr_logo = #{martyrLogo},
+			certificate_no2 = #{certificateNo2},
+			approval_date = #{approvalDate},
+			approval_dep = #{approvalDep},
+			rdygxs_file = #{rdygxsFile},
+			bmfhrd_file = #{bmfhrdFile},
+			lspf_file = #{lspfFile},
+			remark = #{remark},
+			certificate_path = #{certificatePath},
+			opinion = #{opinion},
+			sh_status = #{shStatus},
+			sh_person = #{shPerson},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_casualty_report SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_casualty_report SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+			 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<select id="findByIds" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairCasualtyReport">
+		select <include refid="affairCasualtyReportColumns"/>
+		from affair_casualty_report a where id in <foreach collection="ids" item="item" index="index"
+														   open="(" separator="," close=")">#{item}</foreach>
+	</select>
+	<update id="shenHe">
+		UPDATE affair_casualty_report SET
+			sh_status = #{affairCasualtyReport.shStatus},
+			sh_person = #{affairCasualtyReport.shPerson}, opinion = #{affairCasualtyReport.opinion},
+			update_date = #{affairCasualtyReport.updateDate}
+			where id = #{affairCasualtyReport.id}
+	</update>
+
+
+	<!--统计汇总的sql片段-->
+	<sql id="statistic">
+		and r.del_flag = '0'
+		<choose>
+			<when test="affairCasualtyReport.beginCasualtyDate != null and affairCasualtyReport.beginCasualtyDate != '' and affairCasualtyReport.endCasualtyDate != null and affairCasualtyReport.endCasualtyDate != ''">
+				AND r.casualty_date BETWEEN #{affairCasualtyReport.beginCasualtyDate} AND #{affairCasualtyReport.endCasualtyDate}
+			</when>
+			<when test="affairCasualtyReport.beginCasualtyDate != null and affairCasualtyReport.beginCasualtyDate != ''">
+				AND r.casualty_date >= #{affairCasualtyReport.beginCasualtyDate}
+			</when>
+			<when test="affairCasualtyReport.endCasualtyDate != null and affairCasualtyReport.endCasualtyDate != ''">
+				AND  #{affairCasualtyReport.endCasualtyDate} >= r.casualty_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<if test="affairCasualtyReport.affirmDepId != null and affairCasualtyReport.affirmDepId != ''">
+			AND r.affirm_dep_id = #{affairCasualtyReport.affirmDepId}
+		</if>
+	</sql>
+
+	<select id="findNumsByParentId" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairCasualtyReportStatistic">
+		<choose>
+			<when test="'1' == parentId">
+				select
+				T1.a AS xiSheng,--因公牺牲数量
+				T2.b AS bingGu ,-- 病故数量
+				T3.c AS shangCan,--伤残数量
+				T4.d AS shangWang--伤亡数量
+				from
+				(   select count(1) as a
+				from affair_casualty_report  r
+				left join sys_office o on r.affirm_dep_id = o.id
+				where o.parent_id = #{parentId} and r.type = '1' and o.type != '1' <include refid="statistic"/>
+				) T1,
+				(   select count(1) as b
+				from affair_casualty_report  r
+				left join sys_office o on r.affirm_dep_id = o.id
+				where o.parent_id = #{parentId} and r.type = '2' and o.type != '1' <include refid="statistic"/>
+				) T2,
+				(    	select count(1) as c
+				from affair_casualty_report  r
+				left join sys_office o on r.affirm_dep_id = o.id
+				where o.parent_id = #{parentId} and r.type = '3' and o.type != '1' <include refid="statistic"/>
+				) T3,
+				(   select count(1) as d
+				from affair_casualty_report  r
+				left join sys_office o on r.affirm_dep_id = o.id
+				where o.parent_id = #{parentId} and r.type = '4' and o.type != '1' <include refid="statistic"/>
+				) T4
+			</when>
+			<otherwise>
+				select
+				T1.a AS xiSheng,--因公牺牲数量
+				T2.b AS bingGu ,-- 病故数量
+				T3.c AS shangCan,--伤残数量
+				T4.d AS shangWang--伤亡数量
+				from
+				(   select count(1) as a
+				from affair_casualty_report  r
+				left join sys_office o on r.affirm_dep_id = o.id
+				where o.parent_id = #{parentId} and r.type = '1' <include refid="statistic"/>
+				) T1,
+				(   select count(1) as b
+				from affair_casualty_report  r
+				left join sys_office o on r.affirm_dep_id = o.id
+				where o.parent_id = #{parentId} and r.type = '2' <include refid="statistic"/>
+				) T2,
+				(    	select count(1) as c
+				from affair_casualty_report  r
+				left join sys_office o on r.affirm_dep_id = o.id
+				where o.parent_id = #{parentId} and r.type = '3' <include refid="statistic"/>
+				) T3,
+				(   select count(1) as d
+				from affair_casualty_report  r
+				left join sys_office o on r.affirm_dep_id = o.id
+				where o.parent_id = #{parentId} and r.type = '4' <include refid="statistic"/>
+				) T4
+			</otherwise>
+		</choose>
+	</select>
+	<select id="findByUnitId" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairCasualtyReportStatistic">
+		select
+		T1.a AS xiSheng,--因公牺牲数量
+		T2.b AS bingGu ,-- 病故数量
+		T3.c AS shangCan,--伤残数量
+		T4.d AS shangWang--伤亡数量
+		from
+		(   	select count(1) as a
+				from affair_casualty_report  r
+				where r.affirm_dep_id = #{unitId} and r.type = '1' <include refid="statistic"/>
+		) T1,
+		(  		 select count(1) as b
+				from affair_casualty_report  r
+				where r.affirm_dep_id = #{unitId} and r.type = '2' <include refid="statistic"/>
+		) T2,
+		  (    select count(1) as c
+				from affair_casualty_report  r
+				where r.affirm_dep_id  = #{unitId} and r.type = '3' <include refid="statistic"/>
+		) T3,
+		(    	select count(1) as d
+				from affair_casualty_report  r
+				where r.affirm_dep_id = #{unitId} and r.type = '4' <include refid="statistic"/>
+		) T4
+	</select>
+	<select id="findOneTypeByUnitId" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairCasualtyReportStatistic">
+		select
+		T1.a AS oneTypeNum--因公牺牲或病故或伤残或伤亡数量
+		from
+		(   	select count(1) as a
+				from affair_casualty_report  r
+				where r.affirm_dep_id = #{unitId} and r.type = #{affairCasualtyReport.type} <include refid="statistic"/>
+		) T1
+	</select>
+
+</mapper>

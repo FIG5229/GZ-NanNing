@@ -1,0 +1,770 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairSevenKnowledgeDao">
+    
+	<sql id="affairSevenKnowledgeColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.sex AS "sex",
+		a.birthday AS "birthday",
+		a.degree_education AS "degreeEducation",
+		a.politics_face AS "politicsFace",
+		a.home_address AS "homeAddress",
+		a.house_area AS "houseArea",
+		a.contact_tel AS "contactTel",
+		a.work_time AS "workTime",
+		a.from_police_time AS "fromPoliceTime",
+		a.police_rank AS "policeRank",
+		a.marital_status AS "maritalStatus",
+		a.health AS "health",
+		a.medical_history AS "medicalHistory",
+		a.mental_illness AS "mentalIllness",
+		a.curriculum_vitae AS "curriculumVitae",
+		a.income AS "income",
+		a.key_expenditure AS "keyExpenditure",
+		a.business_situation AS "businessSituation",
+		a.other_house AS "otherHouse",
+		a.debt_dispute AS "debtDispute",
+		a.character AS "character",
+		a.specialty AS "specialty",
+		a.hobbies AS "hobbies",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.work_job AS "workJob",
+		a.job AS "job",
+		a.good_business AS "goodBusiness",
+		a.insufficient_business AS "insufficientBusiness",
+		a.stock_speculation AS "stockSpeculation",
+		a.buy_lottery AS "buyLottery",
+		a.practice_skills AS "practiceSkills",
+		a.family_harmony AS "familyHarmony",
+		a.neighborhood_relations AS "neighborhoodRelations",
+		a.colleague_relations AS "colleagueRelations",
+		a.rewards_punishments AS "rewardsPunishments",
+		a.gun_hold_time AS "gunHoldTime",
+		a.has_gun AS "hasGun",
+		a.gun_system AS "gunSystem",
+		a.drink AS "drink",
+		a.greedy_cup AS "greedyCup",
+		a.out_control_drink AS "outControlDrink",
+		a.driver_license_type AS "driverLicenseType",
+		a.driver_time AS "driverTime",
+		a.driver_age_car AS "driverAgeCar",
+		a.driver_age_motorcycle AS "driverAgeMotorcycle",
+		a.police_car_time AS "policeCarTime",
+		a.long_police_car_time AS "longPoliceCarTime",
+		a.safe_driver AS "safeDriver",
+		a.mahjong AS "mahjong",
+		a.gambling AS "gambling",
+		a.bet_other AS "betOther",
+		a.family_misfortune AS "familyMisfortune",
+		a.illegal_organization AS "illegalOrganization",
+		a.bad_association AS "badAssociation",
+		a.addicted_internet AS "addictedInternet",
+		a.luxury_places AS "luxuryPlaces",
+		a.participation_business AS "participationBusiness",
+		a.crruption AS "crruption",
+		a.other_adverse_reactions AS "otherAdverseReactions",
+		a.off_duty AS "offDuty",
+		a.mass_complaints AS "massComplaints",
+		a.disciplining AS "disciplining",
+		a.help_educate_time AS "helpEducateTime",
+		a.suo_leader AS "suoLeader",
+		a.chu_leader AS "chuLeader",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.nation AS "nation",
+		a.id_number AS "idNumber",
+		a.evaluate as "evaluate",
+		a.time as "time"
+	</sql>
+
+	<!--关联人员信息查询-->
+	<sql id="affairSevenKnowledgeColumnsBeta">
+		a.id AS "id",
+		a.name AS "name",
+		b.sex AS "sex",
+		b.birthday AS "birthday",
+		a.degree_education AS "degreeEducation",
+		b.politics_face AS "politicsFace",
+		b.hjszd AS "homeAddress",
+		a.house_area AS "houseArea",
+		a.contact_tel AS "contactTel",
+		b.work_date AS "workTime",
+		b.public_security_date AS "fromPoliceTime",
+<!-- 		r.police_rank_level AS "policeRank",-->
+		b.marriage_status AS "maritalStatus",
+		a.health AS "health",
+		a.medical_history AS "medicalHistory",
+		a.mental_illness AS "mentalIllness",
+<!-- 		xxxx.curriculum_vitae AS "curriculumVitae",-->
+		a.income AS "income",
+		a.key_expenditure AS "keyExpenditure",
+		a.business_situation AS "businessSituation",
+		a.other_house AS "otherHouse",
+		a.debt_dispute AS "debtDispute",
+		a.character AS "character",
+		a.specialty AS "specialty",
+		a.hobbies AS "hobbies",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.work_job AS "workJob",
+		a.job AS "job",
+		a.good_business AS "goodBusiness",
+		a.insufficient_business AS "insufficientBusiness",
+		a.stock_speculation AS "stockSpeculation",
+		a.buy_lottery AS "buyLottery",
+		a.practice_skills AS "practiceSkills",
+		a.family_harmony AS "familyHarmony",
+		a.neighborhood_relations AS "neighborhoodRelations",
+		a.colleague_relations AS "colleagueRelations",
+<!-- 		xxxxxxxx.rewards_punishments AS "rewardsPunishments",-->
+		a.gun_hold_time AS "gunHoldTime",
+		a.has_gun AS "hasGun",
+		a.gun_system AS "gunSystem",
+		a.drink AS "drink",
+		a.greedy_cup AS "greedyCup",
+		a.out_control_drink AS "outControlDrink",
+		a.driver_license_type AS "driverLicenseType",
+		a.driver_time AS "driverTime",
+		a.driver_age_car AS "driverAgeCar",
+		a.driver_age_motorcycle AS "driverAgeMotorcycle",
+		a.police_car_time AS "policeCarTime",
+		a.long_police_car_time AS "longPoliceCarTime",
+		a.safe_driver AS "safeDriver",
+		a.mahjong AS "mahjong",
+		a.gambling AS "gambling",
+		a.bet_other AS "betOther",
+		a.family_misfortune AS "familyMisfortune",
+		a.illegal_organization AS "illegalOrganization",
+		a.bad_association AS "badAssociation",
+		a.addicted_internet AS "addictedInternet",
+		a.luxury_places AS "luxuryPlaces",
+		a.participation_business AS "participationBusiness",
+		a.crruption AS "crruption",
+		a.other_adverse_reactions AS "otherAdverseReactions",
+		a.off_duty AS "offDuty",
+		a.mass_complaints AS "massComplaints",
+		a.disciplining AS "disciplining",
+		a.help_educate_time AS "helpEducateTime",
+		a.suo_leader AS "suoLeader",
+		a.chu_leader AS "chuLeader",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		b.nation AS "nation",
+		a.id_number AS "idNumber",
+		a.evaluate as "evaluate",
+		a.time as "time"
+	</sql>
+	
+	<sql id="affairSevenKnowledgeJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairSevenKnowledge">
+		SELECT 
+			<include refid="affairSevenKnowledgeColumnsBeta"/>
+		FROM affair_seven_knowledge a
+		left join personnel_base b on a.id_number=b.id_number
+		<!--left join
+		(SELECT id_number ,police_rank_level
+		 FROM personnel_police_rank pr
+		  where del_flag = '0' and create_date = (select max(create_date) from personnel_police_rank where  pr.id_number = a.id_number)
+		  GROUP BY id_number,police_rank_level) r
+		on a.id_number = r.id_number-->
+		<include refid="affairSevenKnowledgeJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairSevenKnowledge">
+		SELECT 
+			<include refid="affairSevenKnowledgeColumnsBeta"/>
+		FROM affair_seven_knowledge a
+		<include refid="affairSevenKnowledgeJoins"/>
+		left join personnel_base b on a.id_number=b.id_number
+		<!--left join
+			(SELECT MAX ( create_date ) AS create_date, id_number ,police_rank_level
+			FROM personnel_police_rank where del_flag = '0'
+			GROUP BY id_number,police_rank_level) r
+		on a.id_number = r.id_number-->
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+			</if>
+			<if test="sex != null and sex != ''">
+				AND a.sex = #{sex}
+			</if>
+			<choose>
+				<when test="beginBirthday != null and endBirthday != null and beginBirthday != '' and endBirthday != ''">
+					AND a.time BETWEEN #{beginBirthday} AND #{endBirthday}
+				</when>
+				<when test="beginBirthday != null and beginBirthday != ''">
+					AND a.time &gt;= #{beginBirthday}
+				</when>
+				<when test="endBirthday != null and endBirthday != ''">
+					AND a.time &lt;= #{endTime}
+				</when>
+				<otherwise></otherwise>
+			</choose>
+
+			<if test="politicsFace != null and politicsFace != ''">
+				AND a.politics_face = #{politicsFace}
+			</if>
+
+			<choose>
+				<when test="beginWorkTime != null and endWorkTime != null and beginWorkTime != '' and endWorkTime != ''">
+					AND a.time BETWEEN #{beginWorkTime} AND #{endWorkTime}
+				</when>
+				<when test="beginWorkTime != null and beginWorkTime != ''">
+					AND a.time &gt;= #{beginWorkTime}
+				</when>
+				<when test="endWorkTime != null and endWorkTime != ''">
+					AND a.time &lt;= #{endWorkTime}
+				</when>
+				<otherwise></otherwise>
+			</choose>
+
+			<choose>
+				<when test="beginFromPoliceTime != null and endFromPoliceTime != null and beginFromPoliceTime != '' and endFromPoliceTime != ''">
+					AND a.time BETWEEN #{beginFromPoliceTime} AND #{endFromPoliceTime}
+				</when>
+				<when test="beginFromPoliceTime != null and beginFromPoliceTime != ''">
+					AND a.time &gt;= #{beginFromPoliceTime}
+				</when>
+				<when test="endFromPoliceTime != null and endFromPoliceTime != ''">
+					AND a.time &lt;= #{endFromPoliceTime}
+				</when>
+				<otherwise></otherwise>
+			</choose>
+
+			<if test="unit != null and unit != ''">
+				AND a.unit = #{unit}
+			</if>
+			<if test="job != null and job != ''">
+				AND a.job LIKE 
+					<if test="dbName == 'oracle'">'%'||#{job}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{job}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{job},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{job}||'%'</if>
+			</if>
+			<if test="nation != null and nation != ''">
+				AND a.nation = #{nation}
+			</if>
+			<if test="officeId != null and officeId != ''">
+				AND (o.ID = #{officeId} OR o.parent_ids LIKE'%,'||#{officeId}||',%' OR u.ID = #{officeId} or a.unit_id=#{officeId})
+			</if>
+			<if test="evaluate != null and evaluate != ''">
+				and a.evaluate = #{evaluate}
+			</if>
+			<if test="year != null and year != ''">
+				AND extract(year from a.time) = ${year}
+			</if>
+			<if test="month != null and month != ''">
+				AND TO_CHAR(a.time, 'yyyy-mm') = #{month}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY nullif(a.evaluate,'')asc,a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairSevenKnowledge">
+		SELECT 
+			<include refid="affairSevenKnowledgeColumnsBeta"/>
+		FROM affair_seven_knowledge a
+		<include refid="affairSevenKnowledgeJoins"/>
+		left join personnel_base b on a.id_number=b.id_number
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_seven_knowledge(
+			id,
+			name,
+			sex,
+			birthday,
+			degree_education,
+			politics_face,
+			home_address,
+			house_area,
+			contact_tel,
+			work_time,
+			from_police_time,
+			police_rank,
+			marital_status,
+			health,
+			medical_history,
+			mental_illness,
+			curriculum_vitae,
+			income,
+			key_expenditure,
+			business_situation,
+			other_house,
+			debt_dispute,
+			character,
+			specialty,
+			hobbies,
+			unit,
+			unit_id,
+			work_job,
+			job,
+			good_business,
+			insufficient_business,
+			stock_speculation,
+			buy_lottery,
+			practice_skills,
+			family_harmony,
+			neighborhood_relations,
+			colleague_relations,
+			rewards_punishments,
+			gun_hold_time,
+			has_gun,
+			gun_system,
+			drink,
+			greedy_cup,
+			out_control_drink,
+			driver_license_type,
+			driver_time,
+			driver_age_car,
+			driver_age_motorcycle,
+			police_car_time,
+			long_police_car_time,
+			safe_driver,
+			mahjong,
+			gambling,
+			bet_other,
+			family_misfortune,
+			illegal_organization,
+			bad_association,
+			addicted_internet,
+			luxury_places,
+			participation_business,
+			crruption,
+			other_adverse_reactions,
+			off_duty,
+			mass_complaints,
+			disciplining,
+			help_educate_time,
+			suo_leader,
+			chu_leader,
+			create_by,
+			create_org_id,
+			create_date,
+			update_by,
+			update_org_id,
+			update_date,
+			del_flag,
+			nation,
+			id_number,
+			evaluate,
+			time
+		) VALUES (
+			#{id},
+			#{name},
+			#{sex},
+			#{birthday},
+			#{degreeEducation},
+			#{politicsFace},
+			#{homeAddress},
+			#{houseArea},
+			#{contactTel},
+			#{workTime},
+			#{fromPoliceTime},
+			#{policeRank},
+			#{maritalStatus},
+			#{health},
+			#{medicalHistory},
+			#{mentalIllness},
+			#{curriculumVitae},
+			#{income},
+			#{keyExpenditure},
+			#{businessSituation},
+			#{otherHouse},
+			#{debtDispute},
+			#{character},
+			#{specialty},
+			#{hobbies},
+			#{unit},
+			#{unitId},
+			#{workJob},
+			#{job},
+			#{goodBusiness},
+			#{insufficientBusiness},
+			#{stockSpeculation},
+			#{buyLottery},
+			#{practiceSkills},
+			#{familyHarmony},
+			#{neighborhoodRelations},
+			#{colleagueRelations},
+			#{rewardsPunishments},
+			#{gunHoldTime},
+			#{hasGun},
+			#{gunSystem},
+			#{drink},
+			#{greedyCup},
+			#{outControlDrink},
+			#{driverLicenseType},
+			#{driverTime},
+			#{driverAgeCar},
+			#{driverAgeMotorcycle},
+			#{policeCarTime},
+			#{longPoliceCarTime},
+			#{safeDriver},
+			#{mahjong},
+			#{gambling},
+			#{betOther},
+			#{familyMisfortune},
+			#{illegalOrganization},
+			#{badAssociation},
+			#{addictedInternet},
+			#{luxuryPlaces},
+			#{participationBusiness},
+			#{crruption},
+			#{otherAdverseReactions},
+			#{offDuty},
+			#{massComplaints},
+			#{disciplining},
+			#{helpEducateTime},
+			#{suoLeader},
+			#{chuLeader},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateDate},
+			#{delFlag},
+			#{nation},
+			#{idNumber},
+			#{evaluate},
+			#{time}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_seven_knowledge SET 	
+			name = #{name},
+			sex = #{sex},
+			birthday = #{birthday},
+			degree_education = #{degreeEducation},
+			politics_face = #{politicsFace},
+			home_address = #{homeAddress},
+			house_area = #{houseArea},
+			contact_tel = #{contactTel},
+			work_time = #{workTime},
+			from_police_time = #{fromPoliceTime},
+			police_rank = #{policeRank},
+			marital_status = #{maritalStatus},
+			health = #{health},
+			medical_history = #{medicalHistory},
+			mental_illness = #{mentalIllness},
+			curriculum_vitae = #{curriculumVitae},
+			income = #{income},
+			key_expenditure = #{keyExpenditure},
+			business_situation = #{businessSituation},
+			other_house = #{otherHouse},
+			debt_dispute = #{debtDispute},
+			character = #{character},
+			specialty = #{specialty},
+			hobbies = #{hobbies},
+			unit = #{unit},
+			unit_id = #{unitId},
+			work_job = #{workJob},
+			job = #{job},
+			good_business = #{goodBusiness},
+			insufficient_business = #{insufficientBusiness},
+			stock_speculation = #{stockSpeculation},
+			buy_lottery = #{buyLottery},
+			practice_skills = #{practiceSkills},
+			family_harmony = #{familyHarmony},
+			neighborhood_relations = #{neighborhoodRelations},
+			colleague_relations = #{colleagueRelations},
+			rewards_punishments = #{rewardsPunishments},
+			gun_hold_time = #{gunHoldTime},
+			has_gun = #{hasGun},
+			gun_system = #{gunSystem},
+			drink = #{drink},
+			greedy_cup = #{greedyCup},
+			out_control_drink = #{outControlDrink},
+			driver_license_type = #{driverLicenseType},
+			driver_time = #{driverTime},
+			driver_age_car = #{driverAgeCar},
+			driver_age_motorcycle = #{driverAgeMotorcycle},
+			police_car_time = #{policeCarTime},
+			long_police_car_time = #{longPoliceCarTime},
+			safe_driver = #{safeDriver},
+			mahjong = #{mahjong},
+			gambling = #{gambling},
+			bet_other = #{betOther},
+			family_misfortune = #{familyMisfortune},
+			illegal_organization = #{illegalOrganization},
+			bad_association = #{badAssociation},
+			addicted_internet = #{addictedInternet},
+			luxury_places = #{luxuryPlaces},
+			participation_business = #{participationBusiness},
+			crruption = #{crruption},
+			other_adverse_reactions = #{otherAdverseReactions},
+			off_duty = #{offDuty},
+			mass_complaints = #{massComplaints},
+			disciplining = #{disciplining},
+			help_educate_time = #{helpEducateTime},
+			suo_leader = #{suoLeader},
+			chu_leader = #{chuLeader},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_date = #{updateDate},
+			nation = #{nation},
+			id_number = #{idNumber},
+			evaluate = #{evaluate},
+			time = #{time}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_seven_knowledge SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_seven_knowledge SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<select id="selByIdNumber" resultType="java.lang.Integer">
+		select count(*) from affair_seven_knowledge a where a.del_flag='0' and a.id_number = #{idNumber}
+	</select>
+
+    <select id="sevenKnowledgeStatistics" resultType="java.util.Map">
+		select
+		count(case when (a.evaluate = '3') then a.specialty end) as wd,
+		count(case when (a.evaluate = '2') then a.specialty end) as gz,
+		count(case when (a.evaluate = '1') then a.specialty end) as zdgz,
+		'南宁处' as label from affair_seven_knowledge  a
+		left join sys_office o on o.id = a.unit_id
+		where a.del_flag = '0' and (o."id" = '34' or o."parent_id" ='34' or o.parent_ids like '%,34,%')
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.time) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		union all
+		select
+		count(case when (a.evaluate = '3') then a.specialty end) as wd,
+		count(case when (a.evaluate = '2') then a.specialty end) as gz,
+		count(case when (a.evaluate = '1') then a.specialty end) as zdgz,
+		'柳州处' as label from affair_seven_knowledge  a
+		left join sys_office o on o.id = a.unit_id
+		where a.del_flag = '0' and (o."id" = '95' or o."parent_id" ='95' or o.parent_ids like '%,95,%')
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.time) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		union all
+		select
+		count(case when (a.evaluate = '3') then a.specialty end) as wd,
+		count(case when (a.evaluate = '2') then a.specialty end) as gz,
+		count(case when (a.evaluate = '1') then a.specialty end) as zdgz,
+		'北海处' as label from affair_seven_knowledge  a
+		left join sys_office o on o.id = a.unit_id
+		where a.del_flag = '0' and (o."id" = '156' or o."parent_id" ='156' or o.parent_ids like '%,156,%')
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.time) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		union all
+		select
+		count(case when (a.evaluate = '3') then a.specialty end) as wd,
+		count(case when (a.evaluate = '2') then a.specialty end) as gz,
+		count(case when (a.evaluate = '1') then a.specialty end) as zdgz,
+		'局机关' as label from affair_seven_knowledge  a
+		left join sys_office o on o.id = a.unit_id
+		where a.del_flag = '0' and (o.id not in ('34','95','156') and o.parent_ids not like '%,34,%'and o.parent_ids not like '%,95,%'and o.parent_ids not like '%,156,%')
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.time) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findSevenKnowledgeChartList"
+			resultType="com.thinkgem.jeesite.modules.affair.entity.AffairSevenKnowledge">
+		SELECT
+		<include refid="affairSevenKnowledgeColumnsBeta"/>
+		FROM affair_seven_knowledge a
+		left join personnel_base b on a.id_number=b.id_number
+		left join sys_dict sd on sd."value" = a.evaluate
+		left join sys_office o on o.id = a.unit_id
+		where a.del_flag = '0' and sd."type" = 'seven_evaluate_rating'
+		and sd.label = #{label}
+		<choose>
+			<when test='unit != null and unit != "top"'>
+				and (o."id" = #{unitId} or o."parent_id" =#{unitId} or o.parent_ids like '%,'||#{unitId}||',%')
+			</when>
+			<otherwise>
+				and (o.id not in ('34','95','156') and o.parent_ids not like '%,34,%'and o.parent_ids not like '%,95,%'and o.parent_ids not like '%,156,%')
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND TO_CHAR(a.time, 'yyyy') = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	<select id="sevenChuKnowledgeStatistics" resultType="java.util.Map">
+		select
+		count(case when (a.evaluate = '3') then a.specialty end) as wd,
+		count(case when (a.evaluate = '2') then a.specialty end) as gz,
+		count(case when (a.evaluate = '1') then a.specialty end) as zdgz,
+		o.name as label from affair_seven_knowledge  a
+		left join sys_office o on o.id = a.unit_id
+		where a.del_flag = '0'
+		and (o."id" = #{parentId} or o."parent_id" =#{parentId} or o.parent_ids like '%,'||#{parentId}||',%')
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.time) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		group by o.name
+	</select>
+
+	<!--<delete id="deleteByIdNumber">
+        delete from affair_seven_knowledge where id_number = #{idNumber}
+    </delete>-->
+
+	<update id="deleteByIdNumber">
+		UPDATE affair_seven_knowledge SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id_number = #{idNumber}
+	</update>
+
+
+
+</mapper>

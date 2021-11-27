@@ -1,0 +1,2153 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.exam.dao.ExamWorkflowDatasDao">
+    
+	<sql id="examWorkflowDatasColumns">
+		a.id AS "id",
+		a.row_id AS "rowId",
+		a.detail AS "detail",
+		a.value AS "value",
+		a.path AS "path",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.workflow_id AS "workflowId",
+		a.obj_id AS "objId",
+		a.obj_name AS "objName",
+		A.fill_person AS "fillPerson",
+		A.fill_person_id  AS "fillPersonId",
+		A.exam_person AS "examPerson",
+		A.exam_person_id  AS "examPersonId",
+		A.depart_sign AS "departSign",
+		A.depart_sign_id  AS "departSignId",
+		A.part_bureaus_sign AS "partBureausSign",
+		A.part_bureaus_sign_id  AS "partBureausSignId",
+		A.adjust_person AS "adjustPerson",
+		A.adjust_person_id  AS "adjustPersonId",
+		A.main_bureaus_sign AS "mainBureausSign",
+		A.main_bureaus_sign_id  AS "mainBureausSignId",
+		a.standard_id AS "standardId",
+		a.operation_status AS "operationStatus",
+		a.status AS "status",
+		a.is_selected AS "isSelected",
+		a.weight AS "weight",
+		a.value_type AS "valueType",
+		a.work_name AS "workName",
+		a.items AS "items",
+		a.is_already_selected AS "isAlreadySelected",
+		a.push_history_id as "pushHistoryId",
+		a.type as "type",
+		a.is_alter as "isAlter",
+		a.select_person_id as "selectPersonId",
+		a.del_person_id as "delPersonId"
+	</sql>
+	
+	<sql id="examWorkflowDatasJoins">
+	</sql>
+    
+	<select id="get" resultType="ExamWorkflowDatas">
+		SELECT 
+			<include refid="examWorkflowDatasColumns"/>
+		FROM exam_workflow_datas a
+		<include refid="examWorkflowDatasJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ExamWorkflowDatas">
+		SELECT 
+			<include refid="examWorkflowDatasColumns"/>
+		FROM exam_workflow_datas a
+		<include refid="examWorkflowDatasJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="workflowId != null and workflowId != ''">
+				AND a.workflow_id = #{workflowId}
+			</if>
+			<if test="objId != null and objId != ''">
+				AND a.obj_id = #{objId}
+			</if>
+			<if test="objName != null and objName != ''">
+				AND a.obj_name = #{objName}
+			</if>
+			<if test="fillPerson != null and fillPerson != ''">
+				AND a.fill_person = #{fillPerson}
+			</if>
+			<if test="fillPersonId != null and fillPersonId != ''">
+				AND a.fill_person_id = #{fillPersonId}
+			</if>
+			<if test="examPerson != null and examPerson != ''">
+				AND a.exam_person = #{examPerson}
+			</if>
+			<if test="departSign != null and departSign != ''">
+				AND a.depart_sign = #{departSign}
+			</if>
+			<if test="departSignId != null and departSignId != ''">
+				AND a.depart_sign_id = #{departSignId}
+			</if>
+			<if test="partBureausSign != null and partBureausSign != ''">
+				AND a.part_bureaus_sign = #{partBureausSign}
+			</if>
+			<if test="partBureausSignId != null and partBureausSignId != ''">
+				AND a.part_bureaus_sign_id = #{partBureausSignId}
+			</if>
+			<if test="adjustPerson != null and adjustPerson != ''">
+				AND a.adjust_person = #{adjustPerson}
+			</if>
+			<if test="adjustPersonId != null and adjustPersonId != ''">
+				AND a.adjust_person_id = #{adjustPersonId}
+			</if>
+			<if test="mainBureausSign != null and mainBureausSign != ''">
+				AND a.main_bureaus_sign = #{mainBureausSign}
+			</if>
+			<if test="mainBureausSignId != null and mainBureausSignId != ''">
+				AND a.main_bureaus_sign_id = #{mainBureausSignId}
+			</if>
+			<if test="standardId != null and standardId != ''">
+				AND a.standard_id = #{standardId}
+			</if>
+			<if test="operationStatus != null and operationStatus != ''">
+				AND a.operation_status = #{operationStatus}
+			</if>
+			<if test="isSelected  != null and isSelected != ''">
+				AND a.is_selected = #{isSelected}
+			</if>
+			<if test="weight  != null and weight != ''">
+				AND a.weight = #{weight}
+			</if>
+			<if test="workName  != null and workName != ''">
+				AND a.work_name = #{workName}
+			</if>
+			<if test="isAlreadySelected  != null and isAlreadySelected != ''">
+				AND a.is_already_selected = #{isAlreadySelected}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				<!--ORDER BY to_number(a.row_id, '999') asc-->
+ 				ORDER BY to_number(nullif(a.row_id,''), '999') asc
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findAboutMeList" resultType="ExamWorkflowDatas">
+		SELECT
+		<include refid="examWorkflowDatasColumns"/>
+		FROM exam_workflow_datas a
+		<include refid="examWorkflowDatasJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="workflowId != null and workflowId != ''">
+				AND a.workflow_id = #{workflowId}
+			</if>
+			<if test="objId != null and objId != ''">
+				AND a.obj_id = #{objId}
+			</if>
+			<if test="objName != null and objName != ''">
+				AND a.obj_name = #{objName}
+			</if>
+			<if test="fillPerson != null and fillPerson != ''">
+				AND a.fill_person = #{fillPerson}
+			</if>
+			<if test="fillPersonId != null and fillPersonId != ''">
+				AND a.fill_person_id = #{fillPersonId}
+			</if>
+			<if test="departSign != null and departSign != ''">
+				AND a.depart_sign = #{departSign}
+			</if>
+			<if test="partBureausSign != null and partBureausSign != ''">
+				AND a.part_bureaus_sign = #{partBureausSign}
+			</if>
+			and (
+
+				 a.exam_person_id = #{examPersonId}
+				or a.depart_sign_id = #{departSignId}
+				or a.part_bureaus_sign_id = #{partBureausSignId}
+				or a.adjust_person_id = #{adjustPersonId}
+				or a.main_bureaus_sign_id = #{mainBureausSignId}
+			)
+			<if test="mainBureausSign != null and mainBureausSign != ''">
+				AND a.main_bureaus_sign = #{mainBureausSign}
+			</if>
+			<if test="adjustPerson != null and adjustPerson != ''">
+				AND a.adjust_person = #{adjustPerson}
+			</if>
+			<if test="standardId != null and standardId != ''">
+				AND a.standard_id = #{standardId}
+			</if>
+			<if test="operationStatus != null and operationStatus != ''">
+				AND a.operation_status = #{operationStatus}
+			</if>
+			<if test="isSelected  != null and isSelected != ''">
+				AND a.is_selected = #{isSelected}
+			</if>
+			<if test="weight  != null and weight != ''">
+				AND a.weight = #{weight}
+			</if>
+			<if test="workName  != null and workName != ''">
+				AND a.work_name = #{workName}
+			</if>
+			<if test="isAlreadySelected  != null and isAlreadySelected != ''">
+				AND a.is_already_selected = #{isAlreadySelected}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				<!--ORDER BY to_number(a.row_id, '999') asc-->
+				ORDER BY to_number(nullif(a.row_id,''), '999') asc
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findStandardsDataNum" resultType="Map">
+		SELECT
+		A.standard_id AS standardId,COUNT (1) AS "number"
+		FROM exam_workflow_datas a
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="workflowId != null and workflowId != ''">
+				AND a.workflow_id = #{workflowId}
+			</if>
+			<if test="objId != null and objId != ''">
+				AND a.obj_id = #{objId}
+			</if>
+			<if test="objName != null and objName != ''">
+				AND a.obj_name = #{objName}
+			</if>
+			<if test="fillPerson != null and fillPerson != ''">
+				AND a.fill_person = #{fillPerson}
+			</if>
+			<if test="fillPersonId != null and fillPersonId != ''">
+				AND a.fill_person_id = #{fillPersonId}
+			</if>
+			<if test="examPerson != null and examPerson != ''">
+				AND a.exam_person = #{examPerson}
+			</if>
+			<if test="examPersonId != null and examPersonId != ''">
+				AND a.exam_person_id = #{examPersonId}
+			</if>
+			<if test="departSign != null and departSign != ''">
+				AND a.depart_sign = #{departSign}
+			</if>
+			<if test="departSignId != null and departSignId != ''">
+				AND a.depart_sign_id = #{departSignId}
+			</if>
+			<if test="partBureausSign != null and partBureausSign != ''">
+				AND a.part_bureaus_sign = #{partBureausSign}
+			</if>
+			<if test="partBureausSignId != null and partBureausSignId != ''">
+				AND a.part_bureaus_sign_id = #{partBureausSignId}
+			</if>
+			<if test="adjustPerson != null and adjustPerson != ''">
+				AND a.adjust_person = #{adjustPerson}
+			</if>
+			<if test="adjustPersonId != null and adjustPersonId != ''">
+				AND a.adjust_person_id = #{adjustPersonId}
+			</if>
+			<if test="mainBureausSign != null and mainBureausSign != ''">
+				AND a.main_bureaus_sign = #{mainBureausSign}
+			</if>
+			<if test="mainBureausSignId != null and mainBureausSignId != ''">
+				AND a.main_bureaus_sign_id = #{mainBureausSignId}
+			</if>
+			<if test="standardIds != null and standardIds != ''">
+				AND a.standard_id in <foreach collection="standardIds" item="item" index="index"
+							   open="(" separator="," close=")">#{item}</foreach>
+			</if>
+			<if test="operationStatus != null and operationStatus != ''">
+				AND a.operation_status = #{operationStatus}
+			</if>
+			<if test="isSelected  != null and isSelected != ''">
+				AND a.is_selected = #{isSelected}
+			</if>
+			<if test="weight  != null and weight != ''">
+				AND a.weight = #{weight}
+			</if>
+			<if test="workName  != null and workName != ''">
+				AND a.work_name = #{workName}
+			</if>
+			<if test="isAlreadySelected  != null and isAlreadySelected != ''">
+				AND a.is_already_selected = #{isAlreadySelected}
+			</if>
+		</where>
+		GROUP BY	A.standard_id
+	</select>
+	<select id="selectDatasNumber" resultType="Map">
+		SELECT
+		COUNT(1) AS "number",
+		MIN(status) AS "status"
+		FROM exam_workflow_datas a
+		<include refid="examWorkflowDatasJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+
+			<if test="isSelected != null and isSelected != ''">
+				AND a.is_selected = #{isSelected}
+			</if>
+			<if test="workflowId != null and workflowId != ''">
+				AND a.workflow_id = #{workflowId}
+			</if>
+			<if test="objId != null and objId != ''">
+				AND a.obj_id = #{objId}
+			</if>
+			<if test="objName != null and objName != ''">
+				AND a.obj_name = #{objName}
+			</if>
+			<if test="fillPerson != null and fillPerson != ''">
+				AND a.fill_person = #{fillPerson}
+			</if>
+			<if test="fillPersonId != null and fillPersonId != ''">
+				AND a.fill_person_id = #{fillPersonId}
+			</if>
+			<if test="examPerson != null and examPerson != ''">
+				AND a.exam_person = #{examPerson}
+			</if>
+			<if test="examPersonId != null and examPersonId != ''">
+				AND a.exam_person_id = #{examPersonId}
+			</if>
+			<if test="departSign != null and departSign != ''">
+				AND a.depart_sign = #{departSign}
+			</if>
+			<if test="departSignId != null and departSignId != ''">
+				AND a.depart_sign_id = #{departSignId}
+			</if>
+			<if test="partBureausSign != null and partBureausSign != ''">
+				AND a.part_bureaus_sign = #{partBureausSign}
+			</if>
+			<if test="partBureausSignId != null and partBureausSignId != ''">
+				AND a.part_bureaus_sign_id = #{partBureausSignId}
+			</if>
+			<if test="adjustPerson != null and adjustPerson != ''">
+				AND a.adjust_person = #{adjustPerson}
+			</if>
+			<if test="adjustPersonId != null and adjustPersonId != ''">
+				AND a.adjust_person_id = #{adjustPersonId}
+			</if>
+			<if test="mainBureausSign != null and mainBureausSign != ''">
+				AND a.main_bureaus_sign = #{mainBureausSign}
+			</if>
+			<if test="mainBureausSignId != null and mainBureausSignId != ''">
+				AND a.main_bureaus_sign_id = #{mainBureausSignId}
+			</if>
+			<if test="standardId != null and standardId != ''">
+				AND a.standard_id = #{standardId}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status  = #{status}
+			</if>
+			<if test="operationStatus != null and operationStatus != ''">
+				AND a.operation_status  ={operationStatus}
+			</if>
+			<if test="null != condition">
+				AND ${condition}
+			</if>
+			<if test="isAlreadySelected  != null and isAlreadySelected != ''">
+				AND a.is_already_selected = #{isAlreadySelected}
+			</if>
+		</where>
+	</select>
+
+
+	<select id="selectDatasNumberBeta" resultType="Map">
+		SELECT
+		COUNT(1) AS "number",
+		MIN(status) AS "status"
+		FROM exam_workflow_datas a
+		<include refid="examWorkflowDatasJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+
+			<if test="isSelected != null and isSelected != ''">
+				AND a.is_selected = #{isSelected}
+			</if>
+			<if test="workflowId != null and workflowId != ''">
+				AND a.workflow_id = #{workflowId}
+			</if>
+			<if test="objId != null and objId != ''">
+				AND a.obj_id = #{objId}
+			</if>
+			<if test="objName != null and objName != ''">
+				AND a.obj_name = #{objName}
+			</if>
+			<if test="fillPerson != null and fillPerson != ''">
+				AND a.fill_person = #{fillPerson}
+			</if>
+			<if test="fillPersonId != null and fillPersonId != ''">
+				AND a.fill_person_id = #{fillPersonId}
+			</if>
+			<if test="examPerson != null and examPerson != ''">
+				AND a.exam_person = #{examPerson}
+			</if>
+			<if test="examPersonId != null and examPersonId != ''">
+				AND a.exam_person_id is not null
+			</if>
+			<if test="departSign != null and departSign != ''">
+				AND a.depart_sign = #{departSign}
+			</if>
+			<if test="departSignId != null and departSignId != ''">
+				AND a.depart_sign_id is not null
+			</if>
+			<if test="partBureausSign != null and partBureausSign != ''">
+				AND a.part_bureaus_sign = #{partBureausSign}
+			</if>
+			<if test="partBureausSignId != null and partBureausSignId != ''">
+				AND a.part_bureaus_sign_id is not null
+			</if>
+			<if test="adjustPerson != null and adjustPerson != ''">
+				AND a.adjust_person = #{adjustPerson}
+			</if>
+			<if test="adjustPersonId != null and adjustPersonId != ''">
+				AND a.adjust_person_id is not null
+			</if>
+			<if test="mainBureausSign != null and mainBureausSign != ''">
+				AND a.main_bureaus_sign = #{mainBureausSign}
+			</if>
+			<if test="mainBureausSignId != null and mainBureausSignId != ''">
+				AND a.main_bureaus_sign_id is not null
+			</if>
+			<if test="standardId != null and standardId != ''">
+				AND a.standard_id = #{standardId}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status  = #{status}
+			</if>
+			<if test="operationStatus != null and operationStatus != ''">
+				AND a.operation_status  ={operationStatus}
+			</if>
+			<if test="null != condition">
+				AND ${condition}
+			</if>
+			<if test="isAlreadySelected  != null and isAlreadySelected != ''">
+				AND a.is_already_selected = #{isAlreadySelected}
+			</if>
+		</where>
+	</select>
+
+	<select id="selectNumberByInfo" resultType="Map" parameterType="Map">
+		SELECT
+		COUNT(1) AS "number"
+		FROM exam_workflow_datas a
+		<include refid="examWorkflowDatasJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="workflowId != null and workflowId != ''">
+				AND a.workflow_id = #{workflowId}
+			</if>
+			<if test="objId != null and objId != ''">
+				AND a.obj_id = #{objId}
+			</if>
+			<if test="objName != null and objName != ''">
+				AND a.obj_name = #{objName}
+			</if>
+			<choose>
+				<when test="status== 1 and null != personId">
+					AND a.fill_person_id = #{personId}
+				</when>
+				<when test="status== 2 and null != personId">
+					AND a.exam_person_id = #{personId}
+				</when>
+				<when test="status== 3 and null != personId">
+				</when>
+				<when test="status== 4 and null != personId">
+					AND a.depart_sign_id = #{personId}
+				</when>
+				<when test="status== 5 and null != personId">
+					AND a.part_bureaus_sign_id = #{personId}
+				</when>
+				<when test="status== 6 and null != personId">
+					AND a.adjust_person_id = #{personId}
+				</when>
+				<when test="status== 7 and null != personId">
+					AND a.main_bureaus_sign_id = #{personId}
+				</when>
+				<otherwise>
+
+				</otherwise>
+			</choose>
+			<if test="fillPerson != null and fillPerson != ''">
+				AND a.fill_person = #{fillPerson}
+			</if>
+			<if test="fillPersonId != null and fillPersonId != ''">
+				AND a.fill_person_id = #{fillPersonId}
+			</if>
+			<if test="examPerson != null and examPerson != ''">
+				AND a.exam_person = #{examPerson}
+			</if>
+			<if test="examPersonId != null and examPersonId != ''">
+				AND a.exam_person_id = #{examPersonId}
+			</if>
+			<if test="departSign != null and departSign != ''">
+				AND a.depart_sign = #{departSign}
+			</if>
+			<if test="departSignId != null and departSignId != ''">
+				AND a.depart_sign_id = #{departSignId}
+			</if>
+			<if test="partBureausSign != null and partBureausSign != ''">
+				AND a.part_bureaus_sign = #{partBureausSign}
+			</if>
+			<if test="partBureausSignId != null and partBureausSignId != ''">
+				AND a.part_bureaus_sign_id = #{partBureausSignId}
+			</if>
+			<if test="adjustPerson != null and adjustPerson != ''">
+				AND a.adjust_person = #{adjustPerson}
+			</if>
+			<if test="adjustPersonId != null and adjustPersonId != ''">
+				AND a.adjust_person_id = #{adjustPersonId}
+			</if>
+			<if test="mainBureausSign != null and mainBureausSign != ''">
+				AND a.main_bureaus_sign = #{mainBureausSign}
+			</if>
+			<if test="mainBureausSignId != null and mainBureausSignId != ''">
+				AND a.main_bureaus_sign_id = #{mainBureausSignId}
+			</if>
+			<if test="standardId != null and standardId != ''">
+				AND a.standard_id = #{standardId}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status  = #{status}
+			</if>
+			<choose>
+				<when test="isNotCommit != null and isNotCommit != '' and fillPersonId != null and fillPersonId != ''">
+					AND a.operation_status  not in(3)
+				</when>
+				<when test="isNotCommit != null and isNotCommit != ''">
+					AND a.operation_status  not in(1,3)
+				</when>
+				<otherwise>
+
+				</otherwise>
+			</choose>
+			<if test="null != condition">
+				AND ${condition}
+			</if>
+			<if test="null != isSelected">
+				AND a.is_selected = #{isSelected}
+			</if>
+			<if test="isAlreadySelected  != null and isAlreadySelected != ''">
+				AND a.is_already_selected = #{isAlreadySelected}
+			</if>
+		</where>
+	</select>
+
+	<select id="findAllList" resultType="ExamWorkflowDatas">
+		SELECT 
+			<include refid="examWorkflowDatasColumns"/>
+		FROM exam_workflow_datas a
+		<include refid="examWorkflowDatasJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO exam_workflow_datas(
+			id,
+			row_id,
+			detail,
+			value,
+			value_type,
+			path,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag,
+			workflow_id,
+			obj_id,
+			obj_name,
+			fill_person,
+			fill_person_id,
+			exam_person,
+			exam_person_id,
+			depart_sign,
+			depart_sign_id,
+			part_bureaus_sign,
+			part_bureaus_sign_id,
+			adjust_person,
+			adjust_person_id,
+			main_bureaus_sign,
+			main_bureaus_sign_id,
+			standard_id,
+			operation_status,
+			status,
+			is_selected,
+			weight,
+			work_name,
+			items,
+			is_already_selected,
+			push_history_id,
+			type,
+			is_alter,
+			select_person_id,
+			del_person_id
+		) VALUES (
+			#{id},
+			#{rowId},
+			#{detail},
+			#{value},
+			#{valueType},
+			#{path},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag},
+			#{workflowId},
+			#{objId},
+			#{objName},
+			#{fillPerson},
+			#{fillPersonId},
+			#{examPerson},
+			#{examPersonId},
+			#{departSign},
+			#{departSignId},
+			#{partBureausSign},
+			#{partBureausSignId},
+			#{adjustPerson},
+			#{adjustPersonId},
+			#{mainBureausSign},
+			#{mainBureausSignId},
+			#{standardId},
+			#{operationStatus},
+			#{status},
+			#{isSelected},
+			#{weight},
+			#{workName},
+			#{items},
+			#{isAlreadySelected},
+			#{pushHistoryId},
+			#{type},
+			#{isAlter},
+			#{selectPersonId},
+			#{delPersonId}
+		)
+	</insert>
+
+	<insert id="batchInsert" parameterType="java.util.List" useGeneratedKeys="false">
+		INSERT INTO exam_workflow_datas(
+			id,
+			row_id,
+			detail,
+			value,
+			value_type,
+			path,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag,
+			workflow_id,
+			obj_id,
+			obj_name,
+			fill_person,
+			fill_person_id,
+			exam_person,
+			exam_person_id,
+			depart_sign,
+			depart_sign_id,
+			part_bureaus_sign,
+			part_bureaus_sign_id,
+			adjust_person,
+			adjust_person_id,
+			main_bureaus_sign,
+			main_bureaus_sign_id,
+			standard_id,
+			operation_status,
+			status,
+			is_selected,
+			weight,
+			work_name,
+			items,
+			is_already_selected,
+			select_person_id,
+			del_person_id
+		) VALUES
+		<foreach collection="list" item="item" index="index" separator=",">
+		(
+			#{item.id},
+			#{item.rowId},
+			#{item.detail},
+			#{item.value},
+			#{item.valueType},
+			#{item.path},
+			#{item.createBy.id},
+			#{item.createDate},
+			#{item.updateBy.id},
+			#{item.updateDate},
+			#{item.delFlag},
+			#{item.workflowId},
+			#{item.objId},
+			#{item.objName},
+			#{fillPerson},
+			#{fillPersonId},
+			#{examPerson},
+			#{examPersonId},
+			#{departSign},
+			#{departSignId},
+			#{partBureausSign},
+			#{partBureausSignId},
+			#{adjustPerson},
+			#{adjustPersonId},
+			#{mainBureausSign},
+			#{mainBureausSignId},
+			#{item.standardId},
+			#{item.operationStatus},
+			#{item.status},
+			#{item.isSelected},
+			#{item.weight},
+			#{item.workName},
+			#{item.items},
+			#{item.isAlreadySelected},
+			#{item.selectPersonId},
+			#{item.delPersonId}
+
+		)
+		</foreach>
+	</insert>
+
+	<update id="update">
+		UPDATE exam_workflow_datas SET
+		update_by = #{updateBy.id},
+		update_date = #{updateDate}
+		<if test="rowId != null">
+			,row_id = #{rowId}
+		</if>
+		<if test="detail != null">
+			,detail = #{detail}
+		</if>
+		<if test="value != null">
+			,value = #{value}
+		</if>
+		<if test="valueType != null">
+			,value_type = #{valueType}
+		</if>
+		<if test="path != null">
+			,path = #{path}
+		</if>
+		<if test="workflowId != null and workflowId != ''">
+			,workflow_id = #{workflowId}
+		</if>
+		<if test="objId != null">
+			,obj_id = #{objId}
+		</if>
+		<if test="objName != null">
+			,obj_name = #{objName}
+		</if>
+		<if test="fillPerson != null">
+			,fill_person = #{fillPerson}
+		</if>
+		<if test="fillPersonId != null">
+			,fill_person_id = #{fillPersonId}
+		</if>
+		<if test="examPerson != null">
+			,exam_person = #{examPerson}
+		</if>
+		<if test="examPersonId != null">
+			,exam_person_id = #{examPersonId}
+		</if>
+		<if test="departSign != null">
+			,depart_sign = #{departSign}
+		</if>
+		<if test="departSignId != null">
+			,depart_sign_id = #{departSignId}
+		</if>
+		<if test="partBureausSign != null">
+			,part_bureaus_sign = #{partBureausSign}
+		</if>
+		<if test="partBureausSignId != null">
+			,part_bureaus_sign_id = #{partBureausSignId}
+		</if>
+		<if test="adjustPerson != null">
+			,adjust_person = #{adjustPerson}
+		</if>
+		<if test="adjustPersonId != null">
+			,adjust_person_id = #{adjustPersonId}
+		</if>
+		<if test="mainBureausSign != null">
+			,main_bureaus_sign = #{mainBureausSign}
+		</if>
+		<if test="mainBureausSignId != null">
+			,main_bureaus_sign_id = #{mainBureausSignId}
+		</if>
+		<if test="standardId != null">
+			,standard_id = #{standardId}
+		</if>
+		<if test="operationStatus != null">
+			,operation_status = #{operationStatus}
+		</if>
+		<if test="status != null">
+			,status = #{status}
+		</if>
+		<if test="isSelected != null">
+			,is_selected = #{isSelected}
+		</if>
+		<if test="weight != null">
+			,weight = #{weight}
+		</if>
+		<if test="workName != null">
+			,work_name = #{workName}
+		</if>
+		<if test="items != null">
+			,items = #{items}
+		</if>
+		<if test="isAlreadySelected != null">
+			,is_already_selected = #{isAlreadySelected}
+		</if>
+		<if test="pushHistoryId != null">
+			,push_history_id = #{pushHistoryId}
+		</if>
+		<if test="type != null">
+			,type = #{type}
+		</if>
+		<if test="isAlter != null">
+			,is_alter = #{isAlter}
+		</if>
+		<if test="selectPersonId != null">
+			,select_person_id = #{selectPersonId}
+		</if>
+		<if test="delPersonId != null">
+			,del_person_id = #{delPersonId}
+		</if>
+		WHERE id = #{id}
+	</update>
+
+	<update id="updateStatus">
+		UPDATE exam_workflow_datas SET
+		status = #{status}
+		<if test="detail != null">
+			,detail = #{detail}
+		</if>
+		<if test="value != null">
+			,value = #{value}
+		</if>
+		<if test="valueType != null">
+			,value_type = #{valueType}
+		</if>
+		<if test="path != null">
+			,path = #{path}
+		</if>
+		<if test="objId != null">
+			,obj_id = #{objId}
+		</if>
+		<if test="objName != null">
+			,obj_name = #{objName}
+		</if>
+		<if test="fillPerson != null">
+			,fill_person = #{fillPerson}
+		</if>
+		<if test="fillPersonId != null">
+			,fill_person_id = #{fillPersonId}
+		</if>
+		<if test="examPersonId != null">
+			,exam_person_id = #{examPersonId}
+		</if>
+		<if test="examPerson != null">
+			,exam_person = #{examPerson}
+		</if>
+		<if test="departSignId != null">
+			,depart_sign_id = #{departSignId}
+		</if>
+		<if test="departSign != null">
+			,depart_sign = #{departSign}
+		</if>
+		<if test="partBureausSignId != null">
+			,part_bureaus_sign_id = #{partBureausSignId}
+		</if>
+		<if test="partBureausSign != null">
+			,part_bureaus_sign = #{partBureausSign}
+		</if>
+		<if test="adjustPersonId != null">
+			,adjust_person_id = #{adjustPersonId}
+		</if>
+		<if test="adjustPerson != null">
+			,adjust_person = #{adjustPerson}
+		</if>
+		<if test="mainBureausSignId != null">
+			,main_bureaus_sign_id = #{mainBureausSignId}
+		</if>
+		<if test="mainBureausSign != null">
+			,main_bureaus_sign = #{mainBureausSign}
+		</if>
+		<if test="standardId != null">
+			,standard_id = #{standardId}
+		</if>
+		<if test="operationStatus != null">
+			,operation_status = #{operationStatus}
+		</if>
+		<if test="isSelected != null">
+			,is_selected = #{isSelected}
+		</if>
+		<if test="weight != null">
+			,weight = #{weight}
+		</if>
+		<if test="valueType != null">
+			,value_type = #{valueType}
+		</if>
+		<if test="workName != null">
+			,work_name = #{workName}
+		</if>
+		<where>
+			<if test="null != id">
+				AND id = #{id}
+			</if>
+			<if test="null != workflowId">
+				AND workflow_id = #{workflowId}
+			</if>
+			<if test="rowId != null">
+				AND row_id = #{rowId}
+			</if>
+			<if test="isAlreadySelected != null">
+				AND is_already_selected = #{isAlreadySelected}
+			</if>
+			<!--强制结束时，只更新状态小于当前状态的-->
+			<if test="condition != null and condition != ''">
+				and ${condition}
+			</if>
+		</where>
+	</update>
+	
+	<update id="delete">
+		UPDATE exam_workflow_datas SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<delete id="deleteByWorkflowId">
+		delete from exam_workflow_datas
+		WHERE workflow_id = #{workflowId}
+	</delete>
+
+	<update id="deleteDatas">
+		UPDATE exam_workflow_datas SET
+		del_flag = #{DEL_FLAG_DELETE}
+		<where>
+			<if test="null != id and ''!= id">
+			  AND id = #{id}
+			</if>
+			<if test="null != workflowId and ''!= workflowId">
+				AND	workflow_id = #{workflowId}
+			</if>
+			<if test="null != standardId and ''!= standardId">
+				AND standard_id = #{standardId}
+			</if>
+		</where>
+	</update>
+
+	<select id="getAppraiseObjList" parameterType="Map" resultType="Map">
+		SELECT
+		<choose>
+			<when test="'obj'== group">
+				T.obj_id AS "id",
+				T.obj_name AS "name",
+			</when>
+			<when test="'objAndStandId'== group">
+				T.obj_id AS "id",
+				T.obj_name AS "name",
+				T.standard_id AS "standardId",
+			</when>
+            <when test="'personAndStandId'== group">
+                T.fill_person_id AS "id",
+                T.fill_person AS "name",
+                T.standard_id AS "standardId",
+            </when>
+			<otherwise>
+				T.fill_person_id AS "id",
+				T.fill_person AS "name",
+			</otherwise>
+		</choose>
+		SUM ( CAST ( T.VALUE AS NUMERIC ) * T.weight / 100 * T.value_type ) AS "value",
+		MIN(status) AS "status"
+		FROM
+		exam_workflow_datas T
+		<where>
+			<if test="null != workflowId">
+				AND T.workflow_id = #{workflowId}
+			</if>
+		</where>
+		GROUP BY
+		<choose>
+			<when test="'obj'== group">
+				T.obj_id,T.obj_name
+			</when>
+			<when test="'objAndStandId'== group">
+				T.obj_id,T.obj_name,T.standard_id
+			</when>
+            <when test="'personAndStandId'== group">
+                T.fill_person_id,T.fill_person,T.standard_id
+            </when>
+			<otherwise>
+				T.fill_person_id,T.fill_person
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="getAppraiseObjDataList" parameterType="Map" resultType="Map">
+		SELECT
+		<choose>
+			<when test="'obj'== orderObj">
+				T.obj_id AS "objId",
+				T.obj_name AS "name",
+			</when>
+			<otherwise>
+				T.fill_person_id AS "objId",
+				T.fill_person AS "name",
+			</otherwise>
+		</choose>
+		T.standard_id AS "standardId",
+		T.row_id AS "rowId",
+		T.weight AS "weight",
+		T."value_type"	 AS "valueType",
+		T."value"	 AS "value",
+		T."status"  AS "status"
+		FROM
+		exam_workflow_datas T
+		WHERE
+		 T.del_flag = '0'
+		<if test="null != workflowId">
+			AND T.workflow_id = #{workflowId}
+		</if>
+		<if test="null != standardId">
+			AND T.standard_id = #{standardId}
+		</if>
+		ORDER  BY
+		<choose>
+			<when test="'obj'== orderObj">
+				T.obj_id,
+				T.standard_id
+			</when>
+			<otherwise>
+				T.fill_person_id,
+				T.standard_id
+			</otherwise>
+		</choose>
+	</select>
+
+    <select id="findScoreByWorkflowId" resultType="java.util.Map">
+		SELECT
+		a.fill_person as fillPerson,sum(value) as score
+		FROM exam_workflow_datas a
+		WHERE a.workflow_id = #{workflowId} and a.del_flag = '0' GROUP BY a.fill_person
+	</select>
+	
+	<select id="calScores" parameterType="Map" resultType="Map">
+		SELECT T.obj_id AS "objId",
+		T.obj_name AS "objName",
+		<if test="groupType != 'person'">
+		T.work_name AS "workName",
+		</if>
+		<!--T.value_type as "valueType",-->
+		SUM (CAST ( T.VALUE AS NUMERIC )* T.value_type) AS "origalValue",
+		SUM ( CAST ( T.VALUE AS NUMERIC ) * T.weight / 100 * T.value_type ) AS "finalValue"
+	FROM
+		exam_workflow_datas T
+		<where>
+			T.del_flag = #{DEL_FLAG_NORMAL}
+			AND T.operation_status &lt;&gt; '2'
+			AND T.is_selected &lt;&gt; '3'
+			<if test="workflowId != null and workflowId != ''">
+				AND T.workflow_id = #{workflowId}
+			</if>
+			<if test="objId != null and objId != ''">
+				AND T.obj_id = #{objId}
+			</if>
+			<if test="objName != null and objName != ''">
+				AND T.obj_name = #{objName}
+			</if>
+			<if test="fillPerson != null and fillPerson != ''">
+				AND T.fill_person = #{fillPerson}
+			</if>
+			<if test="fillPersonId != null and fillPersonId != ''">
+				AND T.fill_person_id = #{fillPersonId}
+			</if>
+			<if test="examPerson != null and examPerson != ''">
+				AND T.exam_person = #{examPerson}
+			</if>
+			<if test="examPersonId != null and examPersonId != ''">
+				AND T.exam_person_id = #{examPersonId}
+			</if>
+			<if test="departSign != null and departSign != ''">
+				AND T.depart_sign = #{departSign}
+			</if>
+			<if test="departSignId != null and departSignId != ''">
+				AND T.depart_sign_id = #{departSignId}
+			</if>
+			<if test="partBureausSign != null and partBureausSign != ''">
+				AND T.part_bureaus_sign = #{partBureausSign}
+			</if>
+			<if test="partBureausSignId != null and partBureausSignId != ''">
+				AND T.part_bureaus_sign_id = #{partBureausSignId}
+			</if>
+			<if test="adjustPerson != null and adjustPerson != ''">
+				AND T.adjust_person = #{adjustPerson}
+			</if>
+			<if test="adjustPersonId != null and adjustPersonId != ''">
+				AND T.adjust_person_id = #{adjustPersonId}
+			</if>
+			<if test="mainBureausSign != null and mainBureausSign != ''">
+				AND T.main_bureaus_sign = #{mainBureausSign}
+			</if>
+			<if test="mainBureausSignId != null and mainBureausSignId != ''">
+				AND T.main_bureaus_sign_id = #{mainBureausSignId}
+			</if>
+			<if test="standardId != null and standardId != ''">
+				AND T.standard_id = #{standardId}
+			</if>
+			<if test="status != null and status != ''">
+				AND T.status  = #{status}
+			</if>
+			<if test="operationStatus != null and operationStatus != ''">
+				AND T.operation_status  ={operationStatus}
+			</if>
+		</where>
+	GROUP BY
+	<choose>
+		<when test="groupType == 'person'">
+			T.obj_id,
+			T.obj_name
+		</when>
+		<otherwise>
+			T.obj_id,
+			T.obj_name,
+			T.work_name
+		</otherwise>
+	</choose>
+	</select>
+
+	<select id="calScoresJGUnit" parameterType="Map" resultType="Map">
+		SELECT T.obj_id AS "objId",
+		T.obj_name AS "objName",
+		<if test="groupType != 'person'">
+			T.work_name AS "workName",
+			T.value_type as "valueType",
+		</if>
+		<!--T.value_type as "valueType",-->
+		SUM (CAST ( T.VALUE AS NUMERIC ) * T.value_type) AS "origalValue",
+		SUM (CAST ( T.VALUE AS NUMERIC ) * T.weight / 100 * T.value_type) AS "finalValue"
+		FROM
+		exam_workflow_datas T
+		<where>
+			T.del_flag = #{DEL_FLAG_NORMAL}
+			AND T.operation_status &lt;&gt; '2'
+			AND T.is_selected &lt;&gt; '3'
+			<if test="workflowId != null and workflowId != ''">
+				AND T.workflow_id = #{workflowId}
+			</if>
+			<if test="objId != null and objId != ''">
+				AND T.obj_id = #{objId}
+			</if>
+			<if test="objName != null and objName != ''">
+				AND T.obj_name = #{objName}
+			</if>
+			<if test="fillPerson != null and fillPerson != ''">
+				AND T.fill_person = #{fillPerson}
+			</if>
+			<if test="fillPersonId != null and fillPersonId != ''">
+				AND T.fill_person_id = #{fillPersonId}
+			</if>
+			<if test="examPerson != null and examPerson != ''">
+				AND T.exam_person = #{examPerson}
+			</if>
+			<if test="examPersonId != null and examPersonId != ''">
+				AND T.exam_person_id = #{examPersonId}
+			</if>
+			<if test="departSign != null and departSign != ''">
+				AND T.depart_sign = #{departSign}
+			</if>
+			<if test="departSignId != null and departSignId != ''">
+				AND T.depart_sign_id = #{departSignId}
+			</if>
+			<if test="partBureausSign != null and partBureausSign != ''">
+				AND T.part_bureaus_sign = #{partBureausSign}
+			</if>
+			<if test="partBureausSignId != null and partBureausSignId != ''">
+				AND T.part_bureaus_sign_id = #{partBureausSignId}
+			</if>
+			<if test="adjustPerson != null and adjustPerson != ''">
+				AND T.adjust_person = #{adjustPerson}
+			</if>
+			<if test="adjustPersonId != null and adjustPersonId != ''">
+				AND T.adjust_person_id = #{adjustPersonId}
+			</if>
+			<if test="mainBureausSign != null and mainBureausSign != ''">
+				AND T.main_bureaus_sign = #{mainBureausSign}
+			</if>
+			<if test="mainBureausSignId != null and mainBureausSignId != ''">
+				AND T.main_bureaus_sign_id = #{mainBureausSignId}
+			</if>
+			<if test="standardId != null and standardId != ''">
+				AND T.standard_id = #{standardId}
+			</if>
+			<if test="status != null and status != ''">
+				AND T.status  = #{status}
+			</if>
+			<if test="operationStatus != null and operationStatus != ''">
+				AND T.operation_status  ={operationStatus}
+			</if>
+		</where>
+		GROUP BY
+		<choose>
+			<when test="groupType == 'person'">
+				T.obj_id,
+				T.obj_name
+			</when>
+			<otherwise>
+				T.obj_id,
+				T.obj_name,
+				T.work_name,
+				T.value_type
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="calScores2" parameterType="Map" resultType="Map">
+		SELECT
+		T.obj_id AS "objId",
+		T.obj_name AS "objName",
+		T.weight AS "weight",
+		T.work_name as "workName",
+		/*T.value_type AS "valueType",*/
+		ewd.work_name_type AS "workNameType",
+		SUM (CAST ( T.VALUE AS NUMERIC )* T.value_type) AS "origalValue",
+		SUM ( CAST ( T.VALUE AS NUMERIC ) * T.weight / 100 * T.value_type ) AS "finalValue"
+		/*SUM (CAST (T.VALUE AS NUMERIC )) AS "origalValue"*/
+		FROM
+		exam_workflow_datas T
+		left join exam_weights_main ewd on ewd.work_name = T.work_name
+		left join exam_weights ew on ew.id = ewd.ew_id
+		<where>
+			T.del_flag = #{DEL_FLAG_NORMAL}
+			AND T.operation_status &lt;&gt; '2'
+			AND T.is_selected &lt;&gt; '3'
+			<choose>
+				<when test="kpChu != null and kpChu != '' and departmentId != null and departmentId !=''">
+					AND ((ew.kp_type = '3'
+					AND ew.kp_chu = #{kpChu}
+					AND ew.department_id LIKE '%'||#{departmentId}||'%') or ew.kp_type is null)
+					AND (ewd.work_name_type != '' or ewd.work_name_type is null  )
+				</when>
+				<when test="kpChu != null and kpChu != '' ">
+				<if test="departmentId == null or departmentId == ''">
+					AND ((ew.kp_type = '3'
+					AND ew.kp_chu = #{kpChu}
+					) or ew.kp_type is null)
+				</if>
+				</when>
+				<otherwise>
+					AND (ew.kp_type = '1' or ew.kp_type is null)
+				</otherwise>
+			</choose>
+			<if test="workflowId != null and workflowId != ''">
+				AND T.workflow_id = #{workflowId}
+			</if>
+			<if test="objId != null and objId != ''">
+				AND T.obj_id = #{objId}
+			</if>
+			<if test="objName != null and objName != ''">
+				AND T.obj_name = #{objName}
+			</if>
+			<if test="fillPerson != null and fillPerson != ''">
+				AND T.fill_person = #{fillPerson}
+			</if>
+			<if test="fillPersonId != null and fillPersonId != ''">
+				AND T.fill_person_id = #{fillPersonId}
+			</if>
+			<if test="examPerson != null and examPerson != ''">
+				AND T.exam_person = #{examPerson}
+			</if>
+			<if test="examPersonId != null and examPersonId != ''">
+				AND T.exam_person_id = #{examPersonId}
+			</if>
+			<if test="departSign != null and departSign != ''">
+				AND T.depart_sign = #{departSign}
+			</if>
+			<if test="departSignId != null and departSignId != ''">
+				AND T.depart_sign_id = #{departSignId}
+			</if>
+			<if test="partBureausSign != null and partBureausSign != ''">
+				AND T.part_bureaus_sign = #{partBureausSign}
+			</if>
+			<if test="partBureausSignId != null and partBureausSignId != ''">
+				AND T.part_bureaus_sign_id = #{partBureausSignId}
+			</if>
+			<if test="adjustPerson != null and adjustPerson != ''">
+				AND T.adjust_person = #{adjustPerson}
+			</if>
+			<if test="adjustPersonId != null and adjustPersonId != ''">
+				AND T.adjust_person_id = #{adjustPersonId}
+			</if>
+			<if test="mainBureausSign != null and mainBureausSign != ''">
+				AND T.main_bureaus_sign = #{mainBureausSign}
+			</if>
+			<if test="mainBureausSignId != null and mainBureausSignId != ''">
+				AND T.main_bureaus_sign_id = #{mainBureausSignId}
+			</if>
+			<if test="standardId != null and standardId != ''">
+				AND T.standard_id = #{standardId}
+			</if>
+			<if test="status != null and status != ''">
+				AND T.status  = #{status}
+			</if>
+			<if test="operationStatus != null and operationStatus != ''">
+				AND T.operation_status  ={operationStatus}
+			</if>
+		</where>
+		GROUP BY T.obj_id ,T.obj_name,T.weight,T.value_type,T.work_name,ewd.work_name_type
+	</select>
+
+    <select id="findByFillPerson" resultType="java.util.Map">
+		SELECT a.id,a.name, a.login_name as loginName, a.company_id AS company,a.office_id AS office from sys_user a where a.id = #{fillPerson} and a.del_flag = '0'
+	</select>
+
+	<select id="findListByWorkflowId" resultType="com.thinkgem.jeesite.modules.exam.entity.ExamWorkflowDatas">
+		SELECT
+		a.id AS "id",
+		a.row_id AS "rowId",
+		a.detail AS "detail",
+		a.value AS "value",
+		a.workflow_id AS "workflowId",
+		a.obj_id AS "objId",
+		a.obj_name AS "objName",
+		A.fill_person AS "fillPerson",
+		A.fill_person_id  AS "fillPersonId",
+		a.standard_id AS "standardId",
+		a.weight AS "weight",
+		a.value_type AS "valueType",
+		a.work_name AS "workName",
+		a.items AS "items",
+		a.is_already_selected AS "isAlreadySelected"
+		FROM exam_workflow_datas a
+		WHERE a.workflow_id = #{workflowId} and a.del_flag = '0' --GROUP BY a.work_name
+	</select>
+
+	<select id="findAllInfoById" resultType="java.util.HashMap">
+		SELECT
+		<include refid="examWorkflowDatasColumns"/>
+		FROM exam_workflow_datas a
+		where a.del_flag = '0'
+		AND a.workflow_id = #{id}
+	</select>
+
+    <select id="findWorkflowIdByObjId" resultType="java.lang.String">
+		select DISTINCT workflow_id
+		from exam_workflow_datas
+		where obj_id = #{personId}
+		AND status in ('8','99')
+	</select>
+	<select id="findInfosByOIdWFId" resultType="com.thinkgem.jeesite.modules.exam.entity.ExamWorkflowDatas">
+		SELECT
+		<include refid="examWorkflowDatasColumns"/>
+		FROM exam_workflow_datas a
+		where a.del_flag = '0'
+		AND a.workflow_id = #{workflowId}
+		AND a.obj_id = #{objId}
+		AND status in ('8','99')
+		AND operation_status &lt;&gt; '2'
+		AND is_selected = '1'
+	</select>
+    <select id="findIsSelListByWFIdsObjId"
+            resultType="com.thinkgem.jeesite.modules.exam.entity.ExamWorkflowDatas">
+		SELECT
+		<include refid="examWorkflowDatasColumns"/>
+		FROM exam_workflow_datas a
+		where a.del_flag = '0'
+		AND a.workflow_id in <foreach collection="workflowIds" item="item" open="(" close=")" separator="," index="index">
+			#{item}
+		</foreach>
+		AND a.obj_id = #{objId}
+		AND a.status in ('8','99')
+		AND a.is_selected = '1'
+		AND a.operation_status &lt;&gt; '2'
+	</select>
+	<select id="getListByOidWFId" resultType="com.thinkgem.jeesite.modules.exam.entity.ExamWorkflowDatas">
+		SELECT
+		<include refid="examWorkflowDatasColumns"/>
+		FROM exam_workflow_datas a
+		where a.del_flag = '0'
+		AND a.obj_id in <foreach collection="objIds" item="item" open="(" close=")" separator="," index="index">
+		#{item}
+	</foreach>
+		AND a.workflow_id = #{workflowId}
+		AND A.is_selected = '1'
+		AND a.operation_status &lt;&gt; '2'
+	</select>
+
+	<update id="selectedWorkflowDatas" parameterType="map">
+		update exam_workflow_datas a
+		set is_selected ='1'
+		<if test="selectPersonId != null and selectPersonId != ''">
+			,select_person_id = #{selectPersonId}
+		</if>
+		<if test="examPersonId != null and examPersonId != ''">
+			, exam_person_id = #{examPersonId}
+		</if>
+		<if test="examPerson != null">
+			,exam_person = #{examPerson}
+		</if>
+		<if test="departSignId != null">
+			,depart_sign_id = #{departSignId}
+		</if>
+		<if test="departSign != null">
+			,depart_sign = #{departSign}
+		</if>
+		<if test="partBureausSignId != null">
+			,part_bureaus_sign_id = #{partBureausSignId}
+		</if>
+		<if test="partBureausSign != null">
+			,part_bureaus_sign = #{partBureausSign}
+		</if>
+		<if test="adjustPersonId != null">
+			,adjust_person_id = #{adjustPersonId}
+		</if>
+		<if test="adjustPerson != null">
+			,adjust_person = #{adjustPerson}
+		</if>
+		<if test="mainBureausSignId != null">
+			,main_bureaus_sign_id = #{mainBureausSignId}
+		</if>
+		<if test="mainBureausSign != null">
+			,main_bureaus_sign = #{mainBureausSign}
+		</if>
+		where
+		 a.del_flag = '0'
+		 and workflow_id = #{workflowId} and fill_person_id =#{fillPersonId}
+		  and standard_id = #{standardId}
+		  and select_person_id is null
+		  and row_id in
+		 <foreach collection="rowNums"  item="item" index="index"
+				  open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<update id="saveBeta">
+		update exam_workflow_datas
+			set row_id =#{rowId}
+		<if test="value != null and value !=''">
+			 ,value = #{value}
+		</if>
+		<if test="status != null and status !=''">
+			,status = #{status}
+		</if>
+		<if test="items != null and items !=''">
+			,items = #{items}
+		</if>
+		<if test="path != null and path !=''">
+			,path = #{path}
+		</if>
+		<if test="operationStatus != null and operationStatus !=''">
+			,operation_status = #{operationStatus}
+		</if>
+		<if test="detail != null and detail !=''">
+			,detail = #{detail}
+		</if>
+		<if test="workName != null and workName !=''">
+			,work_name = #{workName}
+		</if>
+		<if test="weight != null and weight !=''">
+			,weight = #{weight}
+		</if>
+		<if test="valueType != null and valueType != ''">
+			,value_type = #{valueType}
+		</if>
+		<if test="objId != null">
+			,obj_id = #{objId}
+		</if>
+		<if test="objName != null">
+			,obj_name = #{objName}
+		</if>
+		<if test="fillPerson != null">
+			,fill_person = #{fillPerson}
+		</if>
+		<if test="fillPersonId != null">
+			,fill_person_id = #{fillPersonId}
+		</if>
+		<if test="examPersonId != null">
+			,exam_person_id = #{examPersonId}
+		</if>
+		<if test="examPerson != null">
+			,exam_person = #{examPerson}
+		</if>
+		<if test="departSignId != null">
+			,depart_sign_id = #{departSignId}
+		</if>
+		<if test="departSign != null">
+			,depart_sign = #{departSign}
+		</if>
+		<if test="partBureausSignId != null">
+			,part_bureaus_sign_id = #{partBureausSignId}
+		</if>
+		<if test="partBureausSign != null">
+			,part_bureaus_sign = #{partBureausSign}
+		</if>
+		<if test="adjustPersonId != null">
+			,adjust_person_id = #{adjustPersonId}
+		</if>
+		<if test="adjustPerson != null">
+			,adjust_person = #{adjustPerson}
+		</if>
+		<if test="mainBureausSignId != null">
+			,main_bureaus_sign_id = #{mainBureausSignId}
+		</if>
+		<if test="mainBureausSign != null">
+			,main_bureaus_sign = #{mainBureausSign}
+		</if>
+		<if test="isAlter != null">
+			,is_alter = #{isAlter}
+		</if>
+		<if test="selectPersonId != null">
+			,select_person_id = #{selectPersonId}
+		</if>
+		<if test="delPersonId != null">
+			,del_person_id = #{delPersonId}
+		</if>
+		where id = #{id}
+	</update>
+
+	<update id="updatePersonBeta">
+		update exam_workflow_datas
+		set status = #{status}
+		<if test="examPersonId != null">
+			,exam_person_id = #{examPersonId}
+		</if>
+		<if test="examPerson != null">
+			,exam_person = #{examPerson}
+		</if>
+		<if test="departSignId != null">
+			,depart_sign_id = #{departSignId}
+		</if>
+		<if test="departSign != null">
+			,depart_sign = #{departSign}
+		</if>
+		<if test="partBureausSignId != null">
+			,part_bureaus_sign_id = #{partBureausSignId}
+		</if>
+		<if test="partBureausSign != null">
+			,part_bureaus_sign = #{partBureausSign}
+		</if>
+		<if test="adjustPersonId != null">
+			,adjust_person_id = #{adjustPersonId}
+		</if>
+		<if test="adjustPerson != null">
+			,adjust_person = #{adjustPerson}
+		</if>
+		<if test="mainBureausSignId != null">
+			,main_bureaus_sign_id = #{mainBureausSignId}
+		</if>
+		<if test="mainBureausSign != null">
+			,main_bureaus_sign = #{mainBureausSign}
+		</if>
+		where fill_person_id = #{fillPersonId} and workflow_id = #{workflowId}
+		<if test="examPerson != null and examPerson != ''">
+			AND exam_person is null
+		</if>
+		<if test="examPersonId != null and examPersonId != ''">
+			AND exam_person_id is null
+		</if>
+		<if test="departSign != null and departSign != ''">
+			AND depart_sign is null
+		</if>
+		<if test="departSignId != null and departSignId != ''">
+			AND depart_sign_id is null
+		</if>
+		<if test="partBureausSign != null and partBureausSign != ''">
+			AND part_bureaus_sign is null
+		</if>
+		<if test="partBureausSignId != null and partBureausSignId != ''">
+			AND part_bureaus_sign_id is null
+		</if>
+		<if test="adjustPerson != null and adjustPerson != ''">
+			AND adjust_person is null
+		</if>
+		<if test="adjustPersonId != null and adjustPersonId != ''">
+			AND adjust_person_id is null
+		</if>
+		<if test="mainBureausSign != null and mainBureausSign != ''">
+			AND main_bureaus_sign is null
+		</if>
+		<if test="mainBureausSignId != null and mainBureausSignId != ''">
+			AND main_bureaus_sign_id is null
+		</if>
+	</update>
+
+	<update id="updateStatusBeta">
+		update exam_workflow_datas
+		set status = #{status}
+		where workflow_id = #{workflowId} and fill_person_id = #{fillPersonId}
+	</update>
+
+	<select id="getMapByOidWFIdWorkName" resultType="com.thinkgem.jeesite.modules.exam.entity.ExamWorkflowDatas">
+		SELECT
+		<include refid="examWorkflowDatasColumns"/>
+		FROM exam_workflow_datas a
+		where a.del_flag = '0'
+		AND a.obj_id = #{objId}
+		AND a.workflow_id = #{workflowId}
+		AND A.is_selected = '1'
+		AND a.work_name = #{workName}
+		AND a.operation_status &lt;&gt; '2'
+		<if test="fillPersonId != null and fillPersonId != ''">
+			AND a.fill_person_id = #{fillPersonId}
+		</if>
+	</select>
+
+    <select id="findObjIdAndName" resultType="java.util.Map">
+		select  obj_id as "objId",obj_name as "objName"
+		from exam_workflow_datas a
+		where a.del_flag = '0'
+		AND a.workflow_id = #{workflowId}
+		GROUP BY obj_id,obj_name
+ 		ORDER BY cast(obj_id as INTEGER)
+	</select>
+
+	<select id="findJJGObjIdAndName" resultType="java.util.Map">
+		select  obj_id as "objId",obj_name as "objName",u.office_id as "officeId"
+		from exam_workflow_datas a
+		left join sys_user u on u.id = a.fill_person_id
+		where a.del_flag = '0'
+		AND a.workflow_id = #{workflowId}
+		group by obj_id,obj_name,office_id
+		order by cast (u.office_id as INTEGER)
+	</select>
+
+	<select id="findUnitListByWorkflowId" resultType="java.util.Map">
+		SELECT a.id as "unitId" ,a.name as "unitName" from sys_office a
+		where id in (
+		select DISTINCT office_id
+		from sys_user
+		where id in (
+		select DISTINCT obj_id
+		from exam_workflow_datas
+		where workflow_id = #{workflowId}))
+		order by a.code
+	</select>
+	<select id="getObjId" resultType="java.util.Map">
+		select DISTINCT obj_id as "objId",obj_name as "objName",d.job_abbreviation as "jobAbbreviation",
+		cast(nullif(split_part(d.sort, '-', 1),'') as integer),
+		cast(nullif(split_part(d.sort, '-', 2),'') as integer),
+		cast(nullif(split_part(d.sort, '-', 3),'') as integer),
+		cast(nullif(split_part(d.sort, '-', 4),'') as integer)
+		from  exam_workflow_datas a
+		left join personnel_base d on d.id_number = a.obj_id
+		where obj_id in (select id  from sys_user where office_id = #{unitId})
+		and a.workflow_id = #{workflowId}
+		order by
+		cast(nullif(split_part(d.sort, '-', 1),'') as integer),
+		cast(nullif(split_part(d.sort, '-', 2),'') as integer),
+		cast(nullif(split_part(d.sort, '-', 3),'') as integer),
+		cast(nullif(split_part(d.sort, '-', 4),'') as integer)
+	</select>
+
+
+	<update id="removeByIds">
+		UPDATE exam_workflow_datas SET
+		is_selected = #{type}
+		<!--value = ''
+		,items = ''
+		,path = ''
+		,operation_status = -1
+		,detail = ''-->
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<update id="selfRemoveById">
+		UPDATE exam_workflow_datas SET
+		is_selected = '0',
+		value = '0',
+		select_person_id = null
+		WHERE id =#{itemId}
+	</update>
+
+	<update id="othersRemoveById">
+		UPDATE exam_workflow_datas SET
+		is_selected = '3',
+		value = '0',
+		del_person_id = #{delPersonId}
+		WHERE id =#{itemId}
+	</update>
+
+
+	<select id="findPersonInfo" resultType="java.util.Map">
+		select DISTINCT a.obj_name as "objName",a.obj_id as "objId",c.job_abbreviation as "jobAbbreviation",d.name as "unitName",d.id  as "unitId",
+		cast(nullif(split_part(c.sort, '-', 1),'') as integer),
+		cast(nullif(split_part(c.sort, '-', 2),'')as integer) ,
+		cast(nullif(split_part(c.sort, '-', 3),'')as integer) ,
+		cast(nullif(split_part(c.sort, '-', 4),'')as integer)
+		from exam_workflow_datas a
+		LEFT JOIN sys_user b on  a.obj_id = b.id
+		LEFT JOIN sys_office d on b.office_id = d.id
+		LEFT JOIN personnel_base c on c.id_number = a.obj_id
+		where workflow_id = #{workflowId}
+		<if test="officeId != null and officeId != ''">
+			AND (d.ID = #{officeId} OR d.parent_ids LIKE'%,'||#{officeId}||',%')
+		</if>
+		order by
+		cast(nullif(split_part(c.sort, '-', 1),'') as integer),
+		cast(nullif(split_part(c.sort, '-', 2),'')as integer) ,
+		cast(nullif(split_part(c.sort, '-', 3),'')as integer) ,
+		cast(nullif(split_part(c.sort, '-', 4),'')as integer)
+	</select>
+
+	<select id="findCountByWorkflowIdFillPersonId" resultType="java.lang.Integer">
+		select count(*) from exam_workflow_datas a where a.workflow_id = #{workflowId} and a.fill_person_id = #{fillPersonId}
+	</select>
+
+	<select id="findCountByWorkflowIdExamPersonId" resultType="java.lang.Integer">
+		select count(*) from exam_workflow_datas a where a.workflow_id = #{workflowId} and a.exam_person_id = #{examPersonId}
+	</select>
+
+	<update id="updateStatusByIdsBeta">
+		update exam_workflow_datas a
+		set status = ${status}
+		where workflow_id =#{workflowId} and fill_person_id in <foreach collection="ids" item="item" index="index"
+																	  open="(" separator="," close=")">#{item}</foreach>
+		<if test="examPersonId != null and examPersonId != ''">
+			and exam_person_id = #{examPersonId}
+		</if>
+		<if test="examPerson != null and examPerson != ''">
+			AND a.exam_person = #{examPerson}
+		</if>
+		<if test="departSign != null and departSign != ''">
+			AND a.depart_sign = #{departSign}
+		</if>
+		<if test="departSignId != null and departSignId != ''">
+			AND a.depart_sign_id = #{departSignId}
+		</if>
+		<if test="partBureausSign != null and partBureausSign != ''">
+			AND a.part_bureaus_sign = #{partBureausSign}
+		</if>
+		<if test="partBureausSignId != null and partBureausSignId != ''">
+			AND a.part_bureaus_sign_id = #{partBureausSignId}
+		</if>
+		<if test="adjustPerson != null and adjustPerson != ''">
+			AND a.adjust_person = #{adjustPerson}
+		</if>
+		<if test="adjustPersonId != null and adjustPersonId != ''">
+			AND a.adjust_person_id = #{adjustPersonId}
+		</if>
+		<if test="mainBureausSign != null and mainBureausSign != ''">
+			AND a.main_bureaus_sign = #{mainBureausSign}
+		</if>
+		<if test="mainBureausSignId != null and mainBureausSignId != ''">
+			AND a.main_bureaus_sign_id = #{mainBureausSignId}
+		</if>
+	</update>
+
+
+	<update id="updateExamPersonByIds">
+		update exam_workflow_datas
+		<if test="examPersonId != null and examPersonId != '' and examPerson != null and examPerson != ''">
+			set exam_person_id = #{examPersonId},exam_person = #{examPerson}
+		</if>
+		<if test="partBureausSign != null and partBureausSign != '' and partBureausSignId != null and partBureausSignId != ''">
+			set part_bureaus_sign_id = #{partBureausSignId},part_bureaus_sign = #{partBureausSign}
+		</if>
+		<if test="departSignId != null and departSignId != '' and departSign != null and departSign != ''">
+			set depart_sign_id = #{departSignId},depart_sign = #{depart_sign}
+		</if>
+		<if test="adjustPerson != null and adjustPerson != '' and adjustPersonId != null and adjustPersonId != ''">
+			set adjust_person_id = #{adjustPersonId},adjust_person = #{adjustPerson}
+		</if>
+		<if test="mainBureausSign != null and mainBureausSign != '' and mainBureausSignId != null and mainBureausSignId != ''">
+			set main_bureaus_sign_id = #{mainBureausSignId},main_bureaus_sign = #{mainBureausSign}
+		</if>
+		where 
+		fill_person_id in <foreach collection="ids" item="item" index="index"
+								   open="(" separator="," close=")">#{item}</foreach>
+		and workflow_id = #{workflowId}
+		<if test="examPersonId != null and examPersonId != '' and examPerson != null and examPerson != ''">
+			and exam_person_id is null
+		</if>
+		<if test="partBureausSign != null and partBureausSign != '' and partBureausSignId != null and partBureausSignId != ''">
+			and part_bureaus_sign_id is null
+		</if>
+		<if test="departSignId != null and departSignId != '' and departSign != null and departSign != ''">
+			and depart_sign_id is null
+		</if>
+		<if test="adjustPerson != null and adjustPerson != '' and adjustPersonId != null and adjustPersonId != ''">
+			and adjust_person_id is null
+		</if>
+		<if test="mainBureausSign != null and mainBureausSign != '' and mainBureausSignId != null and mainBureausSignId != ''">
+			and main_bureaus_sign_id is null
+		</if>
+		<choose>
+			<when test="status == 2">
+				and exam_person_id = #{condition}
+			</when>
+			<when test="status == 4">
+				and depart_sign_id = #{condition}
+			</when>
+			<when test="status == 5">
+				and part_bureaus_sign_id = #{condition}
+			</when>
+			<when test="status == 6">
+				and adjust_person_id = #{condition}
+			</when>
+			<when test="status ==7">
+				and main_bureaus_sign_id = #{condition}
+			</when>
+		</choose>
+	</update>
+	<select id="findStandardIdByWorkflowIdAndObjId" resultType="com.thinkgem.jeesite.modules.exam.entity.ExamWorkflowDatas">
+		select
+		<include refid="examWorkflowDatasColumns"/>
+		from exam_workflow_datas a
+		where workflow_id =#{workflowId}
+		and obj_id = #{objId}
+		and is_selected = '1'
+		AND a.operation_status &lt;&gt; '2'
+	</select>
+
+
+	<update id="updatePush">
+		update exam_workflow_datas
+		set del_flag = '0'
+		<if test="isSelected != null and isSelected != ''">
+			, is_selected = #{isSelected}
+		</if>
+		<if test="isAlreadySelected != null and isAlreadySelected != ''">
+			, is_already_selected = #{isAlreadySelected}
+		</if>
+		where fill_person_id = #{fillPersonId}
+		 and workflow_id = #{workflowId}
+		 and row_id = #{rowId}
+		 and standard_id = #{standardId};
+	</update>
+
+	<select id="findNextExamPerson" resultType="map">
+		select DISTINCT
+			exam_person,exam_person_id,
+			depart_sign,depart_sign_id,
+			part_bureaus_sign,part_bureaus_sign_id,
+			adjust_person,adjust_person_id,
+			main_bureaus_sign,main_bureaus_sign_id,
+			fill_person
+		from exam_workflow_datas a
+		where fill_person_id = #{fillPersonId} and workflow_id = #{workflowId}
+		<choose>
+			<when test="status == 2">
+				and exam_person_id = #{userId}
+			</when>
+			<when test="status == 4">
+				and depart_sign_id = #{userId}
+			</when>
+			<when test="status == 5">
+				and part_bureaus_sign_id = #{userId}
+			</when>
+			<when test="status == 6">
+				and adjust_person_id = #{userId}
+			</when>
+			<when test="status == 7">
+				and main_bureaus_sign_id = #{userId}
+			</when>
+
+		</choose>
+	</select>
+
+    <select id="getHeadItemScoreList" resultType="java.util.Map">
+		select
+		<include refid="examWorkflowDatasColumns"/>,
+		b.model_type as "modelType"
+		from exam_workflow_datas a
+		left join exam_standard_base_info b  on a.standard_id = b.id
+		where a.workflow_id = #{workflowId}
+		<if test="userId != '' and userId != null">
+			and fill_person_id = #{userId}
+		</if>
+		and a.is_selected = '1'
+		and a.del_flag = '0'
+		and b.del_flag = '0'
+		AND a.operation_status &lt;&gt; '2'
+	</select>
+
+    <select id="getExamUnitList" resultType="java.util.Map">
+		select DISTINCT
+		<!-- 推送导致fill_person存在空值-->
+		<!--fill_person as "fillPerson",-->
+		u.name as "fillPerson",
+		fill_person_id as "fillPersonId",u.office_id as "officeId", o.name as "officeName"
+		from exam_workflow_datas w
+		LEFT JOIN sys_user u on w.fill_person_id = u.id
+		LEFT JOIN sys_office o on o.id = u.office_id
+		where workflow_id = #{workflowId}
+		and w.fill_person is not null AND w.fill_person &lt;&gt; '';
+	</select>
+
+	<select id="findScoresByPcsIdWorkName" resultType="com.thinkgem.jeesite.modules.exam.entity.ExamWorkflowDatas">
+		SELECT
+		<include refid="examWorkflowDatasColumns"/>
+		FROM exam_workflow_datas a
+		where a.del_flag = '0'
+		AND a.fill_person_id = #{fillPersonId}
+		AND a.workflow_id = #{workflowId}
+		AND a.is_selected = '1'
+		AND a.operation_status &lt;&gt; '2'
+		AND a.work_name = #{workName}
+	</select>
+    <select id="findCkPcsScoreDetail" resultType="com.thinkgem.jeesite.modules.exam.entity.ExamWorkflowDatas">
+		select <include refid="examWorkflowDatasColumns"/>
+		FROM exam_workflow_datas a
+		left join exam_standard_base_info b on a.standard_id = b.id
+		where a.del_flag = '0'
+		AND a.fill_person_id = #{fillPersonId}
+		AND a.workflow_id = #{workflowId}
+		AND a.is_selected = '1'
+		AND a.operation_status &lt;&gt;'2'
+		AND b.model_type = #{modelType}
+	</select>
+
+	<select id="getHeadItemScoreNoSelectList" resultType="java.util.Map">
+		select
+		DISTINCT
+		a.work_name as "workName",
+		a.weight as "weight",
+		b.model_type as "modelType",
+		d.label as "label"
+		from exam_workflow_datas a
+		left join exam_standard_base_info b  on a.standard_id = b.id
+		left join sys_dict d on d.value = a.work_name
+		where a.workflow_id = #{workflowId}
+		and d.type = 'exam_weigths'
+		<if test="userId != '' and userId != null">
+			and fill_person_id = #{userId}
+		</if>
+		and a.is_selected &lt;&gt; '1'
+		and a.del_flag = '0'
+	</select>
+
+	<select id="findStatusById" resultType="int">
+		select distinct status
+		from exam_workflow_datas
+		where
+		workflow_id = #{workflowId}
+		and fill_person_id = #{fillPersonId}
+		<!--存在满分或者零分的  不选择直接提交  这里不能查is_selected不等于0的-->
+		<!--and is_selected &lt;&gt; '0'-->
+		<if test="userId != null and userId != ''">
+			<choose>
+				<when test="status = 2">
+					and exam_person_id = #{userId};
+				</when>
+				<when test="status = 4">
+					and depart_sign_id = #{userId};
+				</when>
+				<when test="status = 5">
+					and part_bureaus_sign_id = #{userId};
+				</when>
+				<when test="status = 6">
+					and adjust_person_id = #{userId};
+				</when>
+				<when test="status = 7">
+					and main_bureaus_signId = #{userId};
+				</when>
+			</choose>
+		</if>
+	</select>
+	<select id="findJkCWorkNameWeights" resultType="java.util.Map">
+		select
+		DISTINCT a.weight,a.work_name AS "workName"
+		from exam_workflow_datas a
+		where workflow_id =#{workflowId}
+		<if test="objId !=null and objId != ''">
+			and obj_id = #{objId}
+		</if>
+		<if test="fillPersonId != null and fillPersonId !=''">
+			and fill_person_id = #{fillPersonId}
+		</if>
+		and is_selected = '1'
+		AND a.operation_status &lt;&gt; '2'
+	</select>
+
+	<select id="findJkCWorkNameWeights2" resultType="java.util.Map">
+		select
+		DISTINCT a.weight,a.work_name AS "workName",w.work_name_type as "workNameType"
+		from exam_workflow_datas a
+		left join exam_weights_main w on w.work_name = a.work_name
+		left join exam_weights ws on w.ew_id = ws.id
+		where workflow_id =#{workflowId}
+		and w.del_flag = '0'
+		and ws.kp_type = '1'
+		<if test="objId !=null and objId != ''">
+			and obj_id = #{objId}
+		</if>
+		<if test="fillPersonId != null and fillPersonId !=''">
+			and fill_person_id = #{fillPersonId}
+		</if>
+		and is_selected = '1'
+		AND a.operation_status &lt;&gt; '2'
+	</select>
+
+	<select id="getAppraiseObjDataList2" parameterType="Map" resultType="Map">
+		SELECT
+		<choose>
+			<when test="'obj'== orderObj">
+				T.obj_id AS "objId",
+				T.obj_name AS "name",
+			</when>
+			<otherwise>
+				T.fill_person_id AS "objId",
+				T.fill_person AS "name",
+			</otherwise>
+		</choose>
+		T.standard_id AS "standardId",
+		T.row_id AS "rowId",
+		T.weight AS "weight",
+		T."value_type"	 AS "valueType",
+		T."value"	 AS "value",
+		T."status"  AS "status"
+		FROM
+		exam_workflow_datas T
+		WHERE
+		T.del_flag = '0'
+		AND T.is_selected = '1'
+		AND T.operation_status &lt;&gt; '2'
+		<if test="null != workflowId">
+			AND T.workflow_id = #{workflowId}
+		</if>
+		<if test="null != standardId">
+			AND T.standard_id = #{standardId}
+		</if>
+		<if test="null != fillPersonId and fillPersonId != ''">
+			AND T.fill_person_id = #{fillPersonId}
+		</if>
+		ORDER  BY
+		<choose>
+			<when test="'obj'== orderObj">
+				T.obj_id,
+				T.standard_id
+			</when>
+			<otherwise>
+				T.fill_person_id,
+				T.standard_id
+			</otherwise>
+		</choose>
+	</select>
+	<select id="findJkcInfos" resultType="com.thinkgem.jeesite.modules.exam.entity.ExamWorkflowDatas">
+		SELECT
+		<include refid="examWorkflowDatasColumns"/>
+		FROM exam_workflow_datas a
+		where a.del_flag = '0'
+		AND a.fill_person_id = #{fillPersonId}
+		AND a.workflow_id = #{workflowId}
+		AND a.is_selected = '1'
+		AND a.operation_status &lt;&gt; '2'
+	</select>
+	<select id="findFirstFillPersonId" resultType="java.lang.String">
+		select fill_person_id from exam_workflow_datas a
+		where a.del_flag = '0'
+		and a.workflow_id = #{workflowId}
+		limit 1
+	</select>
+
+    <select id="getCheckObjectList" resultType="java.util.Map">
+		select
+		<choose>
+			<when test="status!=null and status == 1">
+				a.fill_person AS "examTempPerson",
+				a.fill_person_id AS "examTempPersonId",
+			</when>
+			<when test="status != null and status == 2">
+				a.exam_person AS "examTempPerson",
+				a.exam_person_id  AS "examTempPersonId",
+			</when>
+			<when test="status != null and status == 3">
+				<!--公示-->
+			</when>
+			<when test="status != null and status == 4">
+				a.depart_sign AS "examTempPerson",
+				a.depart_sign_id  AS "examTempPersonId",
+			</when>
+			<when test="status != null and status == 5">
+				a.part_bureaus_sign AS "examTempPerson",
+				a.part_bureaus_sign_id  AS "examTempPersonId",
+			</when>
+			<when test="status != null and status == 6">
+				a.adjust_person AS "examTempPerson",
+				a.adjust_person_id  AS "examTempPersonId",
+			</when>
+			<when test="status != null and status == 7">
+				a.main_bureaus_sign AS "examTempPerson",
+				a.main_bureaus_sign_id  AS "examTempPersonId",
+			</when>
+			<otherwise></otherwise>
+		</choose>
+		a.workflow_id AS "workflowId"
+		from exam_workflow_datas a
+		where a.del_flag = '0'
+		and a.workflow_id = #{workFlowId}
+		and a.status = #{status}
+		<choose>
+			<when test="status!=null and status == 1">
+				group by a.fill_person,a.fill_person_id
+			</when>
+			<when test="status != null and status == 2">
+				group by a.exam_person ,
+				a.exam_person_id
+			</when>
+			<when test="status != null and status == 3">
+				<!--公示-->
+			</when>
+			<when test="status != null and status == 4">
+				group by a.depart_sign ,
+				a.depart_sign_id
+			</when>
+			<when test="status != null and status == 5">
+				group by a.part_bureaus_sign ,
+				a.part_bureaus_sign_id
+			</when>
+			<when test="status != null and status == 6">
+				group by a.adjust_person,
+				a.adjust_person_id
+			</when>
+			<when test="status != null and status == 7">
+				group by a.main_bureaus_sign ,a.main_bureaus_sign_id
+			</when>
+			<otherwise></otherwise>
+		</choose>
+		,a.workflow_id
+	</select>
+
+	<select id="findNoExamList" resultType="java.util.Map">
+
+		SELECT
+			a.exam_person as examPerson,
+			a.exam_person_id as examPersonId
+		FROM
+			exam_workflow_datas a
+		WHERE
+			a.workflow_id = #{workflowId}
+			AND a.fill_person_id = #{fillPersonId}
+		GROUP BY
+			exam_person,
+			exam_person_id
+	</select>
+
+	<select id="selPersonItems" resultType="java.lang.String">
+		select items from exam_workflow_datas a where a.workflow_id = #{workflowId} and a.obj_id = #{objId} and a.operation_status &lt;&gt; '2' and a.is_selected = '1'
+	</select>
+
+	<select id="findUnExamList" resultType="com.thinkgem.jeesite.modules.exam.entity.ExamWorkflowDatas">
+		select distinct a.fill_person as fillPerson,a.fill_person_id as fillPersonId , a.exam_person as examPerson
+		from exam_workflow_datas a
+		<!--left join sys_user u on u."id" = a.fill_person_id
+		left join sys_office o on o."id" = u.office_id-->
+		where
+		workflow_id = #{workflowId} and status = '2' <!--and is_selected = '1'-->
+		order by a.exam_person
+ 		<!--order by o.code-->
+	</select>
+
+</mapper>

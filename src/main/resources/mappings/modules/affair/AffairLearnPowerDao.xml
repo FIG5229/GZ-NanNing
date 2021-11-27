@@ -1,0 +1,434 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairLearnPowerDao">
+    
+	<sql id="affairLearnPowerColumns">
+		a.id AS "id",
+		a.unit AS "unit",
+		a.time AS "time",
+		a.name AS "name",
+		a.last_month_integral AS "lastMonthIntegral",
+		a.this_month_statistics AS "thisMonthStatistics",
+		a.this_month_integral AS "thisMonthIntegral",
+		a.this_year_statistics AS "thisYearStatistics",
+		a.adjunct AS "adjunct",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.unit_id AS "unitId",
+		a.id_number as "idNumber"
+	</sql>
+	
+	<sql id="affairLearnPowerJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairLearnPower">
+		SELECT 
+			<include refid="affairLearnPowerColumns"/>
+		FROM affair_learn_power a
+		<include refid="affairLearnPowerJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairLearnPower">
+		SELECT 
+			<include refid="affairLearnPowerColumns"/>
+		FROM affair_learn_power a
+		<include refid="affairLearnPowerJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="unit != null and unit != ''">
+				AND a.unit LIKE #{unit}
+			</if>
+			<if test="time != null and time != ''">
+				AND a.time LIKE concat('%',#{time},'%')
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE concat('%',#{name},'%')
+			</if>
+			<if test="userId != '' and userId != null">
+				AND ( o.ID = #{userId} OR o.parent_ids LIKE'%,'||#{userId}||',%' OR u.ID = #{createBy.id} or a.unit_id = #{userId} or u.office_id = #{userId})
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairLearnPower">
+		SELECT 
+			<include refid="affairLearnPowerColumns"/>
+		FROM affair_learn_power a
+		<include refid="affairLearnPowerJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_learn_power(
+			id,
+			unit,
+			time,
+			name,
+			last_month_integral,
+			this_month_statistics,
+			this_month_integral,
+			this_year_statistics,
+			adjunct,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			unit_id,
+			id_number
+		) VALUES (
+			#{id},
+			#{unit},
+			#{time},
+			#{name},
+			#{lastMonthIntegral},
+			#{thisMonthStatistics},
+			#{thisMonthIntegral},
+			#{thisYearStatistics},
+			#{adjunct},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{unitId},
+			#{idNumber}
+		)
+	</insert>
+
+	
+	<update id="update">
+		UPDATE affair_learn_power SET 	
+			unit = #{unit},
+			unit_id = #{unitId},
+			time = #{time},
+			name = #{name},
+			last_month_integral = #{lastMonthIntegral},
+			this_month_statistics = #{thisMonthStatistics},
+			this_month_integral = #{thisMonthIntegral},
+			this_year_statistics = #{thisYearStatistics},
+			adjunct = #{adjunct},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			id_number = #{idNumber}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_learn_power SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_learn_power SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<select id="selectLastYearIntegeralByUserId" resultType="double" >
+		SELECT A
+			.this_year_statistics
+		FROM
+			affair_learn_power A
+		WHERE
+			A.id_number = #{userId}
+			and TO_CHAR(A.time, 'yyyy') = #{ye}
+		ORDER BY
+			A."time" DESC
+			LIMIT 1
+	</select>
+
+	<select id="selectThisYearCodeByUserId" resultType="double" >
+		SELECT SUM
+			(this_month_integral)
+		FROM
+			affair_learn_power
+		WHERE
+			id_number = #{userId}
+			and TO_CHAR(time, 'yyyy') = #{year}
+	</select>
+
+	<select id="selectLastMonthById" resultType="double">
+		SELECT A
+			.this_month_integral
+		FROM
+			affair_learn_power A
+		WHERE
+			A.id_number = #{idNumber}
+			and TO_CHAR(A.time, 'yyyy') = #{year}
+			and TO_CHAR(A.time, 'mm') =  #{month}
+	</select>
+
+	<select id="selectSumYearById" resultType="java.lang.Double">
+		SELECT SUM(this_month_integral)
+		FROM
+			affair_learn_power
+		WHERE
+			 id_number = #{userId}
+			 AND del_flag = '0'
+			AND time LIKE concat('%',#{year},'%')
+			<if test="unitId!=null and unitId != ''">
+			AND unit_id = #{unitId}
+			</if>
+	</select>
+
+    <select id="selectLastScore" resultType="java.lang.Double">
+		SELECT
+			this_month_integral
+		FROM
+			affair_learn_power
+		WHERE
+			id_number = #{idNumber}
+			AND del_flag = '0'
+			AND time LIKE concat('%',#{time},'%')
+			limit 1
+	</select>
+
+    <select id="selectAllId" resultType="java.lang.String">
+		SELECT DISTINCT
+			( id_number )
+		FROM
+			affair_learn_power b
+		LEFT JOIN sys_office o ON o.id = b.create_org_id
+		LEFT JOIN sys_user u ON u.id = b.create_by
+		WHERE
+			b.del_flag = '0'
+		<if test="idN != '' and idN != null">
+			AND ( o.ID = #{idN} OR o.parent_ids LIKE'%,'||#{idN}||',%' OR u.ID = #{idN} or b.unit_id = #{idN} or u.office_id = #{idN})
+		</if>
+	</select>
+
+	<select id="selectBean" resultType="java.lang.String">
+		SELECT SUM(this_month_integral )
+		FROM
+			affair_learn_power
+		WHERE
+			 id_number = #{id}
+			 AND del_flag = '0'
+			AND time LIKE concat('%',#{year},'%')
+	</select>
+
+	<select id="selectUnit" resultType="java.lang.String">
+		SELECT DISTINCT
+			( unit )
+		FROM
+			affair_learn_power
+		WHERE
+			del_flag = '0'
+			and id_number = #{id}
+	</select>
+
+	<select id="selectName" resultType="java.lang.String">
+		SELECT DISTINCT
+			( name )
+		FROM
+			affair_learn_power
+		WHERE
+			del_flag = '0'
+			and id_number = #{id}
+	</select>
+
+    <select id="selectAllTime" resultType="java.lang.String">
+		SELECT DISTINCT
+			( TIME )
+		FROM
+			affair_learn_power
+		WHERE
+			del_flag = '0'
+	</select>
+
+    <select id="selectNumber" resultType="java.lang.Integer">
+		SELECT COUNT
+			( ID )
+		FROM
+			affair_learn_power
+		WHERE
+			del_flag = '0'
+			AND unit_id = #{idNumber}
+			AND time BETWEEN #{yearL} AND #{yearT}
+	</select>
+
+    <select id="selectUnitId" resultType="java.lang.String">
+		select DISTINCT
+			( unit_id )
+		from
+			affair_learn_power
+		where
+			del_flag = '0'
+			AND unit = #{unit}
+	</select>
+
+    <select id="selectAllName" resultType="java.lang.String">
+		SELECT
+			unit
+		FROM
+			affair_learn_power
+		WHERE
+			del_flag = '0'
+	</select>
+
+	<select id="selectIdNumber" resultType="java.lang.String">
+		SELECT DISTINCT
+			( id_number )
+		FROM
+			affair_learn_power
+		WHERE
+			del_flag = '0' and
+			name = #{name}
+	</select>
+
+    <select id="selectAllBean" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairLearnPower">
+		SELECT
+		<include refid="affairLearnPowerColumns"/>
+			FROM affair_learn_power a
+		<include refid="affairLearnPowerJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="unit != null and unit != ''">
+				AND a.unit LIKE #{unit}
+			</if>
+			<if test="time != null and time != ''">
+				AND a.time LIKE concat('%',#{time},'%')
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE #{name}
+			</if>
+			<if test="userId != '' and userId != null">
+				AND ( o.ID = #{userId} OR o.parent_ids LIKE'%,'||#{userId}||',%' OR u.ID = #{createBy.id} or a.unit_id = #{userId} or u.office_id = #{userId})
+			</if>
+		</where>
+	</select>
+
+	<select id="findProblemDataList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairLearnPower">
+		SELECT
+		<include refid="affairLearnPowerColumns"/>
+		FROM affair_learn_power a
+		<include refid="affairLearnPowerJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE #{name}
+			</if>
+			and (a.time = '' or a.time is null or (substring(a.time,5,1) &lt;&gt; '-' or substring(a.time,6,1) not in ('0','1') or substring(a.time,7,1) not in ('0','1','2','3','4','5','6','7','8','9')))
+			<if test="userId != '' and userId != null">
+				AND ( o.ID = #{userId} OR o.parent_ids LIKE'%,'||#{userId}||',%' OR u.ID = #{createBy.id} or a.unit_id = #{userId} or u.office_id = #{userId})
+			</if>
+			<if test="createById_pro!='' and createById_pro != null ">
+				AND a.create_by =#{createById_pro}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	<select id="selectPeoNumber" resultType="java.lang.Integer">
+			SELECT COUNT
+				( * )
+			FROM
+				affair_learn_power
+			WHERE
+				TIME BETWEEN #{yearL}
+				AND #{yearT}
+				AND id_number = #{idNumber}
+				AND this_month_integral &lt; #{score}
+				AND del_flag = '0'
+	</select>
+    <select id="selectMjNumber" resultType="java.lang.Integer">
+		SELECT COUNT
+			( * )
+		FROM
+			affair_learn_power
+			A LEFT JOIN personnel_base P ON A.id_number = P.id_number
+		WHERE
+			P.workunit_id = #{idNumber}
+			AND A.TIME LIKE #{time}
+		 	AND A.this_month_integral >= #{score}
+			AND A.del_flag = '0'
+	</select>
+	<select id="selectPeoNumberYear" resultType="java.lang.Integer">
+		SELECT COUNT
+		( * )
+		FROM
+		affair_learn_power
+		WHERE
+		( SELECT SUM ( this_month_integral ) FROM affair_learn_power WHERE TIME LIKE concat('%',#{time},'%') AND id_number = #{idNumber} AND del_flag = '0' ) &lt; #{score}
+	</select>
+    <select id="selectPeopleNumber" resultType="java.lang.Integer">
+		SELECT COUNT
+			( * )
+		FROM
+			affair_learn_power
+		WHERE
+			TIME LIKE concat('%',#{time},'%')
+			AND id_number = #{idNumber}
+			AND this_month_integral >= #{score}
+			AND del_flag = '0'
+	</select>
+	<select id="selectPNumber" resultType="java.lang.Integer">
+		SELECT SUM
+			( this_month_integral )
+		FROM
+			affair_learn_power
+		WHERE
+			TIME LIKE concat('%',#{time},'%')
+			AND id_number = #{idNumber1}
+			AND del_flag = '0'
+	</select>
+
+	<select id="findByIdNumberTime" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairLearnPower">
+	    SELECT
+			<include refid="affairLearnPowerColumns"/>
+		FROM
+			affair_learn_power a
+		WHERE
+			TIME = #{time}
+			AND id_number = #{idNumber}
+			AND del_flag = '0'
+			limit 1
+    </select>
+</mapper>

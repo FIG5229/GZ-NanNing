@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairBelongToDao">
+    
+	<sql id="affairBelongToColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.sex AS "sex",
+		a.police_no AS "policeNo",
+		a.id_number AS "idNumber",
+		a.party_branch AS "partyBranch",
+		a.party_branch_id AS "partyBranchId",
+		a.enter_date AS "enterDate",
+		a.leave_date AS "leaveDate",
+		a.is_leave AS "isLeave",
+		a.leave_type AS "leaveType",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="affairBelongToJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairBelongTo">
+		SELECT 
+			<include refid="affairBelongToColumns"/>
+		FROM affair_belong_to a
+		<include refid="affairBelongToJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairBelongTo">
+		SELECT 
+			<include refid="affairBelongToColumns"/>
+		FROM affair_belong_to a
+		<include refid="affairBelongToJoins"/>
+		LEFT JOIN affair_general_situation s
+		ON s.id = a.party_branch_id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE concat('%',#{name},'%')
+			</if>
+			<if test="partyBranchId != null and partyBranchId != ''">
+				AND a.party_branch_id = #{partyBranchId}
+			</if>
+			<choose>
+				<when test="enterStartDate != null and enterStartDate != '' and enterEndDate != null and enterEndDate != ''">
+					AND a.enter_date between #{enterStartDate} and #{enterEndDate}
+				</when>
+				<when test="enterStartDate != null and enterStartDate != ''">
+					AND a.enter_date >= #{enterStartDate}
+				</when>
+				<when test="enterEndDate != null and enterEndDate != ''">
+					AND  #{enterEndDate} >= a.enter_date
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			<choose>
+				<when test="leaveStartDate != null and leaveStartDate != '' and leaveEndDate != null and leaveEndDate != ''">
+					AND a.leave_date between #{leaveStartDate} and #{leaveEndDate}
+				</when>
+				<when test="leaveStartDate != null and leaveStartDate != ''">
+					AND a.leave_date >= #{leaveStartDate}
+				</when>
+				<when test="leaveEndDate != null and leaveEndDate != ''">
+					AND  #{leaveEndDate} >= a.leave_date
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			<if test="leaveType != null and leaveType != ''">
+				AND a.leave_type = #{leaveType}
+			</if>
+			<if test="treeId != null and treeId != ''">
+				AND (a.party_branch_id = #{treeId} OR s.parent_ids LIKE CONCAT('%,', #{treeId}, ',%'))
+			</if>
+			<if test="idNumber != null and idNumber != ''">
+				AND a.id_number = #{idNumber}
+			</if>
+			<!-- 数据范围过滤 -->
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairBelongTo">
+		SELECT 
+			<include refid="affairBelongToColumns"/>
+		FROM affair_belong_to a
+		<include refid="affairBelongToJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_belong_to(
+			id,
+			name,
+			sex,
+			police_no,
+			id_number,
+			party_branch,
+			party_branch_id,
+			enter_date,
+			leave_date,
+			is_leave,
+			leave_type,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{name},
+			#{sex},
+			#{policeNo},
+			#{idNumber},
+			#{partyBranch},
+			#{partyBranchId},
+			#{enterDate},
+			#{leaveDate},
+			#{isLeave},
+			#{leaveType},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_belong_to SET 	
+			name = #{name},
+			sex = #{sex},
+			police_no = #{policeNo},
+			id_number = #{idNumber},
+			party_branch = #{partyBranch},
+			party_branch_id = #{partyBranchId},
+			enter_date = #{enterDate},
+			leave_date = #{leaveDate},
+			is_leave = #{isLeave},
+			leave_type = #{leaveType},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_belong_to SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_belong_to SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+		 	open="(" separator="," close=")">#{item}</foreach>
+	</update>
+</mapper>

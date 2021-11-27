@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairDisciplinaryActionDzzDao">
+    
+	<sql id="affairDisciplinaryActionDzzColumns">
+		a.id AS "id",
+		a.date AS "date",
+		a.org AS "org",
+		a.org_id AS "orgId",
+		a.nature AS "nature",
+		a.violations AS "violations",
+		a.disciplinary_type AS "disciplinaryType",
+		a.unit AS "unit",
+		a.file_num AS "fileNum",
+		a.annex AS "annex",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.qx_unit_id AS "qxUnitId",
+		a.push_type AS "pushType"
+
+	</sql>
+	
+	<sql id="affairDisciplinaryActionDzzJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairDisciplinaryActionDzz">
+		SELECT 
+			<include refid="affairDisciplinaryActionDzzColumns"/>
+		FROM affair_disciplinary_action_dzz a
+		<include refid="affairDisciplinaryActionDzzJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairDisciplinaryActionDzz">
+		SELECT 
+			<include refid="affairDisciplinaryActionDzzColumns"/>
+		FROM affair_disciplinary_action_dzz a
+		<include refid="affairDisciplinaryActionDzzJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<!--<if test="beginDate != null and endDate != null and beginDate != '' and endDate != ''">
+				AND a.date BETWEEN #{beginDate} AND #{endDate}
+			</if>-->
+			<choose>
+				<when test="beginDate != null and beginDate != '' and endDate != null and endDate != ''">
+					AND a.date between #{beginDate} and #{endDate}
+				</when>
+				<when test="beginDate != null and beginDate != ''">
+					AND a.date >= #{beginDate}
+				</when>
+				<when test="endDate != null and endDate != ''">
+					AND  #{endDate} >=a.date
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			<if test="startYear != null and  startYear != ''">
+				AND a.date >= #{startYear}
+			</if>
+			<if test="otherYear != null and  otherYear != ''">
+				AND TO_CHAR(a.date, 'yyyy') = #{otherYear}
+			</if>
+			<if test="orgId != null and orgId != ''">
+				AND a.org_id = #{orgId}
+			</if>
+			<if test="nature != null and nature != ''">
+				AND a.nature = #{nature}
+			</if>
+			<if test="disciplinaryType != null and disciplinaryType != ''">
+				AND a.disciplinary_type = #{disciplinaryType}
+			</if>
+			<if test="unit != null and unit != ''">
+				AND a.unit = #{unit}
+			</if>
+			<choose>
+				<when test="qxUnitId != null and qxUnitId != ''">
+					AND ( o.ID = #{qxUnitId} OR o.parent_ids LIKE'%,'||#{qxUnitId}||',%' OR u.ID = #{createBy.id} or a.qx_unit_id=#{qxUnitId})
+				</when>
+				<otherwise>
+					AND ( o.ID = #{qxUnitId} OR u.ID = #{createBy.id} or a.qx_unit_id=#{qxUnitId})
+				</otherwise>
+			</choose>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairDisciplinaryActionDzz">
+		SELECT 
+			<include refid="affairDisciplinaryActionDzzColumns"/>
+		FROM affair_disciplinary_action_dzz a
+		<include refid="affairDisciplinaryActionDzzJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_disciplinary_action_dzz(
+			id,
+			date,
+			org,
+			org_id,
+			nature,
+			violations,
+			disciplinary_type,
+			unit,
+			file_num,
+			annex,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			qx_unit_id,
+			push_type
+		) VALUES (
+			#{id},
+			#{date},
+			#{org},
+			#{orgId},
+			#{nature},
+			#{violations},
+			#{disciplinaryType},
+			#{unit},
+			#{fileNum},
+			#{annex},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{qxUnitId},
+			#{pushType}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_disciplinary_action_dzz SET 	
+			date = #{date},
+			org = #{org},
+			org_id = #{orgId},
+			nature = #{nature},
+			violations = #{violations},
+			disciplinary_type = #{disciplinaryType},
+			unit = #{unit},
+			file_num = #{fileNum},
+			annex = #{annex},
+			qx_unit_id = #{qxUnitId},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			push_type = #{pushType}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_disciplinary_action_dzz SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_disciplinary_action_dzz SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+	
+</mapper>

@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairSuperiorGrantDao">
+    
+	<sql id="affairSuperiorGrantColumns">
+		a.id AS "id",
+		a.grant_type AS "grantType",
+		a.amount AS "amount",
+		a.appropriation_unit AS "appropriationUnit",
+		a.accepting_unit AS "acceptingUnit",
+		a.grant_date AS "grantDate",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="affairSuperiorGrantJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairSuperiorGrant">
+		SELECT 
+			<include refid="affairSuperiorGrantColumns"/>
+		FROM affair_superior_grant a
+		<include refid="affairSuperiorGrantJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairSuperiorGrant">
+		SELECT 
+			<include refid="affairSuperiorGrantColumns"/>
+		FROM affair_superior_grant a
+		<include refid="affairSuperiorGrantJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="grantType != null and grantType != ''">
+				AND a.grant_type = #{grantType}
+			</if>
+			<choose>
+				<when test="beginAmount != null and beginAmount != '' and endAmount != null and endAmount != ''">
+					AND a.amount between #{beginAmount} and #{endAmount}
+				</when>
+				<when test="beginAmount != null and beginAmount != ''">
+					AND a.amount >= #{beginAmount}
+				</when>
+				<when test="endAmount != null and endAmount != ''">
+					AND  #{endAmount} >= a.amount
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			<choose>
+				<when test="beginGrantDate != null and beginGrantDate != '' and endGrantDate != null and endGrantDate != ''">
+					AND a.grant_date between #{beginGrantDate} and #{endGrantDate}
+				</when>
+				<when test="beginGrantDate != null and beginGrantDate != ''">
+					AND a.grant_date >= #{beginGrantDate}
+				</when>
+				<when test="endGrantDate != null and endGrantDate != ''">
+					AND  #{endGrantDate} >= a.grant_date
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.grant_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairSuperiorGrant">
+		SELECT 
+			<include refid="affairSuperiorGrantColumns"/>
+		FROM affair_superior_grant a
+		<include refid="affairSuperiorGrantJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_superior_grant(
+			id,
+			grant_type,
+			amount,
+			appropriation_unit,
+			accepting_unit,
+			grant_date,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{grantType},
+			#{amount},
+			#{appropriationUnit},
+			#{acceptingUnit},
+			#{grantDate},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_superior_grant SET 	
+			grant_type = #{grantType},
+			amount = #{amount},
+			appropriation_unit = #{appropriationUnit},
+			accepting_unit = #{acceptingUnit},
+			grant_date = #{grantDate},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+
+	<update id="delete">
+		UPDATE affair_superior_grant SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_superior_grant SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+	
+</mapper>

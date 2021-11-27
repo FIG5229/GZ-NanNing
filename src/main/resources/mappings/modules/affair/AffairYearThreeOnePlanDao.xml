@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairYearThreeOnePlanDao">
+    
+	<sql id="affairYearThreeOnePlanColumns">
+		a.id AS "id",
+		a.title AS "title",
+		a.party_organization AS "partyOrganization",
+		a.party_organization_id AS "partyOrganizationId",
+		a.year AS "year",
+		a.content AS "content",
+		a.add_status AS "addStatus",
+		a.file_path AS "filePath",
+		a.sh_person AS "shPerson",
+		a.status AS "status",
+		a.reason AS "reason",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="affairYearThreeOnePlanJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairYearThreeOnePlan">
+		SELECT 
+			<include refid="affairYearThreeOnePlanColumns"/>
+		FROM affair_year_three_one_plan a
+		<include refid="affairYearThreeOnePlanJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairYearThreeOnePlan">
+		<choose>
+			<when test="hasAuth == true">/*审核人*/
+				SELECT
+				<include refid="affairYearThreeOnePlanColumns"/>
+				FROM affair_year_three_one_plan a
+				<include refid="affairYearThreeOnePlanJoins"/>
+				LEFT JOIN affair_general_situation s
+				ON s.id = a.party_organization_id
+				where a.del_flag = #{DEL_FLAG_NORMAL} and a.add_status = '2'
+			</when>
+			<otherwise>/*非审核人*/
+				SELECT
+				<include refid="affairYearThreeOnePlanColumns"/>
+				FROM affair_year_three_one_plan a
+				<include refid="affairYearThreeOnePlanJoins"/>
+				LEFT JOIN affair_general_situation s
+				ON s.id = a.party_organization_id
+				where a.del_flag = #{DEL_FLAG_NORMAL}
+			</otherwise>
+		</choose>
+
+		<if test="title != null and title != ''">
+			AND a.title LIKE concat('%',#{title},'%')
+		</if>
+		<if test="partyOrganizationId != null and partyOrganizationId != ''">
+			AND a.party_organization_id = #{partyOrganizationId}
+		</if>
+		<if test="year != null and year != ''">
+			AND a.year = #{year}
+		</if>
+		<if test="treeId != null and treeId != ''">
+		AND (a.party_organization_id = #{treeId} OR s.parent_ids LIKE CONCAT('%,', #{treeId}, ',%'))
+	</if>
+		<!-- 数据范围过滤 -->
+		${sqlMap.dsf}
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairYearThreeOnePlan">
+		SELECT 
+			<include refid="affairYearThreeOnePlanColumns"/>
+		FROM affair_year_three_one_plan a
+		<include refid="affairYearThreeOnePlanJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_year_three_one_plan(
+			id,
+			title,
+			party_organization,
+			party_organization_id,
+			year,
+			content,
+			add_status,
+			file_path,
+			sh_person,
+			status,
+			reason,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{title},
+			#{partyOrganization},
+			#{partyOrganizationId},
+			#{year},
+			#{content},
+			#{addStatus},
+			#{filePath},
+			#{shPerson},
+			#{status},
+			#{reason},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_year_three_one_plan SET 	
+			title = #{title},
+			party_organization = #{partyOrganization},
+			year = #{year},
+			content = #{content},
+			add_status = #{addStatus},
+			file_path = #{filePath},
+			sh_person = #{shPerson},
+			status = #{status},
+			reason = #{reason},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_year_three_one_plan SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="shenHeSave">
+		UPDATE affair_year_three_one_plan SET
+			sh_person = #{affairYearThreeOnePlan.shPerson},
+			status = #{affairYearThreeOnePlan.status},
+			reason = #{affairYearThreeOnePlan.reason},
+			update_date = #{affairYearThreeOnePlan.updateDate}
+		WHERE id = #{affairYearThreeOnePlan.id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_year_three_one_plan SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+			 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+</mapper>

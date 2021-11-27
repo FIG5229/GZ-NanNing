@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.tw.dao.DutywarningDao">
+    
+	<sql id="dutywarningColumns">
+		a.guid AS "guid",
+		a.createtime AS "createtime",
+		a.warningtype AS "warningtype",
+		a.content AS "content",
+		a.userid AS "userid"
+	</sql>
+	
+	<sql id="dutywarningJoins">
+	</sql>
+    
+	<select id="get" resultType="Dutywarning">
+		SELECT 
+			<include refid="dutywarningColumns"/>
+		FROM dutywarning a
+		<include refid="dutywarningJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="Dutywarning">
+		SELECT 
+			<include refid="dutywarningColumns"/>
+		FROM dutywarning a
+		<include refid="dutywarningJoins"/>
+		<where>
+			
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="Dutywarning">
+		SELECT 
+			<include refid="dutywarningColumns"/>
+		FROM dutywarning a
+		<include refid="dutywarningJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO dutywarning(
+			guid,
+			createtime,
+			warningtype,
+			content,
+			userid
+		) VALUES (
+			#{guid},
+			#{createtime},
+			#{warningtype},
+			#{content},
+			#{userid}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE dutywarning SET 	
+			guid = #{guid},
+			createtime = #{createtime},
+			warningtype = #{warningtype},
+			content = #{content},
+			userid = #{userid}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM dutywarning
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

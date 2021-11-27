@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairClassApplyDao">
+    
+	<sql id="affairClassApplyColumns">
+		a.id AS "id",
+		a.class_id AS "classId",
+		a.class_name AS "className",
+		a.stu_name AS "stuName",
+		a.stu_name_id AS "stuNameId",
+		a.stu_sex AS "stuSex",
+		a.stu_nation AS "stuNation",
+		a.stu_id_num AS "stuIdNum",
+		a.stu_sys_phone_num AS "stuSysPhoneNum",
+		a.stu_unit_id AS "stuUnitId",
+		a.stu_unit_name AS "stuUnitName",
+		a.stu_phone_num AS "stuPhoneNum",
+		a.stu_arrival_time AS "stuArrivalTime",
+		a.stu_arrival_num AS "stuArrivalNum",
+		a.stu_arrival_site AS "stuArrivalSite",
+		a.stu_back_time AS "stuBackTime",
+		a.stu_back_num AS "stuBackNum",
+		a.stu_back_site AS "stuBackSite",
+		a.stu_isreserve AS "stuIsreserve",
+		a.stu_pub_exmp_num AS "stuPubExmpNum",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="affairClassApplyJoins">
+	</sql>
+    
+	<select id="get" resultType="AffairClassApply">
+		SELECT 
+			<include refid="affairClassApplyColumns"/>
+		FROM affair_class_apply a
+		<include refid="affairClassApplyJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairClassApply">
+		SELECT 
+			<include refid="affairClassApplyColumns"/>
+		FROM affair_class_apply a
+		<include refid="affairClassApplyJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairClassApply">
+		SELECT 
+			<include refid="affairClassApplyColumns"/>
+		FROM affair_class_apply a
+		<include refid="affairClassApplyJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_class_apply(
+			id,
+			class_id,
+			class_name,
+			stu_name,
+			stu_name_id,
+			stu_sex,
+			stu_nation,
+			stu_id_num,
+			stu_sys_phone_num,
+			stu_unit_id,
+			stu_unit_name,
+			stu_phone_num,
+			stu_arrival_time,
+			stu_arrival_num,
+			stu_arrival_site,
+			stu_back_time,
+			stu_back_num,
+			stu_back_site,
+			stu_isreserve,
+			stu_pub_exmp_num,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{classId},
+			#{className},
+			#{stuName},
+			#{stuNameId},
+			#{stuSex},
+			#{stuNation},
+			#{stuIdNum},
+			#{stuSysPhoneNum},
+			#{stuUnitId},
+			#{stuUnitName},
+			#{stuPhoneNum},
+			#{stuArrivalTime},
+			#{stuArrivalNum},
+			#{stuArrivalSite},
+			#{stuBackTime},
+			#{stuBackNum},
+			#{stuBackSite},
+			#{stuIsreserve},
+			#{stuPubExmpNum},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_class_apply SET 	
+			class_id = #{classId},
+			class_name = #{className},
+			stu_name = #{stuName},
+			stu_name_id = #{stuNameId},
+			stu_sex = #{stuSex},
+			stu_nation = #{stuNation},
+			stu_id_num = #{stuIdNum},
+			stu_sys_phone_num = #{stuSysPhoneNum},
+			stu_unit_id = #{stuUnitId},
+			stu_unit_name = #{stuUnitName},
+			stu_phone_num = #{stuPhoneNum},
+			stu_arrival_time = #{stuArrivalTime},
+			stu_arrival_num = #{stuArrivalNum},
+			stu_arrival_site = #{stuArrivalSite},
+			stu_back_time = #{stuBackTime},
+			stu_back_num = #{stuBackNum},
+			stu_back_site = #{stuBackSite},
+			stu_isreserve = #{stuIsreserve},
+			stu_pub_exmp_num = #{stuPubExmpNum},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_class_apply SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

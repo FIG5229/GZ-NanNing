@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairTeamPerformanceDao">
+    
+	<sql id="affairTeamPerformanceColumns">
+		a.id AS "id",
+		a.date AS "date",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.item_one AS "itemOne",
+		a.item_two AS "itemTwo",
+		a.item_three AS "itemThree",
+		a.item_four AS "itemFour",
+		a.item_five AS "itemFive",
+		a.item_six AS "itemSix",
+		a.score AS "score",
+		a.rank AS "rank",
+		a.remark AS "remark",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.number AS "number",
+		a.finish_date AS "finishDate",
+		a.name AS "name"
+	</sql>
+	
+	<sql id="affairTeamPerformanceJoins">
+		LEFT JOIN sys_office o ON o.id = a.unit_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairTeamPerformance">
+		SELECT 
+			<include refid="affairTeamPerformanceColumns"/>
+		FROM affair_team_performance a
+		<include refid="affairTeamPerformanceJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairTeamPerformance">
+		SELECT 
+			<include refid="affairTeamPerformanceColumns"/>
+		FROM affair_team_performance a
+		<include refid="affairTeamPerformanceJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="unitId != null and unitId != ''">
+				AND a.unit_id = #{unitId}
+			</if>
+			<choose>
+				<when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+					AND a.date between #{startDate} and #{endDate}
+				</when>
+				<when test="startDate != null and startDate != ''">
+					AND a.date >= #{startDate}
+				</when>
+				<when test="endDate != null and endDate != ''">
+					AND  #{endDate} >=  a.date
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairTeamPerformance">
+		SELECT 
+			<include refid="affairTeamPerformanceColumns"/>
+		FROM affair_team_performance a
+		<include refid="affairTeamPerformanceJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_team_performance(
+			id,
+			date,
+			unit,
+			unit_id,
+			item_one,
+			item_two,
+			item_three,
+			item_four,
+			item_five,
+			item_six,
+			score,
+			rank,
+			remark,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			number,
+			finish_date,
+			name
+		) VALUES (
+			#{id},
+			#{date},
+			#{unit},
+			#{unitId},
+			#{itemOne},
+			#{itemTwo},
+			#{itemThree},
+			#{itemFour},
+			#{itemFive},
+			#{itemSix},
+			#{score},
+			#{rank},
+			#{remark},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{number},
+			#{finishDate},
+			#{name}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_team_performance SET 	
+			date = #{date},
+			unit = #{unit},
+			unit_id = #{unitId},
+			item_one = #{itemOne},
+			item_two = #{itemTwo},
+			item_three = #{itemThree},
+			item_four = #{itemFour},
+			item_five = #{itemFive},
+			item_six = #{itemSix},
+			score = #{score},
+			rank = #{rank},
+			remark = #{remark},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			number = #{number},
+			finish_date = #{finishDate},
+			name = #{name}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_team_performance SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_team_performance SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+	
+</mapper>

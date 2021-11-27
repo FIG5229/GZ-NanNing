@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairCdObjectDao">
+    
+	<sql id="affairCdObjectColumns">
+		a.id AS "id",
+		a.approval_id AS "approvalId",
+		a.name AS "name",
+		a.id_number AS "idNumber",
+		a.unit AS "unit",
+		a.job AS "job",
+		a.face AS "face",
+		a.unit_id AS "unitId",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="affairCdObjectJoins">
+		LEFT JOIN affair_archive_approval b ON b.id = a.approval_id
+		LEFT JOIN sys_office o5 ON o5.id = a.unit
+	</sql>
+
+	<select id="get" resultType="AffairCdObject">
+		SELECT
+			<include refid="affairCdObjectColumns"/>
+		FROM affair_cd_object a
+		<include refid="affairCdObjectJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairCdObject">
+		SELECT 
+			<include refid="affairCdObjectColumns"/>
+		FROM affair_cd_object a
+		<include refid="affairCdObjectJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="approvalId != null and approvalId != ''">
+				AND a.approval_id = #{approvalId}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE '%'||#{name}||'%'
+			</if>
+			<if test="unitId != null and unitId != ''">
+				AND a.unit_id = #{unitId}
+			</if>
+			<if test="id != null and id != ''">
+				AND a.approval_id = #{id}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairCdObject">
+		SELECT 
+			<include refid="affairCdObjectColumns"/>
+		FROM affair_cd_object a
+		<include refid="affairCdObjectJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_cd_object(
+			id,
+			approval_id,
+			name,
+			id_number,
+			unit,
+			job,
+			face,
+			unit_id,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{approvalId},
+			#{name},
+			#{idNumber},
+			#{unit},
+			#{job},
+			#{face},
+			#{unitId},
+			#{createBy.id},
+			#{createOrgId},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateOrgId},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_cd_object SET 	
+			name = #{name},
+			id_number = #{idNumber},
+			unit = #{unit},
+			job = #{job},
+			face = #{face},
+			unit_id = #{unitId}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_cd_object SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		<choose>
+			<when test="id !=null and id != ''">
+				WHERE id = #{id}
+			</when>
+			<otherwise>
+				WHERE approval_id = #{approvalId}
+			</otherwise>
+		</choose>
+	</update>
+
+	<update id="deleteByApprovelIds">
+
+		UPDATE affair_cd_object SET
+		del_flag = '1'
+		WHERE approval_id in <foreach collection="approvelIds" item="item" index="index"
+									  open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<select id="findSomeByApprovelId" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairCdObject">
+		SELECT c.name,c.unit,c.face from affair_cd_object c where c.approval_id = #{approvalId} and c.del_flag = '0'
+	</select>
+</mapper>

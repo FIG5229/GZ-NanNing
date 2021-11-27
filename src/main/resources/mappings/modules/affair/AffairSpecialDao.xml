@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairSpecialDao">
+    
+	<sql id="affairSpecialColumns">
+		a.id AS "id",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.name AS "name",
+		a.id_number AS "idNumber",
+		a.personnel_flag AS "personnelFlag",
+		a.job AS "job",
+		a.level AS "level",
+		a.police_rank AS "policeRank",
+		a.date AS "date",
+		a.type AS "type",
+		a.main_deeds AS "mainDeeds",
+		a.money AS "money",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.aproval_date AS "aprovalDate",
+		a.annex AS "annex"
+	</sql>
+	
+	<sql id="affairSpecialJoins">
+		LEFT JOIN affair_labor_office o ON o.id = a.create_org_id
+		LEFT JOIN affair_labor_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairSpecial">
+		SELECT 
+			<include refid="affairSpecialColumns"/>
+		FROM affair_special a
+		<include refid="affairSpecialJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairSpecial">
+		SELECT 
+			<include refid="affairSpecialColumns"/>
+		FROM affair_special a
+		<include refid="affairSpecialJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+			</if>
+			<choose>
+				<when test="beginDate != null and beginDate != '' and endDate != null and endDate != ''">
+					AND a.date between #{beginDate} and #{endDate}
+				</when>
+				<when test="beginDate != null and beginDate != ''">
+					AND a.date >= #{beginDate}
+				</when>
+				<when test="endDate != null and endDate != ''">
+					AND  #{endDate} >= a.date
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			<choose>
+				<when test="beginAprovalDate != null and beginAprovalDate != '' and endAprovalDate != null and endAprovalDate != ''">
+					AND a.aproval_date between #{beginAprovalDate} and #{endAprovalDate}
+				</when>
+				<when test="beginAprovalDate != null and beginAprovalDate != ''">
+					AND a.aproval_date >= #{beginAprovalDate}
+				</when>
+				<when test="endAprovalDate != null and endAprovalDate != ''">
+					AND  #{endAprovalDate} >= a.aproval_date
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			<if test="userId != null and userId != ''">
+				AND ( o.ID = #{userId} OR o.parent_ids LIKE'%,'||#{userId}||',%' OR u.ID = #{userId} or a.unit_id=#{userId})
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairSpecial">
+		SELECT 
+			<include refid="affairSpecialColumns"/>
+		FROM affair_special a
+		<include refid="affairSpecialJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_special(
+			id,
+			unit,
+			unit_id,
+			name,
+			id_number,
+			personnel_flag,
+			job,
+			level,
+			police_rank,
+			date,
+			type,
+			main_deeds,
+			money,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			aproval_date,
+			annex
+		) VALUES (
+			#{id},
+			#{unit},
+			#{unitId},
+			#{name},
+			#{idNumber},
+			#{personnelFlag},
+			#{job},
+			#{level},
+			#{policeRank},
+			#{date},
+			#{type},
+			#{mainDeeds},
+			#{money},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{aprovalDate},
+			#{annex}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_special SET 	
+			unit = #{unit},
+			unit_id = #{unitId},
+			name = #{name},
+			id_number = #{idNumber},
+			personnel_flag = #{personnelFlag},
+			job = #{job},
+			level = #{level},
+			police_rank = #{policeRank},
+			date = #{date},
+			type = #{type},
+			main_deeds = #{mainDeeds},
+			money = #{money},
+			aproval_date = #{aprovalDate},
+			annex = #{annex},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_special SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_special SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+	
+</mapper>

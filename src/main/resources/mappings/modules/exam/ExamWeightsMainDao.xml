@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.exam.dao.ExamWeightsMainDao">
+    
+	<sql id="examWeightsMainColumns">
+		a.id AS "id",
+		a.ew_id AS "ewId",
+		a.work_name AS "workName",
+		a.weights AS "weights",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.work_name_type AS "workNameType"
+	</sql>
+	
+	<sql id="examWeightsMainJoins">
+	</sql>
+    
+	<select id="get" resultType="ExamWeightsMain">
+		SELECT 
+			<include refid="examWeightsMainColumns"/>
+		FROM exam_weights_main a
+		<include refid="examWeightsMainJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ExamWeightsMain">
+		SELECT 
+			<include refid="examWeightsMainColumns"/>
+		FROM exam_weights_main a
+		<include refid="examWeightsMainJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="workName != null and workName != ''">
+				AND a.work_name = #{workName}
+			</if>
+			<if test="weights != null and weights != ''">
+				AND a.weights = #{weights}
+			</if>
+			<if test="id != null and id != ''">
+				AND a.ew_id = #{id}
+			</if>
+			<if test="ewId != null and ewId != ''">
+				AND a.ew_id = #{ewId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ExamWeightsMain">
+		SELECT 
+			<include refid="examWeightsMainColumns"/>
+		FROM exam_weights_main a
+		<include refid="examWeightsMainJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<insert id="insert">
+		INSERT INTO exam_weights_main(
+			id,
+			ew_id,
+			work_name,
+			weights,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			work_name_type
+		) VALUES (
+			#{id},
+			#{ewId},
+			#{workName},
+			#{weights},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{workNameType}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE exam_weights_main SET 	
+			ew_id = #{ewId},
+			work_name = #{workName},
+			weights = #{weights},
+			work_name_type = #{workNameType}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE exam_weights_main SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByMainId">
+		UPDATE exam_weights_main SET
+			del_flag = '1'
+		WHERE ew_id = #{ewId}
+	</update>
+	<update id="deleteByMainIds">
+		UPDATE exam_weights_main SET
+		del_flag = '1'
+		WHERE ew_id in <foreach collection="mainIds" item="item" index="index"
+								  open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<select id="findWorkNameList" resultType="java.util.Map">
+		SELECT
+			d.label as "label",
+			d.value as "value",
+			w.weights as "weight",
+			sort,
+			w.work_name_type as "workNameType"
+		    FROM exam_weights_main w
+		    LEFT JOIN sys_dict d on w.work_name = d.value
+		    left join exam_weights ws on w.ew_id = ws.id
+		    WHERE d.type = 'exam_weigths'
+		    and d.del_flag = '0'
+		    and w.del_flag = '0'
+		    and ws.kp_type = '1'
+		    <!--and w.work_name &lt;&gt; '32'-->
+		    order by d.sort ASC
+	</select>
+	<select id="findWorkNameByFillPersonId" resultType="java.util.Map">
+		SELECT
+		DISTINCT
+		d.label as "label",
+		d.value as "value",
+		w.weights as "weight",
+		d.sort as "sort",
+		w.work_name_type as "workNameType"
+		FROM exam_weights_main w
+		LEFT JOIN sys_dict d on w.work_name = d.value
+		LEFT JOIN exam_workflow_datas ewd on w.work_name = ewd.work_name
+		left join exam_weights ws on w.ew_id = ws.id
+		WHERE d.type = 'exam_weigths'
+		and d.del_flag = '0'
+		and w.del_flag = '0' <!--and w.work_name &lt;&gt; '32'-->
+		and ewd.fill_person_id = #{fillPersonId}
+		and ewd.workflow_id = #{workflowId}
+		and ws.kp_type = #{kpType}
+		order by d.sort ASC
+		<!--and ewd.is_selected = '1'
+		and ewd.operation_status &lt;&gt; '2'-->
+		<!--order by d.sort ASC-->
+	</select>
+
+	<select id="findWorkNameByExamPersonId" resultType="java.util.Map">
+		SELECT
+		DISTINCT
+		d.label as "label",
+		d.value as "value",
+		w.weights as "weight",
+		sort,
+		w.work_name_type as "workNameType"
+		FROM exam_weights_main w
+		LEFT JOIN sys_dict d on w.work_name = d.value
+		LEFT JOIN exam_workflow_datas ewd on w.work_name = ewd.work_name
+		left join exam_weights ws on w.ew_id = ws.id
+		WHERE d.type = 'exam_weigths'
+		and d.del_flag = '0'
+		and w.del_flag = '0' <!--and w.work_name &lt;&gt; '32'-->
+		and ewd.exam_person_id = #{examPersonId}
+		and ewd.workflow_id = #{workflowId}
+		and ws.kp_type = '1'
+		<!--and ewd.is_selected = '1'
+		and ewd.operation_status &lt;&gt; '2'-->
+		<!--order by d.sort ASC-->
+	</select>
+
+	<select id="getWorkNameListByChu" resultType="java.util.Map">
+		SELECT
+		d.label as "label",
+		d.value as "value",
+		w.weights as "weight",
+		w.work_name_type as "workNameType",
+		sort
+		FROM exam_weights_main w
+		LEFT JOIN sys_dict d on w.work_name = d.value
+		left join exam_weights ws on w.ew_id = ws.id
+		WHERE d.type = 'exam_weigths'
+		<if test="unitId != null and unitId != ''">
+			and ws.department_id LIKE '%'||#{unitId}||'%'
+		</if>
+		and d.del_flag = '0'
+		and w.del_flag = '0'
+		and ws.kp_type = '3'
+		and ws.kp_chu = #{chuId}
+		order by d.sort ASC
+	</select>
+	<select id="getZdWeight" resultType="java.lang.Integer">
+		select sum(weights)
+		from exam_weights_main a
+		left join exam_weights b on a.ew_id = b.id
+		where b.kp_type = #{kpType}
+		<if test="unitId!=null and unitId != ''">
+			and kp_chu =#{unitId}
+		</if>
+		<if test="kpUnitId !=null and kpUnitId != ''">
+			and b.department_id LIKE '%'||#{kpUnitId}||'%'
+		</if>
+		and a.del_flag = '0'
+		and a.work_name_type = '1'
+
+	</select>
+    <select id="getZdOrCgWeight" resultType="java.lang.Double">
+		select sum(weights)
+		from exam_weights_main a
+		left join exam_weights b on a.ew_id = b.id
+		where b.kp_type = #{kpType}
+		<if test="unitId!=null and unitId != ''">
+			and kp_chu =#{unitId}
+		</if>
+		<if test="kpUnitId !=null and kpUnitId != ''">
+			and b.department_id LIKE '%'||#{kpUnitId}||'%'
+		</if>
+		and a.del_flag = '0'
+		and a.work_name_type = #{workNameType}
+		and work_name not in (select work_name  FROM exam_score_work_item a
+		WHERE a.del_flag = '0' and a.exam_type = #{kpType})
+	</select>
+
+	<select id="getCgWeight" resultType="java.lang.Integer">
+		select sum(weights)
+		from exam_weights_main a
+		left join exam_weights b on a.ew_id = b.id
+		where b.kp_type = #{kpType}
+		<if test="unitId!=null and unitId != ''">
+			and kp_chu =#{unitId}
+		</if>
+		<if test="kpUnitId !=null and kpUnitId != ''">
+			and b.department_id LIKE '%'||#{kpUnitId}||'%'
+		</if>
+		and a.del_flag = '0'
+		and a.work_name_type = '0'
+	</select>
+    <select id="getJKCBaseSumScore" resultType="java.lang.Double">
+		select sum(ewm.weights) from exam_weights_main ewm
+		left join exam_weights ew on ewm.ew_id = ew.id
+		where ew.kp_type = '1'
+		and ewm.work_name_type != '3'
+		and ewm.work_name not in (select work_name from exam_score_work_item es where es.del_flag = '0' and es.exam_type = '1')
+		and ew.del_flag = '0'
+		and ewm.del_flag = '0'
+	</select>
+
+	<select id="getCKDSBaseSumScore" resultType="java.lang.Double">
+		select sum(ewm.weights) from exam_weights_main ewm
+		left join exam_weights ew on ewm.ew_id = ew.id
+		where ew.kp_type = '3'
+		and ewm.work_name_type != '3'
+		and ewm.work_name not in (select work_name from exam_score_work_item es where es.del_flag = '0' and es.exam_type = '3')
+		and ew.del_flag = '0'
+		and ewm.del_flag = '0'
+		<if test="kpChuId!=null and kpChuId != ''">
+			and ew.kp_chu =#{kpChuId}
+		</if>
+		<if test="kpUnitId !=null and kpUnitId != ''">
+			and ew.department_id LIKE '%'||#{kpUnitId}||'%'
+		</if>
+	</select>
+
+	<select id="getJorCJGBaseSumScore" resultType="java.lang.Double">
+	select sum(ewm.weights) from exam_weights_main ewm
+		left join exam_weights ew on ewm.ew_id = ew.id
+		where ew.kp_type = #{examType}
+		and ewm.work_name_type != '3'
+		and ewm.work_name not in (select work_name from exam_score_work_item es where es.del_flag = '0' and es.exam_type = #{examType})
+		and ew.del_flag = '0'
+		and ewm.del_flag = '0'
+		<if test="kpChuId!=null and kpChuId != ''">
+			and ew.kp_chu =#{kpChuId}
+		</if>
+		<if test="kpUnitId !=null and kpUnitId != ''">
+			and ew.department_id LIKE '%'||#{kpUnitId}||'%'
+		</if>
+	</select>
+
+	<select id="findWorkNameListByKPType" resultType="java.util.Map">
+		SELECT
+		d.label as "label",
+		d.value as "value",
+		w.weights as "weight",
+		w.work_name_type as "workNameType",
+		sort
+		FROM exam_weights_main w
+		LEFT JOIN sys_dict d on w.work_name = d.value
+		left join exam_weights ws on w.ew_id = ws.id
+		WHERE d.type = 'exam_weigths'
+		<if test="kpUnitId != null and kpUnitId != ''">
+			and ws.department_id LIKE '%'||#{kpUnitId}||'%'
+		</if>
+		and d.del_flag = '0'
+		and w.del_flag = '0'
+		and ws.kp_type = #{examType}
+		<if test="kpChuId != null and kpChuId != ''">
+		and ws.kp_chu = #{kpChuId}
+        </if>
+		order by d.sort ASC
+	</select>
+
+	<select id="findWorkNameByChu_FillPersonId" resultType="java.util.Map">
+	SELECT
+		DISTINCT
+		d.label as "label",
+		d.value as "value",
+		w.weights as "weight",
+		d.sort as "sort",
+		w.work_name_type as "workNameType"
+		FROM exam_weights_main w
+		LEFT JOIN sys_dict d on w.work_name = d.value
+		LEFT JOIN exam_workflow_datas ewd on w.work_name = ewd.work_name
+		left join exam_weights ws on w.ew_id = ws.id
+		WHERE d.type = 'exam_weigths'
+		and d.del_flag = '0'
+		and w.del_flag = '0' <!--and w.work_name &lt;&gt; '32'-->
+		and ewd.fill_person_id = #{fillPersonId}
+		and ewd.workflow_id = #{workflowId}
+		and ws.kp_type = #{kpType}
+		<if test="kpChuId != null and kpChuId != ''">
+		and ws.kp_chu = #{kpChuId}
+        </if>
+        <if test="kpUnitId != null and kpUnitId != ''">
+        and ws.department_id LIKE '%'||#{kpUnitId}||'%'
+        </if>
+		order by d.sort ASC
+    </select>
+</mapper>

@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairYjGoOutReportDao">
+    
+	<sql id="affairYjGoOutReportColumns">
+		a.id AS "id",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.go_place AS "goPlace",
+		a.leave_time AS "leaveTime",
+		a.back_time AS "backTime",
+		a.thing AS "thing",
+		a.bmzzld_opinion AS "bmzzldOpinion",
+		a.fgld_opinion AS "fgldOpinion",
+		a.mainld_opinion AS "mainldOpinion",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.ju_check_man AS "juCheckMan",
+		a.chu_check_man AS "chuCheckMan",
+		a.submit_man AS "submitMan",
+		a.check_type AS "checkType",
+		a.ju_check_id AS "juCheckId",
+		a.chu_check_id AS "chuCheckId",
+		a.submit_id AS "submitId",
+		a.opinion AS "opinion",
+		a.name AS "name",
+		a.id_number AS "idNumber",
+		a.person_type AS "personType",
+		a.bmzzld_name AS "bmzzldName",
+		a.fgld_name AS "fgldName",
+		a.mainld_name AS "mainldName",
+		a.bmzzld_id AS "bmzzldId",
+		a.fgld_id AS "fgldId",
+		a.mainld_id AS "mainldId"
+	</sql>
+
+	<sql id="affairYjGoOutReportJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairYjGoOutReport">
+		SELECT 
+			<include refid="affairYjGoOutReportColumns"/>
+		FROM affair_yj_go_out_report a
+		<include refid="affairYjGoOutReportJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairYjGoOutReport">
+		SELECT 
+			<include refid="affairYjGoOutReportColumns"/>
+		FROM affair_yj_go_out_report a
+		<include refid="affairYjGoOutReportJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="unitId != null and unitId != ''">
+				AND a.unit_id = #{unitId}
+			</if>
+			<if test="goPlace != null and goPlace != ''">
+				AND a.go_place = #{goPlace}
+			</if>
+			<if test="leaveTime != null and leaveTime != ''">
+				AND a.leave_time = #{leaveTime}
+			</if>
+			<if test="backTime != null and backTime != ''">
+				AND a.back_time = #{backTime}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+			</if>
+			<choose>
+				<when test="isPerson != null and isPerson != '' and isPerson ">
+					AND  a.create_by =#{userId}
+				</when>
+				<otherwise>
+					<if test="officeId != null and officeId != '' and userId != null and  userId != ''">
+						AND (
+							o.ID = #{officeId} OR o.parent_ids LIKE'%,'||#{officeId}||',%' OR u.ID = #{officeId} or a.unit_id=#{officeId}
+							OR
+							(
+								(a.create_by = #{userId} or a.submit_id = #{userId})
+								OR
+								((a.check_type = '2' or a.check_type = '4') and (a.ju_check_id = #{userId} or a.chu_check_id = #{userId}))
+								OR
+								(a.check_type = '3' and a.ju_check_id = #{userId})
+							)
+						)
+					</if>
+				</otherwise>
+			</choose>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairYjGoOutReport">
+		SELECT 
+			<include refid="affairYjGoOutReportColumns"/>
+		FROM affair_yj_go_out_report a
+		<include refid="affairYjGoOutReportJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+    <select id="findByIds" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairYjGoOutReport">
+		select <include refid="affairYjGoOutReportColumns"/>
+		from affair_yj_go_out_report a
+		where a.id in
+		<foreach collection="idsArray" open="(" separator="," close=")" item="item">
+		#{item}
+		</foreach>
+	</select>
+    <select id="selectAllBeanTjfx" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairYjGoOutReport">
+		SELECT
+			*,
+			date_part( 'day', CAST ( back_time AS TIMESTAMP ) - CAST ( leave_time AS TIMESTAMP ) ) AS size
+		FROM
+			affair_yj_go_out_report
+		WHERE
+			del_flag = '0'
+			AND check_type = '4'
+	</select>
+
+	<select id="selectBeanDetails" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairYjGoOutReport">
+		SELECT
+			*
+		FROM
+			affair_yj_go_out_report
+		WHERE
+			del_flag = '0'
+			AND check_type = '4'
+		<if test="newSize != null and newSize == 30 or newSize == 5 or newSize == 10 or newSize == 15">
+			AND (
+				#{newSize} >= date_part( 'day', CAST ( back_time AS TIMESTAMP ) - CAST ( leave_time AS TIMESTAMP ))
+				AND  ( date_part( 'day', CAST ( back_time AS TIMESTAMP ) - CAST ( leave_time AS TIMESTAMP ))) >= #{lastSize}
+			)
+		</if>
+		<if test="newSize != null and newSize == 31">
+			AND date_part( 'day', CAST ( back_time AS TIMESTAMP ) - CAST ( leave_time AS TIMESTAMP ) )  >= #{newSize}
+		</if>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<insert id="insert">
+		INSERT INTO affair_yj_go_out_report(
+			id,
+			unit,
+			unit_id,
+			go_place,
+			leave_time,
+			back_time,
+			thing,
+			bmzzld_opinion,
+			fgld_opinion,
+			mainld_opinion,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			ju_check_man,
+			chu_check_man,
+			submit_man,
+			check_type,
+			ju_check_id,
+			chu_check_id,
+			submit_id,
+			opinion,
+			name,
+			id_number,
+			person_type,
+			bmzzld_name,
+			fgld_name,
+			mainld_name,
+			bmzzld_id,
+			fgld_id,
+			mainld_id
+		) VALUES (
+			#{id},
+			#{unit},
+			#{unitId},
+			#{goPlace},
+			#{leaveTime},
+			#{backTime},
+			#{thing},
+			#{bmzzldOpinion},
+			#{fgldOpinion},
+			#{mainldOpinion},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{juCheckMan},
+			#{chuCheckMan},
+			#{submitMan},
+			#{checkType},
+			#{juCheckId},
+			#{chuCheckId},
+			#{submitId},
+			#{opinion},
+			#{name},
+			#{idNumber},
+			#{personType},
+			#{bmzzldName},
+			#{fgldName},
+			#{mainldName},
+			#{bmzzldId},
+			#{fgldId},
+			#{mainldId}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_yj_go_out_report SET 	
+			unit = #{unit},
+			unit_id = #{unitId},
+			go_place = #{goPlace},
+			leave_time = #{leaveTime},
+			back_time = #{backTime},
+			thing = #{thing},
+			bmzzld_opinion = #{bmzzldOpinion},
+			fgld_opinion = #{fgldOpinion},
+			mainld_opinion = #{mainldOpinion},
+			create_org_id = #{createBy.office.id},
+			create_id_no = #{createIdNo},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			ju_check_man = #{juCheckMan},
+			chu_check_man = #{chuCheckMan},
+			submit_man = #{submitMan},
+			check_type = #{checkType},
+			ju_check_id = #{juCheckId},
+			chu_check_id = #{chuCheckId},
+			submit_id = #{submitId},
+			opinion = #{opinion},
+			name = #{name},
+			id_number = #{idNumber},
+			person_type = #{personType},
+			bmzzld_name = #{bmzzldName},
+			fgld_name = #{fgldName},
+			mainld_name = #{mainldName},
+			bmzzld_id = #{bmzzldId},
+			fgld_id = #{fgldId},
+			mainld_id = #{mainldId}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_yj_go_out_report SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds" >
+		UPDATE affair_yj_go_out_report
+		SET del_flag = '1'
+		where id in <foreach collection="ids" item="item" index="index" open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<update id="plshByIds">
+		UPDATE affair_yj_go_out_report
+		SET check_type = '4'
+		where id in <foreach collection="ids" item="item" index="index" open="(" separator="," close=")">#{item}</foreach>
+	</update>
+	<update id="plshthByIds">
+		UPDATE affair_yj_go_out_report
+		SET check_type = '0'
+		where id in <foreach collection="ids" item="item" index="index" open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<update id="revocation">
+		UPDATE affair_yj_go_out_report SET
+			check_type = '2'
+		WHERE id = #{id}
+	</update>
+</mapper>

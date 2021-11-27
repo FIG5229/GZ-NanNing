@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.exam.dao.ExamScoreWorkItemDao">
+    
+	<sql id="examScoreWorkItemColumns">
+		a.id AS "id",
+		a.exam_type AS "examType",
+		a.work_name AS "workName",
+		a.beiyong_one AS "beiyongOne",
+		a.beiyong_two AS "beiyongTwo",
+		a.beiyong_three AS "beiyongThree",
+		a.beiyong_four AS "beiyongFour",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="examScoreWorkItemJoins">
+	</sql>
+    
+	<select id="get" resultType="ExamScoreWorkItem">
+		SELECT 
+			<include refid="examScoreWorkItemColumns"/>
+		FROM exam_score_work_item a
+		<include refid="examScoreWorkItemJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ExamScoreWorkItem">
+		SELECT 
+			<include refid="examScoreWorkItemColumns"/>
+		FROM exam_score_work_item a
+		<include refid="examScoreWorkItemJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="examType != null and examType != ''">
+				AND a.exam_type = #{examType}
+			</if>
+			<if test="workName != null and workName != ''">
+				AND a.work_name = #{workName}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ExamScoreWorkItem">
+		SELECT 
+			<include refid="examScoreWorkItemColumns"/>
+		FROM exam_score_work_item a
+		<include refid="examScoreWorkItemJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+    <select id="getInfoCount" resultType="java.lang.Integer">
+		select count(*) from exam_score_work_item a where a.del_flag = '0' and a.exam_type = #{examType} and a.work_name = #{workName}
+	</select>
+
+    <insert id="insert">
+		INSERT INTO exam_score_work_item(
+			id,
+			exam_type,
+			work_name,
+			beiyong_one,
+			beiyong_two,
+			beiyong_three,
+			beiyong_four,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{examType},
+			#{workName},
+			#{beiyongOne},
+			#{beiyongTwo},
+			#{beiyongThree},
+			#{beiyongFour},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE exam_score_work_item SET 	
+			exam_type = #{examType},
+			work_name = #{workName},
+			beiyong_one = #{beiyongOne},
+			beiyong_two = #{beiyongTwo},
+			beiyong_three = #{beiyongThree},
+			beiyong_four = #{beiyongFour},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE exam_score_work_item SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE exam_score_work_item SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+	
+</mapper>

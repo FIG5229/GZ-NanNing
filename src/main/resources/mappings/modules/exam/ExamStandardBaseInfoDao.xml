@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.exam.dao.ExamStandardBaseInfoDao">
+    
+	<sql id="examStandardBaseInfoColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.abbreviation AS "abbreviation",
+		a.obj_type AS "objType",
+		a.kp_type AS "kpType",
+		a.cycle AS "cycle",
+		a.is_enable AS "isEnable",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.model_type AS "modelType",
+		a.unit_id AS "unitId",
+		a.unit_name AS "unitName"
+	</sql>
+	
+	<sql id="examStandardBaseInfoJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="ExamStandardBaseInfo">
+		SELECT 
+			<include refid="examStandardBaseInfoColumns"/>
+		FROM exam_standard_base_info a
+		<include refid="examStandardBaseInfoJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ExamStandardBaseInfo">
+		SELECT 
+			<include refid="examStandardBaseInfoColumns"/>
+		,u.name as createName
+		FROM exam_standard_base_info a
+		<!--left join sys_user u on a.create_by = u.id-->
+		<include refid="examStandardBaseInfoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE concat('%',#{name},'%')
+			</if>
+			<if test="abbreviation != null and abbreviation != ''">
+				AND a.abbreviation LIKE concat('%',#{abbreviation},'%')
+			</if>
+			<if test="objType != null and objType != ''">
+				AND a.obj_type = #{objType}
+			</if>
+			<if test="kpType != null and kpType != ''">
+				AND a.kp_type = #{kpType}
+			</if>
+			<if test="cycle != null and cycle != ''">
+				AND a.cycle = #{cycle}
+			</if>
+			<if test="modelType != null and modelType != ''">
+				AND a.model_type = #{modelType}
+			</if>
+			<if test="unitId != null and unitId != ''">
+				AND a.unit_id = #{unitId}
+			</if>
+			<if test="createBy != null and createBy.id != null and createBy.id != ''">
+				and a.create_by = #{createBy.id}
+			</if>
+			${sqlMap.dsf}
+		</where>
+	<!--	王俊宇让改成看所有 按照创建者查询
+			<where>
+			(
+				a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE concat('%',#{name},'%')
+			</if>
+			<if test="abbreviation != null and abbreviation != ''">
+				AND a.abbreviation LIKE concat('%',#{abbreviation},'%')
+			</if>
+			<if test="objType != null and objType != ''">
+				AND a.obj_type = #{objType}
+			</if>
+			<if test="kpType != null and kpType != ''">
+				AND a.kp_type = #{kpType}
+			</if>
+			<if test="cycle != null and cycle != ''">
+				AND a.cycle = #{cycle}
+			</if>
+			<if test="modelType != null and modelType != ''">
+				AND a.model_type = #{modelType}
+			</if>
+			<if test="unitId != null and unitId != ''">
+				AND a.unit_id like '%${unitId}%'
+			</if>
+			and a.unit_id like '%${officeId}%'
+			)
+			or (
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE concat('%',#{name},'%')
+			</if>
+			<if test="abbreviation != null and abbreviation != ''">
+				AND a.abbreviation LIKE concat('%',#{abbreviation},'%')
+			</if>
+			<if test="objType != null and objType != ''">
+				AND a.obj_type = #{objType}
+			</if>
+			<if test="kpType != null and kpType != ''">
+				AND a.kp_type = #{kpType}
+			</if>
+			<if test="cycle != null and cycle != ''">
+				AND a.cycle = #{cycle}
+			</if>
+			<if test="modelType != null and modelType != ''">
+				AND a.model_type = #{modelType}
+			</if>
+			<if test="unitId != null and unitId != ''">
+				AND a.unit_id like '%${unitId}%'
+			</if>
+			${sqlMap.dsf}
+			)
+		</where>-->
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+				<if test="createBy != null and createBy.id != null and createBy.id != ''">
+					, case a.create_by when '${createBy.id}' then 1 end asc
+				</if>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ExamStandardBaseInfo">
+		SELECT 
+			<include refid="examStandardBaseInfoColumns"/>
+		FROM exam_standard_base_info a
+		<include refid="examStandardBaseInfoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO exam_standard_base_info(
+			id,
+			name,
+			abbreviation,
+			obj_type,
+			kp_type,
+			cycle,
+			is_enable,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			model_type,
+			unit_id,
+			unit_name
+		) VALUES (
+			#{id},
+			#{name},
+			#{abbreviation},
+			#{objType},
+			#{kpType},
+			#{cycle},
+			#{isEnable},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{modelType},
+			#{unitId},
+			#{unitName}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE exam_standard_base_info SET 	
+			name = #{name},
+			abbreviation = #{abbreviation},
+			obj_type = #{objType},
+			kp_type = #{kpType},
+			cycle = #{cycle},
+			model_type = #{modelType},
+			is_enable = #{isEnable},
+			unit_id = #{unitId},
+			unit_name = #{unitName},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE exam_standard_base_info SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<select id="findTabList" resultType="java.util.HashMap">
+		SELECT
+		a.id,a.abbreviation
+		FROM exam_standard_base_info a
+		<where>
+			a.del_flag = '0'  AND a.id in (
+			<foreach collection="list" item="id" index="index" separator=",">
+				#{id}
+			</foreach>
+			)
+		</where>
+	</select>
+
+	<select id="findStandardList" resultType="com.thinkgem.jeesite.modules.exam.entity.ExamStandardBaseInfo">
+		SELECT
+		a.id AS "id",
+		a.name AS "name"
+		FROM exam_standard_base_info a
+		<where>
+			a.del_flag = '0' and a.is_enable = '1'
+		</where>
+		ORDER BY a.update_date DESC
+	</select>
+
+	<select id="findStandardListFilter" resultType="com.thinkgem.jeesite.modules.exam.entity.ExamStandardBaseInfo">
+		SELECT
+		a.id AS "id",
+		a.name AS "name"
+		FROM exam_standard_base_info a
+		<include refid="examStandardBaseInfoJoins"/>
+		<where>
+			a.del_flag = '0' and a.is_enable = '1'
+			${sqlMap.dsf}
+		</where>
+		ORDER BY a.update_date DESC
+	</select>
+
+    <select id="findIdByName" resultType="java.lang.String">
+		SELECT a.id AS "id"
+		FROM exam_standard_base_info a
+		where a.name = #{name} and a.del_flag = '0'
+	</select>
+
+	<select id="findPublicInList" resultType="com.thinkgem.jeesite.modules.exam.entity.ExamStandardBaseInfo">
+		select <include refid="examStandardBaseInfoColumns"/>
+		from exam_standard_base_info a
+		where a.del_flag = '0'
+		AND a.id in (
+		<foreach collection="standardIds" item="item" index="index" separator=",">
+			#{item}
+		</foreach>
+		)
+		and a.name like '%公共%'
+	</select>
+
+</mapper>

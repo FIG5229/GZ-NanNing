@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairPartyRewardPunishDao">
+    
+	<sql id="affairPartyRewardPunishColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.sex AS "sex",
+		a.id_number AS "idNumber",
+		a.police_no AS "policeNo",
+		a.file_no AS "fileNo",
+		a.title AS "title",
+		a.approval_org AS "approvalOrg",
+		a.approval_org_id AS "approvalOrgId",
+		a.type AS "type",
+		a.approval_time AS "approvalTime",
+		a.illustration AS "illustration",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.push_type AS "pushType",
+		a.party_organization AS "partyOrganization",
+		a.party_organization_id AS "partyOrganizationId",
+		a.type_flag AS "typeFlag",
+		a.award_category AS "awardCategory",
+		a.cj_type AS "cjType"
+	</sql>
+	
+	<sql id="affairPartyRewardPunishJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairPartyRewardPunish">
+		SELECT 
+			<include refid="affairPartyRewardPunishColumns"/>
+		FROM affair_party_reward_punish a
+		<include refid="affairPartyRewardPunishJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairPartyRewardPunish">
+		SELECT 
+			<include refid="affairPartyRewardPunishColumns"/>
+		FROM affair_party_reward_punish a
+		<include refid="affairPartyRewardPunishJoins"/>
+		LEFT JOIN affair_general_situation s
+		ON s.id = a.party_organization_id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE concat('%',#{name},'%')
+			</if>
+			<if test="idNumber != null and idNumber != ''">
+				AND a.id_number LIKE concat('%',#{idNumber},'%')
+			</if>
+			<if test="title != null and title != ''">
+				AND a.title LIKE concat('%',#{title},'%')
+			</if>
+			<if test="approvalOrgId != null and approvalOrgId != ''">
+				AND a.approval_org_id = #{approvalOrgId}
+			</if>
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+			<if test="awardCategory != null and awardCategory != ''">
+				AND a.award_category = #{awardCategory}
+			</if>
+			<if test="cjType != null and cjType != ''">
+				AND a.cj_type = #{cjType}
+			</if>
+
+			<choose>
+				<when test="approvalStartTime != null and approvalStartTime != '' and approvalEndTime != null and approvalEndTime != ''">
+					AND a.approval_time between #{approvalStartTime} and #{approvalEndTime}
+				</when>
+				<otherwise>
+					<if test="approvalStartTime != null and approvalStartTime != ''">
+						AND a.approval_time >= #{approvalStartTime}
+					</if>
+					<if test="approvalEndTime != null and approvalEndTime != ''">
+						AND  #{approvalEndTime} >= a.approval_time
+					</if>
+				</otherwise>
+			</choose>
+			<if test="treeId != null and treeId != ''">
+				AND (a.party_organization_id = #{treeId} OR s.parent_ids LIKE CONCAT('%,', #{treeId}, ',%'))
+			</if>
+			<!-- 数据范围过滤 -->
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairPartyRewardPunish">
+		SELECT 
+			<include refid="affairPartyRewardPunishColumns"/>
+		FROM affair_party_reward_punish a
+		<include refid="affairPartyRewardPunishJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+    <select id="selectNumber" resultType="java.lang.Integer">
+			SELECT COUNT
+				( * )
+			FROM
+				"affair_party_reward_punish"
+			WHERE
+				id_number = #{idNumber}
+				AND create_date  BETWEEN  #{lastYearDate} AND #{nowYearDate}
+				AND "type" = #{level}
+				AND del_flag = '0'
+	</select>
+	<select id="selectNumberTwo" resultType="java.lang.Integer">
+			SELECT COUNT
+				( * )
+			FROM
+				"affair_party_reward_punish"
+			WHERE
+				id_number = #{idNumber}
+				AND create_date  BETWEEN  #{lastYearDate} AND #{nowYearDate}
+				AND ("type" = #{level} OR "type" = #{levelTwo})
+				AND del_flag = '0'
+	</select>
+
+	<select id="selectNumberMonth" resultType="java.lang.Integer">
+			SELECT COUNT
+				( * )
+			FROM
+				"affair_party_reward_punish"
+			WHERE
+				id_number = #{idNumber}
+				AND create_date  BETWEEN  #{lastMonthDate} AND #{nowMonthDate}
+				AND "type" = #{level}
+				AND del_flag = '0'
+	</select>
+	<select id="selectNumberMonthTwo" resultType="java.lang.Integer">
+			SELECT COUNT
+				( * )
+			FROM
+				"affair_party_reward_punish"
+			WHERE
+				id_number = #{idNumber}
+				AND create_date  BETWEEN  #{lastMonthDate} AND #{nowMonthDate}
+				AND ("type" = #{level} OR "type" = #{levelTwo})
+				AND del_flag = '0'
+	</select>
+
+    <insert id="insert">
+		INSERT INTO affair_party_reward_punish(
+			id,
+			name,
+			sex,
+			id_number,
+			police_no,
+			file_no,
+			title,
+			approval_org,
+			approval_org_id,
+			type,
+			approval_time,
+			illustration,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			push_type,
+			party_organization,
+			party_organization_id,
+			type_flag,
+			award_category,
+			cj_type
+		) VALUES (
+			#{id},
+			#{name},
+			#{sex},
+			#{idNumber},
+			#{policeNo},
+			#{fileNo},
+			#{title},
+			#{approvalOrg},
+			#{approvalOrgId},
+			#{type},
+			#{approvalTime},
+			#{illustration},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{pushType},
+			#{partyOrganization},
+		    #{partyOrganizationId},
+		    '2',
+		    #{awardCategory},
+		    #{cjType}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_party_reward_punish SET 	
+			name = #{name},
+			sex = #{sex},
+			id_number = #{idNumber},
+			police_no = #{policeNo},
+			file_no = #{fileNo},
+			title = #{title},
+			approval_org = #{approvalOrg},
+			approval_org_id = #{approvalOrgId},
+			type = #{type},
+			approval_time = #{approvalTime},
+			illustration = #{illustration},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			push_type = #{pushType},
+			party_organization = #{partyOrganization},
+			party_organization_id = #{partyOrganizationId},
+			award_category = #{awardCategory},
+			cj_type = #{cjType}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_party_reward_punish SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_party_reward_punish SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+			 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+	<select id="selectPerson" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairPartyRewardPunish">
+		SELECT
+			*
+		FROM
+			affair_party_reward_punish
+		WHERE
+			del_flag = '0'
+			AND award_category = '1'
+			AND party_organization_id = #{unitId}
+			AND create_date  BETWEEN  #{lastYearDate} AND #{nowYearDate}
+	</select>
+    <select id="selectPersonMonth" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairPartyRewardPunish">
+		SELECT
+			*
+		FROM
+			affair_party_reward_punish
+		WHERE
+			del_flag = '0'
+			AND award_category = '1'
+			AND party_organization_id = #{unitId}
+			AND create_date  BETWEEN  #{lastMonthDate} AND #{nowMonthDate}
+	</select>
+	<select id="selectAssessPersonAward" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairPartyRewardPunish">
+		SELECT
+			*
+		FROM
+			"affair_party_reward_punish"
+		WHERE
+			del_flag = '0'
+			AND award_category = '1'
+			AND id_number = #{idNumber}
+			AND create_date  BETWEEN  #{lastYearDate} AND #{nowYearDate}
+	</select>
+	<select id="selectAssessPersonAwardMonth" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairPartyRewardPunish">
+		SELECT
+			*
+		FROM
+			"affair_party_reward_punish"
+		WHERE
+			del_flag = '0'
+			AND award_category = '1'
+			AND id_number = #{idNumber}
+			AND create_date  BETWEEN  #{lastMonthDate} AND #{nowMonthDate}
+	</select>
+
+
+
+</mapper>

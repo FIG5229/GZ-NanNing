@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairIdeaAnalysisDao">
+    
+	<sql id="affairIdeaAnalysisColumns">
+		a.id AS "id",
+		a.title AS "title",
+		a.party_organization AS "partyOrganization",
+		a.party_organization_id AS "partyOrganizationId",
+		a.year AS "year",
+		a.quarter AS "quarter",
+		a.content AS "content",
+		a.file_path AS "filePath",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.status AS "status",
+		a.opinion AS "opinion"
+	</sql>
+	
+	<sql id="affairIdeaAnalysisJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairIdeaAnalysis">
+		SELECT 
+			<include refid="affairIdeaAnalysisColumns"/>
+		FROM affair_idea_analysis a
+		<include refid="affairIdeaAnalysisJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairIdeaAnalysis">
+		SELECT 
+			<include refid="affairIdeaAnalysisColumns"/>
+		FROM affair_idea_analysis a
+		<include refid="affairIdeaAnalysisJoins"/>
+		LEFT JOIN affair_general_situation s
+		ON s.id = a.party_organization_id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="title != null and title != ''">
+				AND a.title LIKE concat('%',#{title},'%')
+			</if>
+			<if test="partyOrganizationId != null and partyOrganizationId != ''">
+				AND a.party_organization_id = #{partyOrganizationId}
+			</if>
+			<if test="year != null and year != ''">
+				AND a.year = #{year}
+			</if>
+			<if test="quarter != null and quarter != ''">
+				AND a.quarter = #{quarter}
+			</if>
+			<if test="treeId != null and treeId != ''">
+				AND (a.party_organization_id = #{treeId} OR s.parent_ids LIKE CONCAT('%,', #{treeId}, ',%'))
+			</if>
+			<!-- 数据范围过滤 -->
+			<!-- 8.21注释掉不确定会不会影响其他功能 -->
+			/*${sqlMap.dsf}*/
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairIdeaAnalysis">
+		SELECT 
+			<include refid="affairIdeaAnalysisColumns"/>
+		FROM affair_idea_analysis a
+		<include refid="affairIdeaAnalysisJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_idea_analysis(
+			id,
+			title,
+			party_organization,
+			party_organization_id,
+			year,
+			quarter,
+			content,
+			file_path,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			status,
+			opinion
+		) VALUES (
+			#{id},
+			#{title},
+			#{partyOrganization},
+			#{partyOrganizationId},
+			#{year},
+			#{quarter},
+			#{content},
+			#{filePath},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			'1',
+			#{opinion}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_idea_analysis SET 	
+			title = #{title},
+			party_organization = #{partyOrganization},
+			party_organization_id = #{partyOrganizationId},
+			year = #{year},
+			quarter = #{quarter},
+			content = #{content},
+			file_path = #{filePath},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			status = #{status},
+			opinion = #{opinion}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_idea_analysis SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_idea_analysis SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+			 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<update id="shenHeSave">
+		UPDATE affair_idea_analysis SET
+			status = #{affairIdeaAnalysis.status},
+			opinion = #{affairIdeaAnalysis.opinion},
+			update_date = #{affairIdeaAnalysis.updateDate}
+		WHERE id = #{affairIdeaAnalysis.id}
+	</update>
+
+	<select id="findCountByMonth" resultType="java.lang.String">
+		select
+		count(1)
+		from affair_idea_analysis a
+		where a.del_flag = '0'
+		AND a.year = #{year}
+		AND a.quarter = #{quarterly}
+		AND a.party_organization = #{org}
+		AND a.party_organization_id = #{orgId}
+	</select>
+
+    <select id="selectNumber" resultType="java.lang.Integer">
+		SELECT COUNT
+			( ID )
+		FROM
+			"affair_idea_analysis"
+		WHERE
+			party_organization_id = #{idNumber}
+			AND  to_char ( "create_date", 'yyyy-mm-dd' ) BETWEEN #{yearL} AND #{yearT}
+	</select>
+
+    <select id="selectLeadNumber" resultType="java.lang.Integer">
+		SELECT COUNT
+			( ID )
+		FROM
+			"affair_idea_analysis"
+		WHERE
+			party_organization_id = #{idNumber}
+			AND create_date LIKE CONCAT('%,', #{time}, ',%'))
+	</select>
+</mapper>

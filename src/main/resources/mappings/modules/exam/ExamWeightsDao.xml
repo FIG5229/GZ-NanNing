@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.exam.dao.ExamWeightsDao">
+    
+	<sql id="examWeightsColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.department AS "department",
+		a.department_id AS "departmentId",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.kp_type AS "kpType",
+		a.kp_chu AS "kpChu"
+	</sql>
+	
+	<sql id="examWeightsJoins">
+	</sql>
+    
+	<select id="get" resultType="ExamWeights">
+		SELECT 
+			<include refid="examWeightsColumns"/>
+		FROM exam_weights a
+		<include refid="examWeightsJoins"/>
+		WHERE a.id = #{id}
+	</select>
+
+	<select id="getWeightByUnit" resultType="ExamWeights">
+		SELECT
+			<include refid="examWeightsColumns"/>
+		FROM exam_weights a
+		<include refid="examWeightsJoins"/>
+		WHERE  a.del_flag = '0'
+		<if test="kpType != null and kpType != ''">
+			and a.kp_type = #{kpType}
+		</if>
+		<if test="kpChu != null and kpChu != ''">
+			and a.kp_chu = #{kpChu}
+		</if>
+		<if test="departmentId != null and departmentId != ''">
+			and a.department_id LIKE
+			<if test="dbName == 'oracle'">'%'||#{departmentId}||'%'</if>
+			<if test="dbName == 'mssql'">'%'+#{departmentId}+'%'</if>
+			<if test="dbName == 'mysql'">concat('%',#{departmentId},'%')</if>
+			<if test="dbName == 'postgre'">'%'||#{departmentId}||'%'</if>
+		</if>
+	</select>
+	
+	<select id="findList" resultType="ExamWeights">
+		SELECT 
+			<include refid="examWeightsColumns"/>
+		FROM exam_weights a
+		<include refid="examWeightsJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+			</if>
+			<if test="departmentId != null and departmentId != ''">
+				AND a.department_id LIKE '%'||#{departmentId}||'%'
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.kp_type ASC,a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ExamWeights">
+		SELECT 
+			<include refid="examWeightsColumns"/>
+		FROM exam_weights a
+		<include refid="examWeightsJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO exam_weights(
+			id,
+			name,
+			department,
+			department_id,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			kp_type,
+			kp_chu
+		) VALUES (
+			#{id},
+			#{name},
+			#{department},
+			#{departmentId},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{kpType},
+			#{kpChu}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE exam_weights SET 	
+			name = #{name},
+			department = #{department},
+			department_id = #{departmentId},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			kp_type = #{kpType},
+			kp_chu = #{kpChu}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE exam_weights SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE exam_weights SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+	
+</mapper>

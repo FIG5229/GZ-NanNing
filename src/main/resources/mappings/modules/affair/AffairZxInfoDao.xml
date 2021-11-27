@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairZxInfoDao">
+    
+	<sql id="affairZxInfoColumns">
+		a.id AS "id",
+		a.date AS "date",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.name AS "name",
+		a.id_number AS "idNumber",
+		a.sex AS "sex",
+		a.type AS "type",
+		a.money AS "money",
+		a.child_name AS "childName",
+		a.child_sex AS "childSex",
+		a.child_birthday AS "childBirthday",
+		a.child_type AS "childType",
+		a.child_school_major AS "childSchoolMajor",
+		a.child_school_type AS "childSchoolType",
+		a.child_year_system AS "childYearSystem",
+		a.child_grade AS "childGrade",
+		a.file_path AS "filePath",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.child_major AS "childMajor",
+		a.shun AS "shun",
+		a.medica_number AS "medicaNumber",
+		a.remarks as "remarks"
+	</sql>
+	
+	<sql id="affairZxInfoJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairZxInfo">
+		SELECT 
+			<include refid="affairZxInfoColumns"/>
+		FROM affair_zx_info a
+		<include refid="affairZxInfoJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairZxInfo">
+		SELECT 
+			<include refid="affairZxInfoColumns"/>
+		FROM affair_zx_info a
+		<include refid="affairZxInfoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<choose>
+				<when test="beginDate != null and beginDate != '' and endDate != null and endDate != ''">
+					AND a.date between #{beginDate} and #{endDate}
+				</when>
+				<when test="beginDate != null and beginDate != ''">
+					AND a.date >= #{beginDate}
+				</when>
+				<when test="endDate != null and endDate != ''">
+					AND  #{endDate} >= a.date
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			<if test="idNumber != null and idNumber != ''">
+				AND a.id_number = #{idNumber}
+			</if>
+			<if test="unitId != null and unitId != ''">
+				AND a.unit_id = #{unitId}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE '%'||#{name}||'%'
+			</if>
+			<if test="sex != null and sex != ''">
+				AND a.sex = #{sex}
+			</if>
+			<!--${sqlMap.dsf}
+			<if test="userId != null and userId != ''">
+				or (a.unit_id = #{userId} AND a.del_flag = #{DEL_FLAG_NORMAL})
+			</if>-->
+			<if test="userId != null and userId != ''">
+				AND ( o.ID = #{userId} OR o.parent_ids LIKE'%,'||#{userId}||',%' OR u.ID = #{userId} or a.unit_id=#{userId})
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+			<!--需求变更按照修改时间排序-->
+				<!--ORDER BY a.name,${page.orderBy}*/-->
+				ORDER BY a.name,${page.orderBy}
+			</when>
+			<otherwise>
+				<!--ORDER BY a.name,a.update_date DESC-->
+				<!--9.3反馈更新 按照列表中的时间排序,同一个人的子女挨着-->
+				ORDER BY a.date DESC  ,a."name"DESC, a."shun" ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairZxInfo">
+		SELECT 
+			<include refid="affairZxInfoColumns"/>
+		FROM affair_zx_info a
+		<include refid="affairZxInfoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_zx_info(
+			id,
+			date,
+			unit,
+			unit_id,
+			name,
+			id_number,
+			sex,
+			type,
+			money,
+			file_path,
+			child_name,
+			child_sex,
+			child_birthday,
+			child_type,
+			child_school_major,
+			child_school_type,
+			child_year_system,
+			child_grade,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			child_major,
+			shun,
+			medica_number,
+			remarks
+		) VALUES (
+			#{id},
+			#{date},
+			#{unit},
+			#{unitId},
+			#{name},
+			#{idNumber},
+			#{sex},
+			#{type},
+			#{money},
+			#{filePath},
+			#{childName},
+			#{childSex},
+			#{childBirthday},
+			#{childType},
+			#{childSchoolMajor},
+			#{childSchoolType},
+			#{childYearSystem},
+			#{childGrade},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{childMajor},
+			#{shun},
+			#{medicaNumber},
+			#{remarks}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_zx_info SET 	
+			date = #{date},
+			unit = #{unit},
+			unit_id = #{unitId},
+			name = #{name},
+			id_number = #{idNumber},
+			sex = #{sex},
+			type = #{type},
+			money = #{money},
+			child_name = #{childName},
+			child_sex = #{childSex},
+			child_birthday = #{childBirthday},
+			child_type = #{childType},
+			child_school_major = #{childSchoolMajor},
+			child_school_type = #{childSchoolType},
+			child_year_system = #{childYearSystem},
+			child_grade = #{childGrade},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			file_path = #{filePath},
+			child_major = #{childMajor},
+			shun = #{shun},
+			medica_number = #{medicaNumber},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_zx_info SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_zx_info SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<select id="findInfoByCreateOrgId" resultType="java.util.HashMap">
+		SELECT case when(SUM(money) ISNULL) then 0 ELSE SUM(money) end as sum , count(id)
+		from affair_zx_info azxi
+		WHERE
+		azxi.del_flag = '0'
+		<if test="id != null and id != ''">
+			AND create_org_id = #{id}
+		</if>
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(azxi.date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from azxi.date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND azxi.date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND azxi.date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= azxi.date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findInfoByCreateOrgIds" resultType="java.util.HashMap">
+		SELECT case when(SUM(money) ISNULL) then 0 ELSE SUM(money) end as sum , count(id)
+		from affair_zx_info azxi
+		WHERE
+		azxi.del_flag = '0'
+		AND	create_org_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(azxi.date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from azxi.date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND azxi.date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND azxi.date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= azxi.date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="countstudyAid" resultType="map">
+		select count(1) as num , sd.label as label from affair_zx_info a
+		left join sys_dict sd on sd."type" = 'affair_zxctype'
+		<include refid="affairZxInfoJoins"/>
+		<!-- 本科 大专 中专-->
+		where a.del_flag = '0' and a.child_school_type = sd."value" and sd."value" in ('1','2','3')
+		${id}
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.date, 'yyyy-mm')  = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY sd.label
+	</select>
+	<select id="findStudyAidList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairZxInfo">
+		select <include refid="affairZxInfoColumns"/>
+		from affair_zx_info a
+		left join sys_dict sd on sd."type" = 'affair_zxctype'
+		<include refid="affairZxInfoJoins"/>
+		where a.del_flag = '0' and sd."value" = a.child_school_type
+		and sd.label = #{label}
+		${sqlMap.dsf}
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.date, 'yyyy-mm')  = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.date) = #{year}
+			</when>
+			<when test="dateStart != null and dateEnd != null">
+				AND a.date between  #{dateStart,jdbcType=DATE} and #{dateEnd,jdbcType=DATE}
+			</when>
+			<when test="dateStart != null">
+				AND a.date >= #{dateStart,jdbcType=DATE}
+			</when>
+			<when test="dateEnd != null">
+				AND  #{dateEnd,jdbcType=DATE} >= a.date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+</mapper>

@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairInformationAdoptionDao">
+    
+	<sql id="affairInformationAdoptionColumns">
+		a.id AS "id",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.date AS "date",
+		a.xx_chu AS "xxChu",
+		a.xx_ju AS "xxJu",
+		a.xx_bu_ju AS "xxBuJu",
+		a.xx_bu AS "xxBu",
+		a.gz_chu AS "gzChu",
+		a.gz_ju AS "gzJu",
+		a.gz_bu_ju AS "gzBuJu",
+		a.gz_bu AS "gzBu",
+		a.dy_chu AS "dyChu",
+		a.dy_ju AS "dyJu",
+		a.dy_bu_ju AS "dyBuJu",
+		a.dy_bu AS "dyBu",
+		a.ps_chu AS "psChu",
+		a.ps_ju AS "psJu",
+		a.ps_bu_ju AS "psBuJu",
+		a.ps_bu AS "psBu",
+		a.xc_ds AS "xcDs",
+		a.xc_sb AS "xcSb",
+		a.xc_zy AS "xcZy",
+		a.other_chu AS "otherChu",
+		a.other_ju AS "otherJu",
+		a.other_bu_ju AS "otherBuJu",
+		a.other_bu AS "otherBu",
+		a.score AS "score",
+		a.rank AS "rank",
+		a.remark AS "remark",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.number AS "number"
+	</sql>
+	
+	<sql id="affairInformationAdoptionJoins">
+		LEFT JOIN sys_office o ON o.id = a.unit_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairInformationAdoption">
+		SELECT 
+			<include refid="affairInformationAdoptionColumns"/>
+		FROM affair_information_adoption a
+		<include refid="affairInformationAdoptionJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairInformationAdoption">
+		SELECT 
+			<include refid="affairInformationAdoptionColumns"/>
+		FROM affair_information_adoption a
+		<include refid="affairInformationAdoptionJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="unitId != null and unitId != ''">
+				AND a.unit_id = #{unitId}
+			</if>
+			<choose>
+				<when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+					AND a.date between #{startDate} and #{endDate}
+				</when>
+				<when test="startDate != null and startDate != ''">
+					AND a.date >= #{startDate}
+				</when>
+				<when test="endDate != null and endDate != ''">
+					AND  #{endDate} >=  a.date
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairInformationAdoption">
+		SELECT 
+			<include refid="affairInformationAdoptionColumns"/>
+		FROM affair_information_adoption a
+		<include refid="affairInformationAdoptionJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_information_adoption(
+			id,
+			unit,
+			unit_id,
+			date,
+			xx_chu,
+			xx_ju,
+			xx_bu_ju,
+			xx_bu,
+			gz_chu,
+			gz_ju,
+			gz_bu_ju,
+			gz_bu,
+			dy_chu,
+			dy_ju,
+			dy_bu_ju,
+			dy_bu,
+			ps_chu,
+			ps_ju,
+			ps_bu_ju,
+			ps_bu,
+			xc_ds,
+			xc_sb,
+			xc_zy,
+			other_chu,
+			other_ju,
+			other_bu_ju,
+			other_bu,
+			score,
+			rank,
+			remark,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			number
+		) VALUES (
+			#{id},
+			#{unit},
+			#{unitId},
+			#{date},
+			#{xxChu},
+			#{xxJu},
+			#{xxBuJu},
+			#{xxBu},
+			#{gzChu},
+			#{gzJu},
+			#{gzBuJu},
+			#{gzBu},
+			#{dyChu},
+			#{dyJu},
+			#{dyBuJu},
+			#{dyBu},
+			#{psChu},
+			#{psJu},
+			#{psBuJu},
+			#{psBu},
+			#{xcDs},
+			#{xcSb},
+			#{xcZy},
+			#{otherChu},
+			#{otherJu},
+			#{otherBuJu},
+			#{otherBu},
+			#{score},
+			#{rank},
+			#{remark},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{number}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_information_adoption SET 	
+			unit = #{unit},
+			unit_id = #{unitId},
+			date = #{date},
+			xx_chu = #{xxChu},
+			xx_ju = #{xxJu},
+			xx_bu_ju = #{xxBuJu},
+			xx_bu = #{xxBu},
+			gz_chu = #{gzChu},
+			gz_ju = #{gzJu},
+			gz_bu_ju = #{gzBuJu},
+			gz_bu = #{gzBu},
+			dy_chu = #{dyChu},
+			dy_ju = #{dyJu},
+			dy_bu_ju = #{dyBuJu},
+			dy_bu = #{dyBu},
+			ps_chu = #{psChu},
+			ps_ju = #{psJu},
+			ps_bu_ju = #{psBuJu},
+			ps_bu = #{psBu},
+			xc_ds = #{xcDs},
+			xc_sb = #{xcSb},
+			xc_zy = #{xcZy},
+			other_chu = #{otherChu},
+			other_ju = #{otherJu},
+			other_bu_ju = #{otherBuJu},
+			other_bu = #{otherBu},
+			score = #{score},
+			rank = #{rank},
+			remark = #{remark},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			number = #{number}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_information_adoption SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_information_adoption SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+	
+</mapper>

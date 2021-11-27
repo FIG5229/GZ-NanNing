@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairPoliceThoughtAnalysisDao">
+    
+	<sql id="affairPoliceThoughtAnalysisColumns">
+		a.id AS "id",
+		a.unit AS "unit",
+		a.content AS "content",
+		a.time AS "time",
+		a.files AS "files",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.unit_id AS "unitId",
+		a.sign_in_time AS "signInTime",
+		a.sign_in_status AS "signInStatus",
+		a.report_type AS "reportType",
+		a.report_status AS "reportStatus",
+		a.report_time AS "reportTime",
+		a.classify AS "classify"
+	</sql>
+	
+	<sql id="affairPoliceThoughtAnalysisJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairPoliceThoughtAnalysis">
+		SELECT 
+			<include refid="affairPoliceThoughtAnalysisColumns"/>
+		FROM affair_police_thought_analysis a
+		<include refid="affairPoliceThoughtAnalysisJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairPoliceThoughtAnalysis">
+		SELECT 
+			<include refid="affairPoliceThoughtAnalysisColumns"/>
+		FROM affair_police_thought_analysis a
+		<include refid="affairPoliceThoughtAnalysisJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="unit != null and unit != ''">
+				AND a.unit LIKE 
+					<if test="dbName == 'oracle'">'%'||#{unit}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{unit}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{unit},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{unit}||'%'</if>
+			</if>
+			/*签收时  不能查看未上报的数据*/
+			<choose>
+				<when test="sign == true">
+					and a.report_status &lt;&gt; '1'
+					<if test="reportStatus != null and reportStatus != ''">
+						and a.report_status = #{reportStatus}
+					</if>
+				</when>
+				<otherwise>
+					<if test="reportStatus != null and reportStatus != ''">
+						and a.report_status  =  #{reportStatus}
+					</if>
+				</otherwise>
+			</choose>
+			<if test="reportType != null and reportType != ''">
+				and a.report_type = #{reportType}
+			</if>
+			<if test="year != null and year != ''">
+				AND extract(year from a.report_time) = #{year}
+			</if>
+			<if test="time != null and time != ''">
+				and a.time = #{time}
+			</if>
+			<choose>
+				<when test="startTime != null and startTime != '' and endTime != null and endTime != ''">
+					AND a.time between #{startTime} and #{endTime}
+				</when>
+				<when test="startTime != null and startTime != ''">
+					AND a.time >= #{startTime}
+				</when>
+				<when test="endTime != null and endTime != ''">
+					AND  #{endTime} >=  a.time
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			<if test="classify != null and classify != ''">
+				and classify = #{classify}
+			</if>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairPoliceThoughtAnalysis">
+		SELECT 
+			<include refid="affairPoliceThoughtAnalysisColumns"/>
+		FROM affair_police_thought_analysis a
+		<include refid="affairPoliceThoughtAnalysisJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+    <select id="selectAllYear" resultType="java.lang.String">
+		select
+			DISTINCT	( to_char( report_time, 'yyyy' ) )
+		from
+			affair_police_thought_analysis
+		where
+		 	del_flag = '0'
+	</select>
+
+    <select id="selectAllMonth" resultType="java.lang.String">
+		select
+			DISTINCT	( to_char( report_time, 'MM' ) )
+		from
+			affair_police_thought_analysis
+		where
+		 	del_flag = '0'
+	</select>
+
+    <select id="selectNumber" resultType="java.lang.Integer">
+		SELECT COUNT
+			( ID )
+		FROM
+			affair_police_thought_analysis
+		WHERE
+			del_flag = '0'
+			AND unit_id = #{idNumber}
+			AND  to_char ( "create_date", 'yyyy-mm-dd' ) BETWEEN #{yearL} AND #{yearT}
+	</select>
+
+    <select id="selectAllName" resultType="java.lang.String">
+		SELECT
+			unit
+		FROM
+			affair_police_thought_analysis
+		WHERE
+			del_flag = '0'
+	</select>
+
+    <insert id="insert">
+		INSERT INTO affair_police_thought_analysis(
+			id,
+			unit,
+			content,
+			time,
+			files,
+			create_by,
+			create_org_id,
+			create_date,
+			update_by,
+			update_org_id,
+			update_date,
+			del_flag,
+			unit_id,
+			sign_in_time,
+			sign_in_status,
+			report_type,
+			report_status,
+			report_time,
+			classify
+		) VALUES (
+			#{id},
+			#{unit},
+			#{content},
+			#{time},
+			#{files},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateDate},
+			#{delFlag},
+			#{unitId},
+			#{signInTime},
+			#{signInStatus},
+			#{reportType},
+			#{reportStatus},
+			#{reportTime},
+			#{classify}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_police_thought_analysis SET 	
+			unit = #{unit},
+			content = #{content},
+			time = #{time},
+			files = #{files},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_date = #{updateDate},
+			unit_id = #{unitId},
+			sign_in_time=#{signInTime},
+			sign_in_status=#{signInStatus},
+			report_type=#{reportType},
+			report_status=#{reportStatus},
+			report_time = #{reportTime},
+			classify = #{classify}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_police_thought_analysis SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_police_thought_analysis SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+	
+</mapper>

@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairWentiTalentNextDao">
+    
+	<sql id="affairWentiTalentNextColumns">
+		a.id AS "id",
+		a.police_no AS "policeNo",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.name AS "name",
+		a.id_number AS "idNumber",
+		a.birthday AS "birthday",
+		a.school AS "school",
+		a.skill AS "skill",
+		a.achievement AS "achievement",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.sex AS "sex",
+		a.yisu_level AS "yisuLevel"
+	</sql>
+	
+	<sql id="affairWentiTalentNextJoins">
+	</sql>
+    
+	<select id="get" resultType="AffairWentiTalentNext">
+		SELECT 
+			<include refid="affairWentiTalentNextColumns"/>
+		FROM affair_wenti_talent_next a
+		<include refid="affairWentiTalentNextJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairWentiTalentNext">
+		SELECT 
+			<include refid="affairWentiTalentNextColumns"/>
+		FROM affair_wenti_talent_next a
+		<include refid="affairWentiTalentNextJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+			</if>
+			<if test="beginBirthday != null and endBirthday != null and beginBirthday != '' and endBirthday != ''">
+				AND a.birthday BETWEEN #{beginBirthday} AND #{endBirthday}
+			</if>
+			<if test="skill != null and skill != ''">
+				AND a.skill = #{skill}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairWentiTalentNext">
+		SELECT 
+			<include refid="affairWentiTalentNextColumns"/>
+		FROM affair_wenti_talent_next a
+		<include refid="affairWentiTalentNextJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_wenti_talent_next(
+			id,
+			police_no,
+			unit,
+			unit_id,
+			name,
+			id_number,
+			birthday,
+			school,
+			skill,
+			achievement,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			sex,
+			yisu_level
+		) VALUES (
+			#{id},
+			#{policeNo},
+			#{unit},
+			#{unitId},
+			#{name},
+			#{idNumber},
+			#{birthday},
+			#{school},
+			#{skill},
+			#{achievement},
+			#{createBy.id},
+			#{createOrgId},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateOrgId},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{sex},
+			#{yisuLevel}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_wenti_talent_next SET 	
+			police_no = #{policeNo},
+			unit = #{unit},
+			unit_id = #{unitId},
+			name = #{name},
+			id_number = #{idNumber},
+			birthday = #{birthday},
+			school = #{school},
+			skill = #{skill},
+			achievement = #{achievement},
+			create_org_id = #{createOrgId},
+			create_id_no = #{createIdNo},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateOrgId},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			sex = #{sex},
+			yisu_level = #{yisuLevel}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_wenti_talent_next SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

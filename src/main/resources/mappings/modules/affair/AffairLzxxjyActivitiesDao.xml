@@ -1,0 +1,421 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairLzxxjyActivitiesDao">
+    
+	<sql id="affairLzxxjyActivitiesColumns">
+		a.id AS "id",
+		a.event_name AS "eventName",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.annex AS "annex",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.qx_unit AS "qxUnit",
+		a.qx_unit_id AS "qxUnitId",
+		a.type AS "type",
+		a.event_date AS "eventDate",
+		a.summary AS "summary",
+		a.publish_dep AS "publishDep",
+		a.publisher AS "publisher",
+		a.publish_org_id AS "publishOrgId",
+		a.receive_dep AS "receiveDep",
+		a.receive_dep_id AS "receiveDepId",
+		a.status AS "status",
+		a.flag AS "flag",
+		a.is_push AS "isPush"
+	</sql>
+	
+	<sql id="affairLzxxjyActivitiesJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairLzxxjyActivities">
+		SELECT 
+			<include refid="affairLzxxjyActivitiesColumns"/>
+		FROM affair_lzxxjy_activities a
+		<include refid="affairLzxxjyActivitiesJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairLzxxjyActivities">
+		<choose>
+			<when test="isFront == true">/*是否来自前端*/
+				SELECT
+				<include refid="affairLzxxjyActivitiesColumns"/>
+				FROM affair_lzxxjy_activities a
+				<where>
+				a.del_flag = #{DEL_FLAG_NORMAL}
+				<if test="eventName != null and eventName != ''">
+					AND a.event_name LIKE '%'||#{eventName}||'%'
+				</if>
+				<if test="unitId != null and unitId != ''">
+					AND a.unit_id = #{unitId}
+				</if>
+				<if test="type != null and type != ''">
+					AND a.type = #{type}
+				</if>
+				<if test="startYear != null and  startYear != ''">
+					AND a.event_date >= #{startYear}
+				</if>
+				<if test="otherYear != null and  otherYear != ''">
+					AND TO_CHAR(a.event_date, 'yyyy') = #{otherYear}
+				</if>
+				<choose>
+					<when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+						AND a.event_date between #{startDate} and #{endDate}
+					</when>
+					<when test="startDate != null and startDate != ''">
+						AND a.event_date >= #{startDate}
+					</when>
+					<when test="endDate != null and endDate != ''">
+						AND  #{endDate} >= a.event_date
+					</when>
+					<otherwise>
+					</otherwise>
+				</choose>
+				</where>
+			</when>
+			<when test="hasAuth == true">/*发布人*/
+				SELECT
+				<include refid="affairLzxxjyActivitiesColumns"/>
+				FROM affair_lzxxjy_activities a
+				<include refid="affairLzxxjyActivitiesJoins"/>
+				<where>
+					a.del_flag = #{DEL_FLAG_NORMAL}
+					<if test="eventName != null and eventName != ''">
+						AND a.event_name LIKE '%'||#{eventName}||'%'
+					</if>
+					<if test="unitId != null and unitId != ''">
+						AND a.unit_id = #{unitId}
+					</if>
+					<if test="type != null and type != ''">
+						AND a.type = #{type}
+					</if>
+					<if test="startYear != null and  startYear != ''">
+						AND a.event_date >= #{startYear}
+					</if>
+					<if test="otherYear != null and  otherYear != ''">
+						AND TO_CHAR(a.event_date, 'yyyy') = #{otherYear}
+					</if>
+					<choose>
+						<when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+							AND a.event_date between #{startDate} and #{endDate}
+						</when>
+						<when test="startDate != null and startDate != ''">
+							AND a.event_date >= #{startDate}
+						</when>
+						<when test="endDate != null and endDate != ''">
+							AND  #{endDate} >= a.event_date
+						</when>
+						<otherwise>
+						</otherwise>
+					</choose>
+					<choose>
+						<when test="qxUnitId != null and qxUnitId != '' ">
+							AND ( o.ID = #{qxUnitId} OR o.parent_ids LIKE'%,'||#{qxUnitId}||',%' OR u.ID = #{createBy.id} or a.qx_unit_id=#{qxUnitId} )
+						</when>
+						<otherwise>
+							AND ( o.ID = #{qxUnitId} OR u.ID = #{createBy.id} or a.qx_unit_id=#{qxUnitId})
+						</otherwise>
+					</choose>
+				</where>
+			</when>
+			<otherwise>/* 非发布人 */
+				SELECT
+				<include refid="affairLzxxjyActivitiesColumns"/>
+				,s.sign as signStatus,
+				s.date as signDate
+				FROM affair_lzxxjy_activities a LEFT JOIN affair_lzxxjy_activities_sign s on a.id = s.notice_id
+				<where>
+				a.del_flag = #{DEL_FLAG_NORMAL} and s.org_id = #{createBy.office.id}
+				<if test="eventName != null and eventName != ''">
+					AND a.event_name LIKE '%'||#{eventName}||'%'
+				</if>
+				<if test="unitId != null and unitId != ''">
+					AND a.unit_id = #{unitId}
+				</if>
+				<if test="type != null and type != ''">
+					AND a.type = #{type}
+				</if>
+				<if test="startYear != null and  startYear != ''">
+					AND a.event_date >= #{startYear}
+				</if>
+				<if test="otherYear != null and  otherYear != ''">
+					AND TO_CHAR(a.event_date, 'yyyy') = #{otherYear}
+				</if>
+				<choose>
+					<when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+						AND a.event_date between #{startDate} and #{endDate}
+					</when>
+					<when test="startDate != null and startDate != ''">
+						AND a.event_date >= #{startDate}
+					</when>
+					<when test="endDate != null and endDate != ''">
+						AND  #{endDate} >= a.event_date
+					</when>
+					<otherwise>
+					</otherwise>
+				</choose>
+				</where>
+			</otherwise>
+		</choose>
+
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.event_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairLzxxjyActivities">
+		SELECT 
+			<include refid="affairLzxxjyActivitiesColumns"/>
+		FROM affair_lzxxjy_activities a
+		<include refid="affairLzxxjyActivitiesJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_lzxxjy_activities(
+			id,
+			event_name,
+			unit,
+			unit_id,
+			annex,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			qx_unit,
+			qx_unit_id,
+			type,
+			event_date,
+			summary,
+			publish_dep,
+			publisher,
+			publish_org_id,
+			receive_dep,
+			receive_dep_id,
+			status,
+			flag,
+			is_push
+		) VALUES (
+			#{id},
+			#{eventName},
+			#{unit},
+			#{unitId},
+			#{annex},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{qxUnit},
+			#{createBy.id},
+			#{type},
+			#{eventDate},
+			#{summary},
+			#{publishDep},
+			#{publisher},
+			#{publishOrgId},
+			#{receiveDep},
+			#{receiveDepId},
+			#{status},
+			#{flag},
+			#{isPush}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_lzxxjy_activities SET 	
+			event_name = #{eventName},
+			unit = #{unit},
+			unit_id = #{unitId},
+			annex = #{annex},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			qx_unit = #{qxUnit},
+			qx_unit_id = #{createBy.id},
+			type = #{type},
+			event_date = #{eventDate},
+			summary = #{summary},
+			publish_dep = #{publishDep},
+			publisher = #{publisher},
+			publish_org_id = #{publishOrgId},
+			receive_dep = #{receiveDep},
+			receive_dep_id = #{receiveDepId},
+			status = #{status},
+			flag = #{flag},
+			is_push = #{isPush}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_lzxxjy_activities SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_lzxxjy_activities SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<select id="findInfoByCreateOrgId" resultType="java.util.HashMap">
+		SELECT count(id)
+		from affair_lzxxjy_activities ala
+		WHERE
+		ala.del_flag != '1'
+		<if test="id != null and id != ''">
+			AND create_org_id = #{id} AND ala.del_flag = '0'
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from ala.event_date) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(ala.event_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND ala.event_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND ala.event_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= ala.event_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findInfoByCreateOrgIds" resultType="java.util.HashMap">
+		SELECT count(id)
+		from affair_lzxxjy_activities ala
+		WHERE
+		ala.del_flag != '1'
+		AND	create_org_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from ala.event_date) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(ala.event_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND ala.event_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND ala.event_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= ala.event_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findSignNum" resultType="java.lang.Integer">
+		SELECT count(1) as signNum
+			FROM affair_lzxxjy_activities n
+			LEFT JOIN affair_lzxxjy_activities_sign s
+			ON n.id=s.notice_id
+			WHERE n.id=#{affairLzxxjyActivities.id} and s.sign = '1'
+	</select>
+
+	<select id="findSumNum" resultType="java.lang.Integer">
+		SELECT count(1)  as sumNum from  affair_lzxxjy_activities_sign s LEFT JOIN affair_lzxxjy_activities n  ON n.id=s.notice_id
+			WHERE n.id=#{affairLzxxjyActivities.id}
+	</select>
+
+	<select id="findByIds" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairLzxxjyActivities">
+		select <include refid="affairLzxxjyActivitiesColumns"/>
+		from affair_lzxxjy_activities a where id in <foreach collection="ids" item="item" index="index"
+														   open="(" separator="," close=")">#{item}</foreach>
+	</select>
+
+	<select id="indexNoticeList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairLzxxjyActivities">
+		select <include refid="affairLzxxjyActivitiesColumns"/>
+		from affair_lzxxjy_activities a
+		where a.del_flag = '0' and a.is_push = '1' and a.status = '2'
+		ORDER BY A.update_date DESC LIMIT 6;
+	</select>
+
+    <select id="selectAllYear" resultType="java.lang.String">
+		select
+			DISTINCT ( to_char( date, 'yyyy' ) )
+		from
+			affair_lzxxjy_activities
+		where
+		 	del_flag = '0'
+	</select>
+
+	<select id="selectNumber" resultType="java.lang.Integer">
+		SELECT COUNT
+			( ID )
+		FROM
+			affair_lzxxjy_activities
+		WHERE
+			del_flag = '0'
+			AND unit_id = #{idNumber}
+			AND to_char ( "event_date", 'yyyy-mm-dd' ) BETWEEN #{yearL} AND #{yearT}
+	</select>
+    <select id="selectAllName" resultType="java.lang.String">
+		select distinct
+			(unit)
+		from
+			affair_lzxxjy_activities
+		where
+			del_flag = '0'
+	</select>
+
+	<select id="selectAllMonth" resultType="java.lang.String">
+		select
+			DISTINCT ( to_char( date, 'MM' ) )
+		from
+			affair_lzxxjy_activities
+		where
+		 	del_flag = '0'
+	</select>
+
+</mapper>

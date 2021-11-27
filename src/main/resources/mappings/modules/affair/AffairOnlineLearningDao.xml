@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairOnlineLearningDao">
+    
+	<sql id="affairOnlineLearningColumns">
+		a.id AS "id",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.date AS "date",
+		a.total_users AS "totalUsers",
+		a.total_learn AS "totalLearn",
+		a.learn_rate AS "learnRate",
+		a.total_study_time AS "totalStudyTime",
+		a.cjxxyhpjxxsc AS "cjxxyhpjxxsc",
+		a.qtyhpjxxsc AS "qtyhpjxxsc",
+		a.total_numbers AS "totalNumbers",
+		a.cjxxyhpjxxcs AS "cjxxyhpjxxcs",
+		a.qtyhpjxxcs AS "qtyhpjxxcs",
+		a.kctgzs AS "kctgzs",
+		a.rjtgkc AS "rjtgkc",
+		a.remark AS "remark",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.number AS "number"
+	</sql>
+	
+	<sql id="affairOnlineLearningJoins">
+		LEFT JOIN sys_office o ON o.id = a.unit_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairOnlineLearning">
+		SELECT 
+			<include refid="affairOnlineLearningColumns"/>
+		FROM affair_online_learning a
+		<include refid="affairOnlineLearningJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairOnlineLearning">
+		SELECT 
+			<include refid="affairOnlineLearningColumns"/>
+		FROM affair_online_learning a
+		<include refid="affairOnlineLearningJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="unitId != null and unitId != ''">
+				AND a.unit_id = #{unitId}
+			</if>
+			<choose>
+				<when test="startDate != null and endDate != null and startDate != '' and endDate != ''">
+					AND a.date BETWEEN #{startDate} AND #{endDate}
+				</when>
+				<when test="endDate != null and endDate != ''">
+					AND a.date &gt;= #{endDate}
+				</when>
+				<when test="endDate != null and endDate != ''">
+					AND a.date &lt;= #{endDate}
+				</when>
+				<otherwise></otherwise>
+			</choose>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairOnlineLearning">
+		SELECT 
+			<include refid="affairOnlineLearningColumns"/>
+		FROM affair_online_learning a
+		<include refid="affairOnlineLearningJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_online_learning(
+			id,
+			unit,
+			unit_id,
+			date,
+			total_users,
+			total_learn,
+			learn_rate,
+			total_study_time,
+			cjxxyhpjxxsc,
+			qtyhpjxxsc,
+			total_numbers,
+			cjxxyhpjxxcs,
+			qtyhpjxxcs,
+			kctgzs,
+			rjtgkc,
+			remark,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			number
+		) VALUES (
+			#{id},
+			#{unit},
+			#{unitId},
+			#{date},
+			#{totalUsers},
+			#{totalLearn},
+			#{learnRate},
+			#{totalStudyTime},
+			#{cjxxyhpjxxsc},
+			#{qtyhpjxxsc},
+			#{totalNumbers},
+			#{cjxxyhpjxxcs},
+			#{qtyhpjxxcs},
+			#{kctgzs},
+			#{rjtgkc},
+			#{remark},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{number}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_online_learning SET 	
+			unit = #{unit},
+			unit_id = #{unitId},
+			date = #{date},
+			total_users = #{totalUsers},
+			total_learn = #{totalLearn},
+			learn_rate = #{learnRate},
+			total_study_time = #{totalStudyTime},
+			cjxxyhpjxxsc = #{cjxxyhpjxxsc},
+			qtyhpjxxsc = #{qtyhpjxxsc},
+			total_numbers = #{totalNumbers},
+			cjxxyhpjxxcs = #{cjxxyhpjxxcs},
+			qtyhpjxxcs = #{qtyhpjxxcs},
+			kctgzs = #{kctgzs},
+			rjtgkc = #{rjtgkc},
+			remark = #{remark},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			number = #{number}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_online_learning SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_online_learning SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+	
+</mapper>

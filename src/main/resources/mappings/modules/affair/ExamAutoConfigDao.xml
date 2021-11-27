@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.ExamAutoConfigDao">
+    
+	<sql id="examAutoConfigColumns">
+		a.id AS "id",
+		a.kp_type AS "kpType",
+		a.cycle AS "cycle",
+		a.standard_id AS "standardId",
+		a.row_num AS "rowNum",
+		a.sys AS "sys",
+		a.items AS "items",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.standard as "standard",
+		a.standard_option as "standardOption"
+	</sql>
+	
+	<sql id="examAutoConfigJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="ExamAutoConfig">
+		SELECT 
+			<include refid="examAutoConfigColumns"/>
+		FROM exam_auto_config a
+		<include refid="examAutoConfigJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ExamAutoConfig">
+		SELECT 
+			<include refid="examAutoConfigColumns"/>
+		FROM exam_auto_config a
+		<include refid="examAutoConfigJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="kpType != null and kpType != ''">
+				AND a.kp_type = #{kpType}
+			</if>
+			<if test="cycle != null and cycle != ''">
+				AND a.cycle = #{cycle}
+			</if>
+			<if test="standardId != null and standardId != ''">
+				AND a.standard_id = #{standardId}
+			</if>
+			<if test="standard != null and standard != ''">
+				AND a.standard_id like '%${standardId}%'
+			</if>
+			<if test="rowNum != null and rowNum != ''">
+				AND a.row_num = #{rowNum}
+			</if>
+			<if test="standardOption != null and standardOption != ''">
+				AND a.standard_option like '%${standardOption}%'
+			</if>
+			<if test="sys != null and sys != ''">
+				AND a.sys LIKE 
+					<if test="dbName == 'oracle'">'%'||#{sys}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{sys}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{sys},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{sys}||'%'</if>
+			</if>
+			<if test="items != null and items != ''">
+				AND a.items LIKE 
+					<if test="dbName == 'oracle'">'%'||#{items}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{items}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{items},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{items}||'%'</if>
+			</if>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ExamAutoConfig">
+		SELECT 
+			<include refid="examAutoConfigColumns"/>
+		FROM exam_auto_config a
+		<include refid="examAutoConfigJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO exam_auto_config(
+			id,
+			kp_type,
+			cycle,
+			standard_id,
+			row_num,
+			sys,
+			items,
+			create_by,
+			create_org_id,
+			create_date,
+			update_by,
+			update_org_id,
+			update_date,
+			del_flag,
+			standard,
+			standard_option
+		) VALUES (
+			#{id},
+			#{kpType},
+			#{cycle},
+			#{standardId},
+			#{rowNum},
+			#{sys},
+			#{items},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateDate},
+			#{delFlag},
+			#{standard},
+			#{standardOption}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE exam_auto_config SET 	
+			kp_type = #{kpType},
+			cycle = #{cycle},
+			standard_id = #{standardId},
+			row_num = #{rowNum},
+			sys = #{sys},
+			items = #{items},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_date = #{updateDate},
+			standard = #{standard},
+			standard_option = #{standardOption}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE exam_auto_config SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

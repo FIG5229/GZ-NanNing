@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairMedicalInsuranceDao">
+    
+	<sql id="affairMedicalInsuranceColumns">
+		a.id AS "id",
+		a.time_year AS "timeYear",
+		a.name AS "name",
+		a.birthday AS "birthday",
+		a.age AS "age",
+		a.id_number AS "idNumber",
+		a.cardinal_number AS "cardinalNumber",
+		a.individual_proportion AS "individualProportion",
+		a.individual_payment AS "individualPayment",
+		a.unit_proportion AS "unitProportion",
+		a.unit_payment AS "unitPayment",
+		a.month_account AS "monthAccount",
+		a.month_account_delimit AS "monthAccountDelimit",
+		a.addition AS "addition",
+		a.addition_funds AS "additionFunds",
+		a.average_salary AS "averageSalary",
+		a.annual_proportion AS "annualProportion",
+		a.annual_account_delimit AS "annualAccountDelimit",
+		a.sex AS "sex",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.annual_proportion_over AS "annualProportionOver",
+		a.max_number AS "maxNumber"
+	</sql>
+	
+	<sql id="affairMedicalInsuranceJoins">
+		LEFT JOIN affair_labor_office o ON o.id = a.create_org_id
+		LEFT JOIN affair_labor_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairMedicalInsurance">
+		SELECT 
+			<include refid="affairMedicalInsuranceColumns"/>
+		FROM affair_medical_insurance a
+		<include refid="affairMedicalInsuranceJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairMedicalInsurance">
+		SELECT 
+			<include refid="affairMedicalInsuranceColumns"/>
+		FROM affair_medical_insurance a
+		<include refid="affairMedicalInsuranceJoins"/>
+		LEFT JOIN affair_labor_sort s ON s.id_number = a.id_number
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<!--AND s.del_flag = '0'-->
+			AND s.del_flag != '1'
+			<if test="timeYear != null and timeYear != ''">
+				AND a.time_year = #{timeYear}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+			</if>
+			<if test="timeYear != null and timeYear != ''">
+				AND a.time_year LIKE
+				<if test="dbName == 'oracle'">'%'||#{timeYear}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{timeYear}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{timeYear},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{timeYear}||'%'</if>
+			</if>
+			<if test="userId != null and userId != ''">
+				AND ( o.ID = #{userId} OR o.parent_ids LIKE'%,'||#{userId}||',%' OR u.ID = #{userId})
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY o.unit_sort ASC, s.sort ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairMedicalInsurance">
+		SELECT 
+			<include refid="affairMedicalInsuranceColumns"/>
+		FROM affair_medical_insurance a
+		<include refid="affairMedicalInsuranceJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_medical_insurance(
+			id,
+			time_year,
+			name,
+			birthday,
+			age,
+			id_number,
+			cardinal_number,
+			individual_proportion,
+			individual_payment,
+			unit_proportion,
+			unit_payment,
+			month_account,
+			month_account_delimit,
+			addition,
+			addition_funds,
+			average_salary,
+			annual_proportion,
+			annual_account_delimit,
+			sex,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			unit,
+			unit_id,
+			annual_proportion_over,
+			max_number
+		) VALUES (
+			#{id},
+			#{timeYear},
+			#{name},
+			#{birthday},
+			#{age},
+			#{idNumber},
+			#{cardinalNumber},
+			#{individualProportion},
+			#{individualPayment},
+			#{unitProportion},
+			#{unitPayment},
+			#{monthAccount},
+			#{monthAccountDelimit},
+			#{addition},
+			#{additionFunds},
+			#{averageSalary},
+			#{annualProportion},
+			#{annualAccountDelimit},
+			#{sex},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{unit},
+			#{unitId},
+			#{annualProportionOver},
+			#{maxNumber}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_medical_insurance SET
+			time_year = #{timeYear},
+			name = #{name},
+			birthday = #{birthday},
+			age = #{age},
+			id_number = #{idNumber},
+			cardinal_number = #{cardinalNumber},
+			individual_proportion = #{individualProportion},
+			individual_payment = #{individualPayment},
+			unit_proportion = #{unitProportion},
+			unit_payment = #{unitPayment},
+			month_account = #{monthAccount},
+			month_account_delimit = #{monthAccountDelimit},
+			addition = #{addition},
+			addition_funds = #{additionFunds},
+			average_salary = #{averageSalary},
+			annual_proportion = #{annualProportion},
+			annual_account_delimit = #{annualAccountDelimit},
+			sex = #{sex},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			unit = #{unit},
+			unit_id = #{unitId},
+			annual_proportion_over = #{annualProportionOver},
+			max_number = #{maxNumber}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_medical_insurance SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	<update id="deleteByIds">
+		UPDATE affair_medical_insurance SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+<!--	<select id="selectCardinalByIdNumber" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairMedicalInsurance">-->
+<!--		SELECT-->
+<!--			cardinal_number,-->
+<!--			individual_proportion,-->
+<!--			unit_proportion,-->
+<!--			average_salary-->
+<!--		FROM-->
+<!--			affair_medical_insurance-->
+<!--		WHERE-->
+<!--			id = #{idNumber}-->
+<!--	</select>-->
+
+	<select id="findBase" resultType="java.util.Map">
+		SELECT (select p.birthday from personnel_base p where p.id_number ~* a.id_number) AS birthday,
+		(select p.sex from personnel_base p where p.id_number ~* a.id_number) AS sex,
+		a.name AS names, a.id_number AS idNumber,
+		(SUM(a.sum) / 12) AS sum,
+		(SUM ( a.jb_grade_salary ) / 12 )AS jbGradeSalary,
+		a.unit AS "unit",
+		a.unit_id AS "unitId"
+		FROM affair_labor a
+		LEFT JOIN affair_labor_office o ON o.id = a.unit_id
+		LEFT JOIN affair_labor_user u ON u.id = a.create_by
+		WHERE a.del_flag = '0'
+		<if test="year != null and year != ''">
+			AND a.year = #{year}
+		</if>
+		<if test="userOffice != '' and userOffice != null">
+			AND ( o.ID = #{userOffice} OR o.parent_ids LIKE'%,'||#{userOffice}||',%' OR u.ID = #{userOffice})
+		</if>
+		GROUP BY
+		sex,
+		birthday,
+		names,
+		id_number,
+		unit,
+		unit_id
+	</select>
+</mapper>

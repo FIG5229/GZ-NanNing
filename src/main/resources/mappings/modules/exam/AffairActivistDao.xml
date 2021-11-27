@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.exam.dao.AffairActivistDao">
+    
+	<sql id="affairActivistColumns">
+		a.id AS "id",
+		a.police_no AS "policeNo",
+		a.id_number AS "idNumber",
+		a.name AS "name",
+		a.sex AS "sex",
+		a.party_branch AS "partyBranch",
+		a.party_branch_id AS "partyBranchId",
+		a.foster_people AS "fosterPeople",
+		a.approval_date AS "approvalDate",
+		a.enter_date AS "enterDate",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="affairActivistJoins">
+	</sql>
+    
+	<select id="get" resultType="AffairActivist">
+		SELECT 
+			<include refid="affairActivistColumns"/>
+		FROM affair_activist a
+		<include refid="affairActivistJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairActivist">
+		SELECT 
+			<include refid="affairActivistColumns"/>
+		FROM affair_activist a
+		<include refid="affairActivistJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="policeNo != null and policeNo != ''">
+				AND a.police_no = #{policeNo}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+			</if>
+			<if test="partyBranch != null and partyBranch != ''">
+				AND a.party_branch LIKE 
+					<if test="dbName == 'oracle'">'%'||#{partyBranch}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{partyBranch}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{partyBranch},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{partyBranch}||'%'</if>
+			</if>
+			<if test="fosterPeople != null and fosterPeople != ''">
+				AND a.foster_people LIKE 
+					<if test="dbName == 'oracle'">'%'||#{fosterPeople}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{fosterPeople}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{fosterPeople},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{fosterPeople}||'%'</if>
+			</if>
+			<if test="approvalDate != null and approvalDate != ''">
+				AND a.approval_date = #{approvalDate}
+			</if>
+			<if test="enterDate != null and enterDate != ''">
+				AND a.enter_date = #{enterDate}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairActivist">
+		SELECT 
+			<include refid="affairActivistColumns"/>
+		FROM affair_activist a
+		<include refid="affairActivistJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_activist(
+			id,
+			police_no,
+			id_number,
+			name,
+			sex,
+			party_branch,
+			party_branch_id,
+			foster_people,
+			approval_date,
+			enter_date,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{policeNo},
+			#{idNumber},
+			#{name},
+			#{sex},
+			#{partyBranch},
+			#{partyBranchId},
+			#{fosterPeople},
+			#{approvalDate},
+			#{enterDate},
+			#{createBy.id},
+			#{createOrgId},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateOrgId},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_activist SET 	
+			police_no = #{policeNo},
+			id_number = #{idNumber},
+			name = #{name},
+			sex = #{sex},
+			party_branch = #{partyBranch},
+			party_branch_id = #{partyBranchId},
+			foster_people = #{fosterPeople},
+			approval_date = #{approvalDate},
+			enter_date = #{enterDate},
+			create_org_id = #{createOrgId},
+			create_id_no = #{createIdNo},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateOrgId},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_activist SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

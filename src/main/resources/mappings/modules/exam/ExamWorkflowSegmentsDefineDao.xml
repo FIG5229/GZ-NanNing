@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.exam.dao.ExamWorkflowSegmentsDefineDao">
+    
+	<sql id="examWorkflowSegmentsDefineColumns">
+		a.id AS "id",
+		a.type AS "type",
+		a.name AS "name",
+		a.sort AS "sort",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.is_must AS "isMust"
+	</sql>
+	
+	<sql id="examWorkflowSegmentsDefineJoins">
+	</sql>
+    
+	<select id="get" resultType="ExamWorkflowSegmentsDefine">
+		SELECT 
+			<include refid="examWorkflowSegmentsDefineColumns"/>
+		FROM exam_workflow_segments_define a
+		<include refid="examWorkflowSegmentsDefineJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ExamWorkflowSegmentsDefine">
+		SELECT 
+			<include refid="examWorkflowSegmentsDefineColumns"/>
+		FROM exam_workflow_segments_define a
+		<include refid="examWorkflowSegmentsDefineJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE concat('%',#{name},'%')
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ExamWorkflowSegmentsDefine">
+		SELECT 
+			<include refid="examWorkflowSegmentsDefineColumns"/>
+		FROM exam_workflow_segments_define a
+		<include refid="examWorkflowSegmentsDefineJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+    <insert id="insert">
+		INSERT INTO exam_workflow_segments_define(
+			id,
+			type,
+			name,
+			sort,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag,
+			is_must
+		) VALUES (
+			#{id},
+			#{type},
+			#{name},
+			#{sort},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag},
+			#{isMust}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE exam_workflow_segments_define SET 	
+			type = #{type},
+			name = #{name},
+			sort = #{sort},
+			is_must = #{isMust}
+			update_by = #{updateBy.id},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE exam_workflow_segments_define SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<select id="findByType" resultType="com.thinkgem.jeesite.modules.exam.entity.ExamWorkflowSegmentsDefine">
+		select
+		<include refid="examWorkflowSegmentsDefineColumns"/>
+		 from exam_workflow_segments_define a
+		 where a.type = #{type} and a.del_flag = '0'
+		order by sort
+	</select>
+	<select id="findIdByTypeAndName" resultType="java.lang.String">
+		select d.id from exam_workflow_segments_define d where d.type = #{type} and d.name = #{name}
+	</select>
+
+	<select id="queryPoliceDatas" resultType="com.thinkgem.jeesite.modules.sys.entity.User">
+		select a.id,
+    	a.company_id AS "company.id",
+    	a.office_id AS "office.id",
+    	a.base_office_id as "baseOfficeId",
+    	a.base_office_name as "baseOfficeName",
+    	a.login_name,
+    	a.password,
+    	a.no,
+		a.name,
+		a.email,
+		a.phone,
+		a.mobile,
+		a.user_type,
+		a.login_ip,
+		a.login_date,
+		a.remarks,
+		a.login_flag,
+		a.photo,
+		a.create_by AS "createBy.id",
+		a.create_date,
+		a.update_by AS "updateBy.id",
+		a.update_date,
+		a.del_flag,
+		o.name AS "office.name"
+		from sys_user a
+		left join sys_office o on a.no = o.code
+		left join sys_offices os on os.id = o.id
+		left join sys_user_role ur on ur.user_id = a."id"
+		where ur.role_id = #{name}
+		${sqlMap.dsf}
+	</select>
+</mapper>

@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairConsolationWorkInfoDao">
+    
+	<sql id="affairConsolationWorkInfoColumns">
+		a.id AS "id",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.name AS "name",
+		a.id_number AS "idNumber",
+		a.type AS "type",
+		a.date AS "date",
+		a.money AS "money",
+		a.content AS "content",
+		a.file_path AS "filePath",
+		a.remark AS "remark",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.title AS "title",
+		a.cause AS "cause"
+	</sql>
+	
+	<sql id="affairConsolationWorkInfoJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairConsolationWorkInfo">
+		SELECT 
+			<include refid="affairConsolationWorkInfoColumns"/>
+		FROM affair_consolation_work_info a
+		<include refid="affairConsolationWorkInfoJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairConsolationWorkInfo">
+		SELECT 
+			<include refid="affairConsolationWorkInfoColumns"/>
+		FROM affair_consolation_work_info a
+		<include refid="affairConsolationWorkInfoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="unit != null and unit != ''">
+				AND a.unit LIKE
+				<if test="dbName == 'oracle'">'%'||#{unit}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{unit}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{unit},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{unit}||'%'</if>
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE '%'||#{name}||'%'
+			</if>
+			<if test="title != null and title != ''">
+				AND a.title LIKE '%'||#{title}||'%'
+			</if>
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+			<choose>
+				<when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+					AND a.date between #{startDate} and #{endDate}
+				</when>
+				<when test="startDate != null and startDate != ''">
+					AND a.date >= #{startDate}
+				</when>
+				<when test="endDate != null and endDate != ''">
+					AND  #{endDate} >= a.date
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			<!--${sqlMap.dsf}
+			<if test="userId != null and userId != ''">
+				or (a.unit_id = #{userId} AND a.del_flag = #{DEL_FLAG_NORMAL})
+			</if>-->
+			<if test="userId != null and userId != ''">
+				AND ( o.ID = #{userId} OR o.parent_ids LIKE'%,'||#{userId}||',%' OR u.ID = #{userId} or a.unit_id=#{userId})
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairConsolationWorkInfo">
+		SELECT 
+			<include refid="affairConsolationWorkInfoColumns"/>
+		FROM affair_consolation_work_info a
+		<include refid="affairConsolationWorkInfoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_consolation_work_info(
+			id,
+			unit,
+			unit_id,
+			name,
+			id_number,
+			type,
+			date,
+			money,
+			content,
+			file_path,
+			remark,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			title,
+			cause
+		) VALUES (
+			#{id},
+			#{unit},
+			#{unitId},
+			#{name},
+			#{idNumber},
+			#{type},
+			#{date},
+			#{money},
+			#{content},
+			#{filePath},
+			#{remark},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{title},
+			#{cause}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_consolation_work_info SET 	
+			unit = #{unit},
+			unit_id = #{unitId},
+			name = #{name},
+			id_number = #{idNumber},
+			type = #{type},
+			date = #{date},
+			money = #{money},
+			content = #{content},
+			file_path = #{filePath},
+			remark = #{remark},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			title = #{title},
+			cause = #{cause}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_consolation_work_info SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_consolation_work_info SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+	
+	<select id="findInfoByCreateOrgId" resultType="java.util.HashMap">
+		SELECT
+			sd.label,
+			<!--case when(SUM(money) ISNULL) then 0 ELSE SUM(money) end as sum,-->
+			count(acwi.type ) as num
+		FROM
+		affair_consolation_work_info acwi
+		LEFT JOIN sys_dict sd ON acwi.type = sd.VALUE
+		LEFT JOIN sys_office o ON o.id = acwi.create_org_id
+		LEFT JOIN sys_user u ON u.id = acwi.create_by
+		WHERE
+			acwi.del_flag = '0'
+			AND sd.type = 'affair_ww'
+			AND sd.del_flag = '0'
+		<if test="id != null and id != ''">
+			${id}
+		</if>
+			<!--
+		<if test="id != null and id != ''">
+			AND acwi.create_org_id = #{id}
+		</if>
+			-->
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(acwi.date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from acwi.date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND acwi.date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND acwi.date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= acwi.date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY acwi.type , sd.label
+	</select>
+	
+	<select id="findInfoByCreateOrgIds" resultType="java.util.HashMap">
+		SELECT
+			sd.label,
+			--case when(SUM(money) ISNULL) then 0 ELSE SUM(money) end as sum,
+			count(acwi.type )
+		FROM
+			affair_consolation_work_info acwi
+			LEFT JOIN sys_dict sd ON acwi.type = sd.
+		VALUE
+		WHERE
+			acwi.del_flag = '0'
+			AND sd.type = 'affair_ww'
+			AND sd.del_flag = '0'
+			AND acwi.create_org_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+		 	#{id}
+		 </foreach>	
+		)
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(acwi.date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from acwi.date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND acwi.date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND acwi.date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= acwi.date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY acwi.type , sd.label
+	</select>
+
+	<select id="findSympathyDetailList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairConsolationWorkInfo">
+		select <include refid="affairConsolationWorkInfoColumns"/>
+		from affair_consolation_work_info a
+		LEFT JOIN sys_dict sd ON a.type = sd.VALUE
+		<include refid="affairConsolationWorkInfoJoins"/>
+		WHERE
+		a.del_flag = '0'
+		AND sd.type = 'affair_ww'
+		AND sd.del_flag = '0'
+		and sd.label = #{label}
+		${sqlMap.dsf}
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.date DESC
+			</otherwise>
+		</choose>
+
+	</select>
+
+	<select id="allInfo" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairConsolationWorkInfo">
+		select
+		<include refid="affairConsolationWorkInfoColumns"/>
+		from affair_consolation_work_info a
+		where a.del_flag = '0'
+		<!--AND	 CAST ( SUBSTRING ( TO_CHAR( A.create_date, 'yyyy-mm-dd' ), 1, 4 ) as varchar ) = #{year}
+		<if test="month != '' and month != null">
+			and CAST ( SUBSTRING ( TO_CHAR( A.create_date, 'yyyy-mm-dd' ), 6, 2 ) as varchar ) = #{month}
+		</if>-->
+		<if test="startTime != null and startTime != '' and endTime != null and endTime != ''">
+			AND to_char ( A.create_date, 'yyyy-mm-dd' ) BETWEEN #{startTime} AND #{endTime}
+		</if>
+	</select>
+
+	<select id="unitCount" resultType="java.lang.Integer">
+		select
+		count(a.unit_id)
+		from affair_consolation_work_info a
+		where a.del_flag = '0'
+		AND a.unit_id = #{unitId}
+		<if test="startTime != null and startTime != '' and endTime != null and endTime != ''">
+			AND to_char ( A.create_date, 'yyyy-mm-dd' ) BETWEEN #{startTime} AND #{endTime}
+		</if>
+	</select>
+
+</mapper>

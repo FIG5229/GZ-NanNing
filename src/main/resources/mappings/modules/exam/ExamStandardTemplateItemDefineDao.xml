@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.exam.dao.ExamStandardTemplateItemDefineDao">
+    
+	<sql id="examStandardTemplateItemDefineColumns">
+		a.id AS "id",
+		a.column_name AS "columnName",
+		a.column_type AS "columnType",
+		a.column_order AS "columnOrder",
+		a.template_id AS "templateId",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate"
+	</sql>
+	
+	<sql id="examStandardTemplateItemDefineJoins">
+		LEFT JOIN exam_standard_template_define b ON b.id = a.template_id
+	</sql>
+    
+	<select id="get" resultType="ExamStandardTemplateItemDefine">
+		SELECT 
+			<include refid="examStandardTemplateItemDefineColumns"/>
+		FROM exam_standard_template_item_define a
+		<include refid="examStandardTemplateItemDefineJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ExamStandardTemplateItemDefine">
+		SELECT 
+			<include refid="examStandardTemplateItemDefineColumns"/>
+		FROM exam_standard_template_item_define a
+		<include refid="examStandardTemplateItemDefineJoins"/>
+		<where>
+			
+			<if test="columnName != null and columnName != ''">
+				AND a.column_name = #{columnName}
+			</if>
+			<if test="columnType != null and columnType != ''">
+				AND a.column_type = #{columnType}
+			</if>
+			<if test="columnOrder != null and columnOrder != ''">
+				AND a.column_order = #{columnOrder}
+			</if>
+			<if test="templateId != null and templateId != ''">
+				AND a.template_id = #{templateId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ExamStandardTemplateItemDefine">
+		SELECT 
+			<include refid="examStandardTemplateItemDefineColumns"/>
+		FROM exam_standard_template_item_define a
+		<include refid="examStandardTemplateItemDefineJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date ASC
+			</otherwise>
+		</choose>
+	</select>
+
+    <insert id="insert">
+		INSERT INTO exam_standard_template_item_define(
+			id,
+			column_name,
+			column_type,
+			column_order,
+			template_id,
+			create_by,
+			create_date,
+			update_by,
+			update_date
+		) VALUES (
+			#{id},
+			#{columnName},
+			#{columnType},
+			#{columnOrder},
+			#{templateId},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE exam_standard_template_item_define SET 	
+			column_name = #{columnName},
+			column_type = #{columnType},
+			column_order = #{columnOrder},
+			template_id = #{templateId},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM exam_standard_template_item_define
+		<choose>
+			<when test="id !=null and id != ''">
+				WHERE id = #{id}
+			</when>
+			<otherwise>
+				WHERE template_id = #{templateId}
+			</otherwise>
+		</choose>
+	</update>
+
+	<select id="findByTemplateId" resultType="java.util.Map">
+		select a.id ,a.column_name, a.column_type,a.column_order
+		from exam_standard_template_item_define a
+		where template_id = #{templateId}
+		ORDER BY column_order asc
+	</select>
+</mapper>

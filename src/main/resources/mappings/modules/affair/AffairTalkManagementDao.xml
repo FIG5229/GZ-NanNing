@@ -1,0 +1,557 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairTalkManagementDao">
+    
+	<sql id="affairTalkManagementColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.sex AS "sex",
+		a.siren AS "siren",
+		a.phone_num AS "phoneNum",
+		a.problem AS "problem",
+		a.letter_category AS "letterCategory",
+		a.time AS "time",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.main_problem AS "mainProblem",
+		a.annex AS "annex",
+		a.reviewer AS "reviewer",
+		a.audit_opinion AS "auditOpinion",
+		a.approval_status AS "approvalStatus",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.personal_num AS "personalNum",
+		a.qx_unit AS "qxUnit",
+		a.qx_unit_id AS "qxUnitId",
+		a.job AS "job",
+		a.job_level AS "jobLevel",
+		a.mianmao AS "mianmao",
+		a.zb_unit AS "zbUnit",
+		a.talker AS "talker",
+		a.talk_place AS "talkPlace"
+	</sql>
+	
+	<sql id="affairTalkManagementJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairTalkManagement">
+		SELECT 
+			<include refid="affairTalkManagementColumns"/>
+		FROM affair_talk_management a
+		<include refid="affairTalkManagementJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairTalkManagement">
+		SELECT 
+			<include refid="affairTalkManagementColumns"/>
+		FROM affair_talk_management a
+		<include refid="affairTalkManagementJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE '%'||#{name}||'%'
+			</if>
+			<if test="zbUnit != null and zbUnit != ''">
+				AND a.zb_unit = #{zbUnit}
+			</if>
+			<if test="sex != null and sex != ''">
+				AND a.sex = #{sex}
+			</if>
+			<if test="phoneNum != null and phoneNum != ''">
+				AND a.phone_num LIKE '%'||#{phoneNum}||'%'
+			</if>
+			<if test="letterCategory != null and letterCategory != ''">
+				AND a.letter_category = #{letterCategory}
+			</if>
+			<choose>
+				<when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+					AND a.time between #{startDate} and #{endDate}
+				</when>
+				<when test="startDate != null and startDate != ''">
+					AND a.time >= #{startDate}
+				</when>
+				<when test="endDate != null and endDate != ''">
+					AND  #{endDate} >= a.time
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			<if test="startYear != null and  startYear != ''">
+				AND a.time >= #{startYear}
+			</if>
+			<if test="otherYear != null and  otherYear != ''">
+				AND TO_CHAR(a.time, 'yyyy') = #{otherYear}
+			</if>
+			<if test="unitId != null and unitId != ''">
+				AND a.unit_id = #{unitId}
+			</if>
+			<choose>
+				<when test="qxUnitId != null and qxUnitId != ''">
+					AND ( o.ID = #{qxUnitId} OR o.parent_ids LIKE'%,'||#{qxUnitId}||',%' OR u.ID = #{createBy.id} or a.qx_unit_id=#{qxUnitId})
+				</when>
+				<otherwise>
+					AND ( o.ID = #{qxUnitId} OR u.ID = #{createBy.id} or a.qx_unit_id=#{qxUnitId})
+				</otherwise>
+			</choose>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.time DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairTalkManagement">
+		SELECT 
+			<include refid="affairTalkManagementColumns"/>
+		FROM affair_talk_management a
+		<include refid="affairTalkManagementJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	<select id="tongJi" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairTalkManagement">
+		SELECT
+		<include refid="affairTalkManagementJoins"/>
+			a.letter_category, count(letter_category)
+		FROM affair_talk_management a
+		<include refid="affairTalkManagementJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>
+			group by a.letter_category
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_talk_management(
+			id,
+			name,
+			sex,
+			siren,
+			phone_num,
+			problem,
+			letter_category,
+			time,
+			unit,
+			unit_id,
+			main_problem,
+			annex,
+			reviewer,
+			audit_opinion,
+			approval_status,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			personal_num,
+			qx_unit,
+			qx_unit_id,
+			job,
+			job_level,
+			mianmao,
+			zb_unit,
+			talker,
+			talk_place
+		) VALUES (
+			#{id},
+			#{name},
+			#{sex},
+			#{siren},
+			#{phoneNum},
+			#{problem},
+			#{letterCategory},
+			#{time},
+			#{unit},
+			#{unitId},
+			#{mainProblem},
+			#{annex},
+			#{reviewer},
+			#{auditOpinion},
+			#{approvalStatus},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{personalNum},
+			#{qxUnit},
+			#{qxUnitId},
+			#{job},
+			#{jobLevel},
+			#{mianmao},
+			#{zbUnit},
+			#{talker},
+			#{talkPlace}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_talk_management SET 	
+			name = #{name},
+			sex = #{sex},
+			siren = #{siren},
+			phone_num = #{phoneNum},
+			problem = #{problem},
+			letter_category = #{letterCategory},
+			time = #{time},
+			unit = #{unit},
+			unit_id = #{unitId},
+			main_problem = #{mainProblem},
+			annex = #{annex},
+			reviewer = #{reviewer},
+			audit_opinion = #{auditOpinion},
+			approval_status = #{approvalStatus},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			personal_num = #{personalNum},
+			qx_unit = #{qxUnit},
+			qx_unit_id = #{qxUnitId},
+			job = #{job},
+			job_level = #{jobLevel},
+			mianmao = #{mianmao},
+			zb_unit = #{zbUnit},
+			talker = #{talker},
+			talk_place = #{talkPlace}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_talk_management SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_talk_management SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+			 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<select id="findStatistic" resultType="java.util.HashMap">
+		select t.letter_category as category ,count(id) as num from affair_talk_management t where t.del_flag = '0'
+		<choose>
+			<when test="affairTalkManagement.startDate != null and affairTalkManagement.startDate != '' and affairTalkManagement.endDate != null and affairTalkManagement.endDate != ''">
+				AND t.time between #{affairTalkManagement.startDate} and #{affairTalkManagement.endDate}
+			</when>
+			<when test="affairTalkManagement.startDate != null and affairTalkManagement.startDate != ''">
+				AND t.time >= #{affairTalkManagement.startDate}
+			</when>
+			<when test="affairTalkManagement.endDate != null and affairTalkManagement.endDate != ''">
+				AND  #{affairTalkManagement.endDate} >= t.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<if test="affairTalkManagement.unitId != null and affairTalkManagement.unitId != ''">
+			AND t.unit_id = #{affairTalkManagement.unitId}
+		</if>
+		GROUP BY t.letter_category ORDER BY t.letter_category
+	</select>
+
+	<select id="findInfoByUnitId" resultType="java.util.HashMap">
+		SELECT
+		sd.label,
+		count( atm.letter_category)
+		FROM
+		affair_talk_management atm
+		LEFT JOIN sys_dict sd ON atm.letter_category = sd.VALUE
+
+		WHERE
+		atm.del_flag = '0'
+		AND	sd.type = 'affair_tanhua' AND sd.del_flag = '0'
+		<if test="id != null and id != ''">
+			AND atm.unit_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from atm.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(atm.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND atm.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND atm.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= atm.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		atm.letter_category,
+		sd.label
+	</select>
+
+	<select id="findInfoByUnitIds" resultType="java.util.HashMap">
+		SELECT
+		sd.label,
+		count( atm.letter_category)
+		FROM
+		affair_talk_management atm
+		LEFT JOIN sys_dict sd ON atm.letter_category = sd.
+		VALUE
+
+		WHERE
+		atm.del_flag != '1'
+		AND	sd.type = 'affair_tanhua' AND sd.del_flag = '0'
+		AND atm.unit_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from atm.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(atm.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND atm.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND atm.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= atm.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		atm.letter_category,
+		sd.label
+	</select>
+
+	<select id="findCountInfoByZbUnit" resultType="java.util.HashMap">
+		SELECT
+			sd.label,
+			COUNT(a.zb_unit)
+			FROM
+			affair_talk_management a
+			<include refid="affairTalkManagementJoins"/>
+			LEFT JOIN sys_dict sd ON a.zb_unit = sd.value
+			WHERE
+
+			a.del_flag  = '0'
+			AND sd.type = 'affair_zb_unit' AND sd.del_flag = '0'
+<!--		<if test="id != null and id != ''">-->
+<!--			AND a.unit_id = #{id}-->
+<!--		</if>-->
+
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND date_trunc('day', a.time) between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= date_trunc('day', a.time)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		${id}
+		GROUP BY
+		a.zb_unit,
+		sd.label
+	</select>
+
+	<select id="findDetailInfoByZbUnit" resultType="AffairTalkManagement">
+		SELECT
+		<include refid="affairTalkManagementColumns"/>
+		FROM
+		affair_talk_management a
+		LEFT JOIN sys_dict sd ON a.zb_unit = sd.value
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+		WHERE
+		a.del_flag  = '0'
+		AND sd.type = 'affair_zb_unit' AND sd.del_flag = '0'
+		<if test="zbUnitType != null and zbUnitType != ''">
+			AND a.zb_unit = #{zbUnitType}
+		</if>
+		<if test="id != null and id != ''">
+			AND a.unit_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND date_trunc('day', a.time) between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= date_trunc('day', a.time)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		${sqlMap.dsf}
+		ORDER BY
+		a.time
+	</select>
+
+	<select id="findPieInfoByLx" resultType="java.util.HashMap">
+		SELECT
+		sd.label,
+		COUNT(a.letter_category)
+		FROM affair_talk_management a
+		<include refid="affairTalkManagementJoins"/>
+		LEFT JOIN sys_dict sd ON a.letter_category = sd.VALUE
+		WHERE
+		a.del_flag = '0'
+		AND	sd.type = 'affair_tanhua' AND sd.del_flag = '0'
+		<if test="id != null and id != ''">
+			AND a.unit_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND date_trunc('day', a.time) between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= date_trunc('day', a.time)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		${id}
+		GROUP BY
+		a.letter_category,
+		sd.label
+	</select>
+
+	<select id="findDetailInfoByLx" resultType="AffairTalkManagement">
+		SELECT
+		<include refid="affairTalkManagementColumns"/>
+		FROM
+		affair_talk_management a
+		LEFT JOIN sys_dict sd ON a.letter_category = sd.value
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+		WHERE
+		a.del_flag  = '0'
+		AND sd.type = 'affair_tanhua' AND sd.del_flag = '0'
+		<if test="thType != null and thType != ''">
+			AND a.letter_category = #{thType}
+		</if>
+		<if test="id != null and id != ''">
+			AND a.unit_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND date_trunc('day', a.time) between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= date_trunc('day', a.time)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		${sqlMap.dsf}
+		ORDER BY
+		a.time
+	</select>
+
+	<!-- 绩效自动考评根据单位获得被考评对象id -->
+	<select id="findCodeByUnit" resultType="java.lang.String">
+		select
+		a.code
+		from
+		sys_office a
+		where a.name = #{unit}
+	</select>
+	
+	<select id="findUserIdByCode" resultType="java.lang.String">
+		select
+		a.id
+		from
+		sys_user a
+		where a.no = #{code}
+	</select>
+
+	<select id="allInfo" resultType="AffairTalkManagement">
+		select
+		<include refid="affairTalkManagementColumns"/>
+		FROM
+		affair_talk_management a
+		where
+		a.del_flag = '0'
+		<!--AND CAST ( SUBSTRING ( TO_CHAR( A.time, 'yyyy-mm-dd' ), 1, 4 ) as varchar ) = #{year}
+		<if test="month != null and month != ''">
+			AND CAST ( SUBSTRING ( TO_CHAR( A.time, 'yyyy-mm-dd' ), 6, 2 ) as varchar ) = #{month}
+		</if>-->
+		<if test="startTime != null and startTime != '' and endTime != '' and endTime != null">
+			AND to_char ( A.time, 'yyyy-mm-dd' ) BETWEEN #{startTime} AND #{endTime}
+		</if>
+	</select>
+
+</mapper>

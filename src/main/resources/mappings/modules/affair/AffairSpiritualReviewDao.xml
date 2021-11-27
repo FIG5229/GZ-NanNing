@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairSpiritualReviewDao">
+    
+	<sql id="affairSpiritualReviewColumns">
+		a.id AS "id",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.title AS "title",
+		a.reporter AS "reporter",
+		a.time AS "time",
+		a.state AS "state",
+		a.adjunct AS "adjunct",
+		a.description AS "description",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.one_check_man AS "oneCheckMan",
+		a.one_check_id AS "oneCheckId"
+	</sql>
+	
+	<sql id="affairSpiritualReviewJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairSpiritualReview">
+		SELECT 
+			<include refid="affairSpiritualReviewColumns"/>
+		FROM affair_spiritual_review a
+		<include refid="affairSpiritualReviewJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairSpiritualReview">
+		SELECT 
+			<include refid="affairSpiritualReviewColumns"/>
+		FROM affair_spiritual_review a
+		<include refid="affairSpiritualReviewJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="unit != null and unit != ''">
+				AND a.unit LIKE
+					<if test="dbName == 'oracle'">'%'||#{unit}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{unit}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{unit},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{unit}||'%'</if>
+			</if>
+			<if test="title != null and title != ''">
+				AND a.title LIKE
+				<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{title}||'%'</if>
+			</if>
+			<if test="reporter != null and reporter != ''">
+				AND a.reporter LIKE
+				<if test="dbName == 'oracle'">'%'||#{reporter}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{reporter}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{reporter},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{reporter}||'%'</if>
+			</if>
+			<if test="state != null and state != ''">
+				AND a.state LIKE
+				<if test="dbName == 'oracle'">'%'||#{state}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{state}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{state},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{state}||'%'</if>
+			</if>
+			${sqlMap.dsf}
+
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairSpiritualReview">
+		SELECT 
+			<include refid="affairSpiritualReviewColumns"/>
+		FROM affair_spiritual_review a
+		<include refid="affairSpiritualReviewJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_spiritual_review(
+			id,
+			unit,
+			unit_id,
+			title,
+			reporter,
+			time,
+			state,
+			adjunct,
+			description,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			one_check_man,
+			one_check_id
+		) VALUES (
+			#{id},
+			#{unit},
+			#{unitId},
+			#{title},
+			#{reporter},
+			#{time},
+			'1',
+			#{adjunct},
+			#{description},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{oneCheckMan},
+			#{oneCheckId}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_spiritual_review SET 	
+			unit = #{unit},
+			unit_id = #{unitId},
+			title = #{title},
+			reporter = #{reporter},
+			time = #{time},
+			state = #{state},
+			adjunct = #{adjunct},
+			description = #{description},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			one_check_man = #{oneCheckMan},
+			one_check_id = #{oneCheckId}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_spiritual_review SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+
+	<update id="deleteByIds">
+		UPDATE affair_spiritual_review SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+
+	<select id="findByIds" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairSpiritualReview">
+		select <include refid="affairSpiritualReviewColumns"/>
+		from affair_spiritual_review a where id in <foreach collection="ids" item="item" index="index"
+															  open="(" separator="," close=")">#{item}</foreach>
+	</select>
+
+	<update id="upd">
+		UPDATE affair_spiritual_review SET
+			state = #{state},
+			one_check_man = #{oneCheckMan},
+			one_check_id = #{oneCheckId}
+		WHERE id = #{id}
+	</update>
+
+
+
+</mapper>

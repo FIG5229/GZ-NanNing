@@ -1,0 +1,917 @@
+body{
+	background:rgba(245,245,245,1);
+	background: url(../../../../../politics/static/images/body-bg.png) no-repeat center center;
+	background-size: cover;
+}
+.top-banner{
+	width:100%;
+	height:256px;
+	background: url(../../../../../politics/static/images/top-banner-new2.png) no-repeat center center;
+}
+.top-banner-center{
+	overflow: hidden;
+	margin: 0 auto;
+	width: 1200px;
+	height: 256px;
+}
+.top-banner-logo{
+	margin-top: 14px;
+	float: left;
+	width: 240px;
+	height: 240px;
+}
+.top-banner-logo img{
+	width: 100%;
+	height: 100%;
+}
+.top-banner-text{
+	margin-top: 99px;
+	float: right;
+	width: 950px;
+	text-align: center;
+}
+.top-banner-text p.p1{
+	padding: 0 0 16px 0;
+	height:56px;
+	font-size:56px;
+	font-weight:bold;
+	color:rgba(255,255,255,1);
+	line-height:56px;
+}
+.top-banner-text p.p2{
+	height:26px;
+	font-size:26px;
+	font-weight:400;
+	color:rgba(255,255,255,1);
+	line-height:26px;
+}
+.top-slogan{
+	margin: 15px auto 5px;
+	width: 1200px;
+	height: 108px;
+}
+.top-slogan img{
+	width: 100%;
+}
+.top-wrap{
+	width:100%;
+	height:64px;
+	line-height: 64px;
+	background: url("../../../../../politics/static/images/top-wrap-bg.png") repeat-x;
+	background-size: 100% 100%;
+}
+.top{
+	overflow: hidden;
+	margin: 0 auto;
+	width: 1200px;
+}
+.logo{
+	float: left;
+	margin: 12px 66px 14px 30px;
+	width:42px;
+	height:42px;
+}
+.logo img{
+	width: 100%;
+	height: 100%;
+}
+.nav{
+    display: inline-block;
+    float: left;
+}
+.nav li{
+    float: left;
+    padding: 0 32px;
+    height: 64px;
+    line-height: 64px;
+}
+.nav li.active{
+    background:#FBC251;
+}
+.nav li:hover{
+    background:#FBC251;
+}
+.nav li a{
+    display: block;
+    font-size:16px;
+    font-weight:500;
+    color:rgba(255,255,255,1);
+}
+.nav>li>a:hover, .nav>li>a:focus {
+    background-color: transparent;
+}
+.top-right{
+	display: block;
+	height: 64px;
+	line-height: 64px;
+	padding-left: 22px;
+	float: right;
+	font-size:16px;
+	font-weight:500;
+	color:rgba(255,255,255,1);
+	cursor: pointer;
+	/*background: url(../../../../../politics/static/images/icon-login.png) no-repeat left center;*/
+	background-size: 13px 13px;
+}
+
+.main{
+	margin: 0 auto;
+	width: 1200px;
+}
+/*主页浮动导航*/
+.float-block{
+	position: fixed;
+	top: 335px;
+	left: 50%;
+	margin-left: -755px;
+	width: 150px;
+	height: 398px;
+}
+body .float-block a:hover{
+	text-decoration: none;
+}
+.float-block .float-item{
+	margin-bottom: 8px;
+	width:100%;
+	height:50px;
+	line-height:50px;
+	background-color:red;
+	font-size:18px;
+	font-weight:400;
+	color:yellow;
+	text-align: center;
+	text-indent: 18px;
+	background-position: 30px center;
+	background-repeat: no-repeat;
+	cursor: pointer;
+}
+.float-block .float-item1{
+	background-image: url(../../../../../politics/static/images/float-item1.png)
+}
+.float-block .float-item-active.float-item1{
+	background-image: url(../../../../../politics/static/images/float-item1-active.png)
+}
+.float-block .float-item2{
+	background-image: url(../../../../../politics/static/images/float-item2.png)
+}
+.float-block .float-item-active.float-item2{
+	background-image: url(../../../../../politics/static/images/float-item2-active.png)
+}
+.float-block .float-item3{
+	background-image: url(../../../../../politics/static/images/float-item3.png)
+}
+.float-block .float-item-active.float-item3{
+	background-image: url(../../../../../politics/static/images/float-item3-active.png)
+}
+.float-block .float-item4{
+	background-image: url(../../../../../politics/static/images/float-item4.png)
+}
+.float-block .float-item-active.float-item4{
+	background-image: url(../../../../../politics/static/images/float-item4-active.png)
+}
+.float-block .float-item5{
+	background-image: url(../../../../../politics/static/images/float-item5.png)
+}
+.float-block .float-item-active.float-item5{
+	background-image: url(../../../../../politics/static/images/float-item5-active.png)
+}
+.float-block .float-item6{
+	background-image: url(../../../../../politics/static/images/float-item6.png)
+}
+.float-block .float-item-active.float-item6{
+	background-image: url(../../../../../politics/static/images/float-item6-active.png)
+}
+.float-block .float-item7{
+	background-image: url(../../../../../politics/static/images/float-item7.png)
+}
+.float-block .float-item-active.float-item7{
+	background-image: url(../../../../../politics/static/images/float-item7-active.png)
+}
+
+
+
+.float-block .float-item:hover{
+	box-shadow:0px 2px 5px 1px rgba(232,211,170,1);
+	background-color:rgba(251,194,81,1);
+	color: #ffffff;
+}
+.block{
+	overflow: hidden;
+	width: 100%;
+	margin-top: 10px;
+}
+.block-title-bg{
+	position: relative;
+	background: url(../../../../../politics/static/images/block-title-bg.png) no-repeat left center;
+	background-size: 100% 100%;
+	text-align: left;
+	text-indent: 29px;
+}
+.block-title-big-bg{
+	position: relative;
+	background: url(../../../../../politics/static/images/block-title-big-bg.png) no-repeat left center;
+	background-size: 100% 100%;
+	text-align: left;
+	text-indent: 29px;
+}
+.block-title-big-bg::after,
+.block-title-bg::after{
+	z-index: -1;
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	left: 6px;
+	top: 0;
+	content: '';
+	background-position: left center;
+	background-repeat: no-repeat;
+	/*background-size: 100% 100%;*/
+}
+/*政工要闻*/
+.block-title-icon-zhenggongyaowen::after{
+	background-image: url(../../../../../politics/static/images/block-title-icon-zhenggongyaowen.png)
+}
+/*政工动态*/
+.block-title-icon-zhenggongdongtai::after{
+	background-image: url(../../../../../politics/static/images/block-title-icon-zhenggongdongtai.png)
+}
+/*工会*/
+.block-title-icon-gonghui::after{
+	background-image: url(../../../../../politics/static/images/block-title-icon-gonghui.png)
+}
+/*党建信息*/
+.block-title-icon-dangjianxinxi::after{
+	background-image: url(../../../../../politics/static/images/block-title-icon-dangjianxinxi.png)
+}
+/*考评*/
+.block-title-icon-kaoping::after{
+	background-image: url(../../../../../politics/static/images/block-title-icon-kaoping.png)
+}
+/*通知公告*/
+.block-title-icon-tongzhigonggao::after{
+	background-image: url(../../../../../politics/static/images/block-title-icon-tongzhigonggao.png)
+}
+/*五星*/
+.block-title-icon-wuxing::after{
+	background-image: url(../../../../../politics/static/images/block-title-icon-wuxing.png)
+}
+
+/* 第一块 */
+.banner{
+	float: left;
+	width:760px;
+	height:448px;
+}
+.swiper-container1,
+.swiper-wrapper1,
+.swiper-slide1{
+	width: 100%;
+	height: 100%;
+}
+.swiper-slide1 img{
+	position: relative;
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+.swiper-slide1 .swiper-item-title{
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	z-index: 100;
+	width: 100%;
+	height: 36px;
+	line-height: 36px;
+	text-indent: 30px;
+	background: rgba(0,0,0,0.3);
+	color: #fff;
+	font-size: 14px;
+	font-weight: bold;
+	text-align: left
+}
+
+.banner .swiper-container1 .swiper-pagination1{
+	height: 36px;
+	width: auto;
+	display: inline;
+	position: absolute;
+	right: 0;
+	left: initial;
+	bottom: 0;
+}
+.banner .swiper-container1 .swiper-pagination1 .swiper-pagination-bullet{
+	display: block;
+	margin: 0;
+	float: left;
+	width: 30px;
+	line-height: 36px;
+	height: 36px;
+	border-radius: 0;
+	background: rgba(0,0,0,0.3);
+	text-align: center;
+	font-size: 14px;
+	font-weight: bold;
+	color: #fff;
+	opacity: 1;
+}
+.banner .swiper-container1 .swiper-pagination1 .swiper-pagination-bullet-active{
+	background: #f92400;
+}
+
+
+.zgdt-wrap{
+	overflow: hidden;
+	float: right;
+	width:426px;
+	height:219px;
+	/*background:rgba(255,255,255,1);*/
+	border-radius:4px;
+	/*border:1px solid rgba(249,36,0,0.3);*/
+}
+.zgdt-wrap h3{
+	width:100%;
+	height:40px;
+	font-size:14px;
+	font-weight:bold;
+	color:rgba(255,255,255,1);
+	line-height:40px;
+}
+.list-commom{
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+	width: 100%;
+	height: 210px;
+	background: #ffffff;
+	/*border: 1px solid #cccccc;*/
+	/*border-top: none;*/
+}
+.list-commom li{
+	position: relative;
+	padding-left: 13px;
+	padding-right: 12px;
+	height: 36px;
+	line-height: 36px;
+	font-size:14px;
+	font-weight:400;
+	color:rgba(0,0,0,1);
+	letter-spacing:1px;
+	background: url(../../../../../politics/static/images/bot-red.png) no-repeat left center;
+	background-size: 4px 4px;
+}
+.list-commom li span{
+	position: absolute;
+	right: 0;
+	top: 0;
+	width: 90px;
+	font-size: 14px;
+	color: #ccc;
+}
+.zgdt-wrap .list-commom li{
+	padding-right: 96px;
+}
+
+/* 第二块 */
+.nav-child{
+	position: relative;
+	/*overflow: hidden;*/
+	margin-right: 24px;
+	margin-bottom: 20px;
+	float: left;
+	width:281px;
+	height:110px;
+	background:rgba(255,255,255,1);
+	cursor: pointer;
+}
+.nav-child-float{
+	display: none;
+	box-sizing: border-box;
+	border: 1px solid #cccccc;
+	box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+	z-index: 10;
+	position: absolute;
+	top: 110px;
+	left: 0;
+	width:281px;
+	background: #ffffff;
+}
+.nav-child:hover .nav-child-float{
+	display: block;
+}
+.nav-child-float:hover{
+	display: block;
+}
+.nav-child-float a{
+	display: block;
+	padding-left: 13px;
+	padding-right: 12px;
+	height: 36px;
+	line-height: 36px;
+	font-size: 16px;
+	font-weight: bold;
+	color: #DE3012;
+	letter-spacing: 1px;
+}
+
+.nav-child p{
+	overflow: hidden;
+	width:100%;
+	height:100%;
+}
+.nav-child img{
+	display: block;
+	width:100%;
+	height:100%;
+}
+.nav-child span{
+	position: absolute;
+	left: 0;
+	top: 0;
+	display: block;
+	padding: 0 5%;
+	width:90%;
+	height:110px;
+	line-height:110px;
+	font-weight: 400;
+	color: #DE3012;
+	overflow: hidden;
+	white-space: nowrap;
+	-ms-text-overflow: ellipsis;
+	text-overflow: ellipsis;
+	text-align: left;
+	text-align: center;
+	font-size: 24px;
+	font-weight: bold;
+	-webkit-text-shadow:#ffffff 1px 0 0,#ffffff 0 1px 0,#ffffff -1px 0 0,#ffffff 0 -1px 0;
+	-moz-text-shadow:#ffffff 1px 0 0,#ffffff 0 1px 0,#ffffff -1px 0 0,#ffffff 0 -1px 0;
+	text-shadow:#ffffff 1px 0 0,#ffffff 0 1px 0,#ffffff -1px 0 0,#ffffff 0 -1px 0;
+	*filter: Glow(Color=#ffffff, Strength=1);
+}
+
+/* 第三块 */
+.tz-title{
+	position: relative;
+	overflow: hidden;
+	width:100%;
+	height:48px;
+	line-height: 48px;
+}
+.tz-title h3{
+	float: left;
+	position: relative;
+	width:168px;
+	height:48px;
+	font-size:14px;
+	font-weight:bold;
+	color:rgba(255,255,255,1);
+	line-height:48px;
+	/*text-indent: 52px;*/
+}
+
+.tz-title marquee{
+	float: right;
+	margin-right: 100px;
+	width: 900px;
+}
+.tz-title ul{
+	width: 1800px;
+}
+.tz-title ul li{
+	float:left;
+	padding-right: 32px;
+	display: inline-block;
+	font-size:14px;
+	font-weight:400;
+	color:rgba(249,36,0,1);
+	height: 48px;
+	line-height:60px;
+	background: url(../../../../../politics/static/images/bot-red.png) no-repeat left 28px;
+	background-size: 4px 4px;
+	text-indent: 10px;
+}
+.tz-title-after{
+	z-index: 20;
+	content: "";
+	position: absolute;
+	right: 23px;
+	top: 21px;
+	width: 16px;
+	height: 16px;
+	background: url(../../../../../politics/static/images/icon-more.png) no-repeat center;
+	background-size: 100%;
+	cursor: pointer;
+}
+
+/* 第四块 */
+.tz-list{
+	position: relative;
+	margin-right: 23px;
+	float: left;
+	width:380px;
+	height:244px;
+}
+.tz-list h3{
+	position: relative;
+	width: 100%;
+	height: 40px;
+	font-size: 14px;
+	font-weight: bold;
+	color: #ffffff;
+	line-height: 40px;
+}
+.tz-list h3:before{
+	content: "";
+	position: absolute;
+	right: 4px;
+	top: 0;
+	width: 94px;
+	height: 40px;
+	line-height: 47px;
+	background: url(../../../../../politics/static/images/icon-more.png) no-repeat right 15px;
+	background-size: 16px 16px;
+	cursor: pointer;
+	color: #DE3012;
+	font-size: 10px;
+}
+.tz-list-echarts h3:after{
+	width: 104px;
+	font-size:12px;
+
+	font-weight:500;
+	color:rgba(249,36,0,1);
+}
+.tz-list-echarts1 h3:before{
+	content: "更多考评";
+}
+.tz-list-echarts2 h3:before{
+	content: "更多统计";
+}
+
+/* 通知通告tab */
+.tz-list .tz-tab{
+	position: relative;
+	width: 100%;
+	height: 40px;
+	font-size: 14px;
+	font-weight: bold;
+	color: #000000;
+	line-height: 40px;
+	background: #E9E9E9;
+	text-align: center;
+}
+.tz-list .tz-tab span{
+	float: left;
+	display: block;
+	width: 33.3%;
+	cursor: pointer;
+}
+.tz-list .tz-tab span.active{
+	background:rgba(249,36,0,1) linear-gradient(360deg,rgba(176,28,0,1) 0%,rgba(226,49,19,1) 100%);
+	color: #ffffff;;
+}
+.list-more-style{
+	display: block;
+	position: absolute;
+	right: 4px;
+	bottom: 0;
+	width: 16px;
+	height: 40px;
+	line-height: 40px;
+	background: url(../../../../../politics/static/images/icon-more.png) no-repeat right center;
+	background-size: 16px 16px;
+	cursor: pointer;
+}
+.list-tab-style{
+	padding: 0px 24px
+}
+.list-commom-tab{
+	display: none;
+	overflow: hidden;
+}
+.list-commom-tab-active{
+	display: block;
+}
+
+.block-title{
+	width:1200px;
+	height:40px;
+	line-height: 40px;
+	background:linear-gradient(90deg,rgba(253,74,0,1) 0%,rgba(255,194,169,1) 100%);
+	font-size:16px;
+	font-weight:bold;
+	color:rgba(255,255,255,1);
+	letter-spacing:1px;
+	text-indent: 20px;
+}
+.pic-list{
+	overflow: hidden;
+	padding-left: 30px;
+	padding-bottom: 20px;
+	background: #fff;
+}
+.pic-item{
+	position: relative;
+	margin-top: 16px;
+	margin-right: 14px;
+	float: left;
+	width:370px;
+	height:220px;
+	cursor: pointer;
+}
+.pic-info{
+	 width: 100%;
+	 height: 100%;
+	 background-position: center;
+	 background-size: cover;
+	 background-repeat: no-repeat;
+}
+.pic-text{
+	display: none;
+	width: 100%;
+	height: 220px;
+	position: absolute;
+	left: 0;
+	top: 0;
+	text-align: center;
+	line-height: 200px;
+	font-size:16px;
+	font-weight:bold;
+	color:rgba(255,255,255,1);
+	letter-spacing:1px;
+	background:rgba(249,36,0,.5);
+}
+.pic-item:hover .pic-text{
+	display: block;
+}
+.gn-wrap{
+	width: 100%;
+	height:216px;
+	background:rgba(255,255,255,1);
+}
+.gn-left{
+	float: left;
+	width:104px;
+}
+.gn-left-item{
+	width:100%;
+	height:54px;
+	line-height: 54px;
+	text-align: center;
+	font-size:14px;
+	font-weight:400;
+	color: #000000;
+	background:rgba(255,244,242,1);
+	cursor: pointer;
+}
+.gn-left-item.active{
+	background:rgba(249,36,0,1);
+	color:rgba(255,255,255,1);
+}
+
+.gn-right{
+	float: right;
+	width:1090px;
+	height:216px;
+	background:rgba(255,255,255,1);
+}
+.gn-right-wrap{
+	position: relative;
+	padding: 20px;
+}
+.gn-right-wrap a.more{
+	position: absolute;
+	width: 16px;
+	height: 16px;
+	line-height: 40px;
+	background: url(../../../../../politics/static/images/icon-more.png) no-repeat right center;
+	background-size: 16px 16px;
+	cursor: pointer;
+}
+.gn-right-wrap a.more2{
+	left: 574px;
+	top: 3px;
+}
+.gn-right-wrap a.more3{
+	right: 40px;
+	top: 3px;
+}
+.swiper-container2{
+	float: left;
+	height: 180px;
+}
+.swiper-container2,
+.swiper-wrapper2,
+.swiper-slide2{
+	width: 590px;
+}
+.gn-video-item{
+	overflow: hidden;
+	width: 275px;
+	height: 176px;
+	float: left;
+	margin-right: 20px;
+}
+.gn-video-item img{
+	display: block;
+	width: 100%;
+}
+.pic-line{
+	float: left;
+	margin-right: 25px;
+	margin-top: 13px;
+	width:1px;
+	height:151px;
+	border-right: 1px dashed #E6E6E6;
+}
+.gn-book-item{
+	float: left;
+	margin-right: 20px;
+}
+.gn-book-item img{
+	display: block;
+	width:196px;
+	height:176px;
+}
+
+/*警营文化*/
+.block-title-new{
+	margin: 20px 0;
+	width:100%;
+	height:30px;
+	text-align: center;
+}
+.block-title-new span{
+	padding: 0 18px;
+	display: inline-block;
+	height:30px;
+	line-height:30px;
+	font-size:24px;
+	font-weight:500;
+	color:rgba(34,34,34,1);
+}
+.block-title-new::before{
+	display: inline-block;
+	content: '';
+	width:105px;
+	height:14px;
+	background: url(../../../../../politics/static/images/block-title-new-bg-left.png) no-repeat left center;
+	background-size: 105px 14px;
+}
+.block-title-new::after{
+	display: inline-block;
+	content: '';
+	width:105px;
+	height:14px;
+	background: url(../../../../../politics/static/images/block-title-new-bg-right.png) no-repeat left center;
+	background-size: 105px 14px;
+}
+.jy-list .jy-tab{
+	position: relative;
+	margin-bottom: 6px;
+	width: 100%;
+	height: 54px;
+	font-size: 16px;
+	font-weight: bold;
+	color: #222222;
+	text-align: center;
+}
+.jy-list .jy-tab .jy-tab-wrap{
+	width: 25%;
+	height: 54px;
+	float: left;
+}
+
+.jy-list .jy-tab .jy-tab-wrap span{
+	display: block;
+	width: 100%;
+	height: 46px;
+	line-height: 46px;
+	cursor: pointer;
+	background:linear-gradient(180deg,rgba(255,255,255,1) 0%,rgba(221,221,221,1) 100%);
+	border:1px solid rgba(204,204,204,1);
+	box-sizing: border-box;
+}
+.jy-list .jy-tab .jy-tab-wrap.active{
+	background: url(../../../../../politics/static/images/jy-tab-bg.png) no-repeat center center;
+	background-size: 100% 100%;
+	color: #ffffff;;
+}
+.jy-list .jy-tab .jy-tab-wrap.active span{
+	border: none;
+	background: none;
+}
+.jy-commom-tab{
+	display: none;
+	overflow: hidden;
+	width: 1200px;
+	height: 151px;
+}
+.jy-commom-tab li{
+	margin-right: 13px;
+	float: left;
+	width:229px;
+	height:151px;
+}
+.jy-commom-tab li img{
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+.jy-commom-tab.jy-commom-tab-active{
+	display: block;
+}
+/*宁铁传媒*/
+.nt-list{
+	width: 1200px;
+	height: 183px
+}
+.nt-list li{
+	position: relative;
+	margin-right: 12px;
+	float: left;
+	width:290px;
+	height:183px;
+	cursor: pointer;
+}
+.nt-list li img{
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+.nt-list li span{
+	position: absolute;
+	left: 0;
+ 	bottom: 0;
+	display: block;
+	width: 100%;
+	height: 36px;
+	line-height: 36px;
+	background:rgba(0,0,0,0.6);
+	font-size:16px;
+	font-weight:bold;
+	color:#ffffff;
+	text-align: center;
+}
+
+
+/* 友情链接 */
+.f-link-title{
+	float: left;
+	width:108px;
+	height:40px;
+	line-height: 40px;
+	background:rgba(249,36,0,1) linear-gradient(360deg,rgba(176,28,0,1) 0%,rgba(226,49,19,1) 100%);
+	font-size:16px;
+	font-weight:bold;
+	color:rgba(255,255,255,1);
+	letter-spacing:1px;
+	text-align: center;
+}
+.select-link{
+	float: left;
+	margin-left: 30px;
+	font-size: 12PX;
+	color: #676767;
+	font-family: '宋体';
+	width: 150PX;
+	height: 40PX;
+	-height: 40PX;
+	padding: 3PX;
+	text-indent: 20px;
+	/**
+	background: rgba(255,255,255,1);
+	border: 1px solid rgba(237,237,237,1);
+	**
+	 */
+}
+
+.footer{
+	margin-top: 20px;
+	width:100%;
+	height:48px;
+	background:#AE0404;
+}
+.footer-info{
+	overflow: hidden;
+	padding-bottom: 10px;
+	margin: 0 auto;
+	width: 430px;
+	text-align: center;
+}
+.footer-img{
+	float: left;
+	display: inline-block;
+	width: 80px;
+	height: 80px;
+}
+.footer-text-wrap{
+	padding-top: 20px;
+	float: right;
+	width: 340px;
+}
+.footer-text{
+	line-height: 22px;
+	font-size:14px;
+	font-weight:400;
+	color:rgba(0,0,0,1);
+}

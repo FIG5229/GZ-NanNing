@@ -1,0 +1,255 @@
+@charset“UTF-8”;
+.abc-checkbox {
+  cursor：default;
+  padding-left：4px; }
+.abc-checkbox label {
+  游标：指针;
+  显示：内联;
+  vertical-align：top;
+  位置：相对;
+  padding-left：5px; }
+.abc-checkbox label :: before {
+  游标：指针;
+  内容：“”;
+  display：inline-block;
+  位置：绝对;
+  宽度：17px;
+  身高：17px;
+  上：2px;
+  左：0;
+  margin-left：-1.25rem;
+  border：1px solid＃ced4da;
+  border-radius：3px;
+  background-color：#fff;
+  过渡：边界0.15s轻松进出，颜色0.15s轻松进出; }
+.abc-checkbox label :: after {
+  游标：指针;
+  display：inline-block;
+  位置：绝对;
+  宽度：16px;
+  身高：16px;
+  左：0;
+  上：2px;
+  margin-left：-1.25rem;
+  padding-left：3px;
+  padding-top：1px;
+  font-size：11px;
+  颜色：＃495057; }
+.abc-checkbox输入[type =“checkbox”]，
+.abc-checkbox输入[type =“radio”] {
+  位置：静态;
+  margin-left：0;
+  游标：指针;
+  不透明度：0;
+  z-index：1; }
+.abc-checkbox输入[type =“checkbox”]：focus + label :: before，
+.abc-checkbox输入[type =“radio”]：focus + label :: before {
+  轮廓：细点;
+  outline：5px auto -webkit-focus-ring-color;
+  outline-offset：-2px; }
+.abc-checkbox输入[type =“checkbox”]：选中+标签::之后，
+.abc-checkbox输入[type =“radio”]：checked + label :: after {
+  font-family：“FontAwesome”;
+  内容：“”; }
+.abc-checkbox输入[type =“checkbox”]：indeterminate + label :: after，
+.abc-checkbox输入[type =“radio”]：indeterminate + label :: after {
+  显示：块;
+  内容：“”;
+  宽度：10px;
+  身高：3px;
+  background-color：＃555555;
+  border-radius：2px;
+  margin-left：-16.5px;
+  margin-top：7px; }
+.abc-checkbox输入[type =“checkbox”]：禁用+标签，
+.abc-checkbox输入[type =“radio”]：disabled + label {
+  不透明度：0.65; }
+.abc-checkbox输入[type =“checkbox”]：disabled + label :: before，
+.abc-checkbox输入[type =“radio”]：disabled + label :: before {
+  background-color：＃e9ecef;
+  cursor：not-allowed; }
+.abc-checkbox输入[type =“checkbox”]：disabled + label :: after，
+.abc-checkbox输入[type =“radio”]：disabled + label :: after {
+  cursor：not-allowed; }
+.abc-checkbox.abc-checkbox-circle label :: before {
+  border-radius：50％; }
+.abc-checkbox.checkbox-inline {
+  margin-top：0; }
+
+.abc-checkbox-primary input [type =“checkbox”]：checked + label :: before，
+.abc-checkbox-primary input [type =“radio”]：checked + label :: before {
+  background-color：＃007bff;
+  border-color：＃007bff; }
+.abc-checkbox-primary input [type =“checkbox”]：checked + label :: after，
+.abc-checkbox-primary input [type =“radio”]：checked + label :: after {
+  颜色：#fff; }
+
+.abc-checkbox-danger输入[type =“checkbox”]：选中+标签::之前，
+.abc-checkbox-danger输入[type =“radio”]：checked + label :: before {
+  background-color：＃dc3545;
+  border-color：＃dc3545; }
+.abc-checkbox-danger输入[type =“checkbox”]：选中+标签::之后，
+.abc-checkbox-danger输入[type =“radio”]：checked + label :: after {
+  颜色：#fff; }
+
+.abc-checkbox-info input [type =“checkbox”]：checked + label :: before，
+.abc-checkbox-info input [type =“radio”]：checked + label :: before {
+  background-color：＃17a2b8;
+  border-color：＃17a2b8; }
+.abc-checkbox-info input [type =“checkbox”]：checked + label :: after，
+.abc-checkbox-info input [type =“radio”]：checked + label :: after {
+  颜色：#fff; }
+
+.abc-checkbox-warning输入[type =“checkbox”]：选中+标签::之前，
+.abc-checkbox-warning input [type =“radio”]：checked + label :: before {
+  background-color：＃ffc107;
+  border-color：＃ffc107; }
+.abc-checkbox-warning输入[type =“checkbox”]：选中+标签::之后，
+.abc-checkbox-warning input [type =“radio”]：checked + label :: after {
+  颜色：#fff; }
+
+.abc-checkbox-success输入[type =“checkbox”]：checked + label :: before，
+.abc-checkbox-success输入[type =“radio”]：checked + label :: before {
+  background-color：＃28a745;
+  border-color：＃28a745; }
+.abc-checkbox-success输入[type =“checkbox”]：选中+标签::之后，
+.abc-checkbox-success input [type =“radio”]：checked + label :: after {
+  颜色：#fff; }
+
+.abc-checkbox-primary input [type =“checkbox”]：indeterminate + label :: before，
+.abc-checkbox-primary input [type =“radio”]：indeterminate + label :: before {
+  background-color：＃007bff;
+  border-color：＃007bff; }
+.abc-checkbox-primary input [type =“checkbox”]：indeterminate + label :: after，
+.abc-checkbox-primary input [type =“radio”]：indeterminate + label :: after {
+  background-color：#fff; }
+
+.abc-checkbox-danger输入[type =“checkbox”]：indeterminate + label :: before，
+.abc-checkbox-danger输入[type =“radio”]：indeterminate + label :: before {
+  background-color：＃dc3545;
+  border-color：＃dc3545; }
+.abc-checkbox-danger输入[type =“checkbox”]：indeterminate + label :: after，
+.abc-checkbox-danger输入[type =“radio”]：indeterminate + label :: after {
+  background-color：#fff; }
+
+.abc-checkbox-info input [type =“checkbox”]：indeterminate + label :: before，
+.abc-checkbox-info input [type =“radio”]：indeterminate + label :: before {
+  background-color：＃17a2b8;
+  border-color：＃17a2b8; }
+.abc-checkbox-info input [type =“checkbox”]：indeterminate + label :: after，
+.abc-checkbox-info input [type =“radio”]：indeterminate + label :: after {
+  background-color：#fff; }
+
+.abc-checkbox-warning输入[type =“checkbox”]：indeterminate + label :: before，
+.abc-checkbox-warning输入[type =“radio”]：indeterminate + label :: before {
+  background-color：＃ffc107;
+  border-color：＃ffc107; }
+.abc-checkbox-warning输入[type =“checkbox”]：indeterminate + label :: after，
+.abc-checkbox-warning input [type =“radio”]：indeterminate + label :: after {
+  background-color：#fff; }
+
+.abc-checkbox-success输入[type =“checkbox”]：indeterminate + label :: before，
+.abc-checkbox-success input [type =“radio”]：indeterminate + label :: before {
+  background-color：＃28a745;
+  border-color：＃28a745; }
+.abc-checkbox-success输入[type =“checkbox”]：indeterminate + label :: after，
+.abc-checkbox-success input [type =“radio”]：indeterminate + label :: after {
+  background-color：#fff; }
+
+.abc-radio {
+  cursor：default;
+  padding-left：4px; }
+.abc-radio label {
+  游标：指针;
+  显示：内联;
+  vertical-align：top;
+  位置：相对;
+  padding-left：5px; }
+.abc-radio label :: before {
+  游标：指针;
+  内容：“”;
+  display：inline-block;
+  位置：绝对;
+  宽度：17px;
+  身高：17px;
+  上：2px;
+  左：0;
+  margin-left：-20px;
+  border：1px solid＃ced4da;
+  border-radius：50％;
+  background-color：#fff;
+  过渡：边境0.15s轻松进出; }
+.abc-radio label :: after {
+  游标：指针;
+  display：inline-block;
+  位置：绝对;
+  内容：“”;
+  宽度：11px;
+  身高：11px;
+  左：3px;
+  上：5px;
+  margin-left：-20px;
+  border-radius：50％;
+  background-color：＃495057;
+  transform：scale（0,0）;
+  过渡：变换0.1s cubic-bezier（0.8，-0.33,0.2,1.33）; }
+.abc-radio input [type =“radio”] {
+  位置：静态;
+  margin-left：0;
+  游标：指针;
+  不透明度：0;
+  z-index：1; }
+.abc-radio input [type =“radio”]：focus + label :: before {
+  轮廓：细点;
+  outline：5px auto -webkit-focus-ring-color;
+  outline-offset：-2px; }
+.abc-radio input [type =“radio”]：checked + label :: after {
+  变换：规模（1,1）; }
+.abc-radio input [type =“radio”]：disabled + label {
+  不透明度：0.65; }
+.abc-radio input [type =“radio”]：disabled + label :: before {
+  cursor：not-allowed; }
+.abc-radio input [type =“radio”]：disabled + label :: after {
+  cursor：not-allowed; }
+.abc-radio.radio-inline {
+  margin-top：0; }
+
+.abc-radio-primary input [type =“radio”] + label :: after {
+  background-color：＃007bff; }
+.abc-radio-primary input [type =“radio”]：checked + label :: before {
+  border-color：＃007bff; }
+.abc-radio-primary input [type =“radio”]：checked + label :: after {
+  background-color：＃007bff; }
+
+.abc-radio-danger输入[type =“radio”] + label :: after {
+  background-color：＃dc3545; }
+.abc-radio-danger输入[type =“radio”]：checked + label :: before {
+  border-color：＃dc3545; }
+.abc-radio-danger输入[type =“radio”]：checked + label :: after {
+  background-color：＃dc3545; }
+
+.abc-radio-info输入[type =“radio”] + label :: after {
+  background-color：＃17a2b8; }
+.abc-radio-info input [type =“radio”]：checked + label :: before {
+  border-color：＃17a2b8; }
+.abc-radio-info input [type =“radio”]：checked + label :: after {
+  background-color：＃17a2b8; }
+
+.abc-radio-warning输入[type =“radio”] + label :: after {
+  background-color：＃ffc107; }
+.abc-radio-warning input [type =“radio”]：checked + label :: before {
+  border-color：＃ffc107; }
+.abc-radio-warning input [type =“radio”]：checked + label :: after {
+  background-color：＃ffc107; }
+
+.abc-radio-success输入[type =“radio”] + label :: after {
+  background-color：＃28a745; }
+.abc-radio-success输入[type =“radio”]：checked + label :: before {
+  border-color：＃28a745; }
+.abc-radio-success输入[type =“radio”]：checked + label :: after {
+  background-color：＃28a745; }
+
+label .was-validated .form-check-input：invalid .abc-checkbox：before，label
+.was-validated .form-check-input：invalid .abc-radio：before，label .form-check-input.is-invalid .abc-checkbox：before，label
+.form-check-input.is-invalid .abc-radio：before {
+  border-color：＃dc3545; }

@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairTransferShDao">
+    
+	<sql id="affairTransferShColumns">
+		a.id AS "id",
+		a.transfer_id AS "transferId",
+		a.sh_person AS "shPerson",
+		a.sh_organization AS "shOrganization",
+		a.sh_organization_id AS "shOrganizationId",
+		a.opinion AS "opinion",
+		a.status AS "status",
+		a.date AS "date"
+	</sql>
+	
+	<sql id="affairTransferShJoins">
+		LEFT JOIN sys_office o4 ON o4.id = a.sh_organization
+	</sql>
+    
+	<select id="get" resultType="AffairTransferSh">
+		SELECT 
+			<include refid="affairTransferShColumns"/>
+		FROM affair_transfer_sh a
+		<include refid="affairTransferShJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairTransferSh">
+		SELECT 
+			<include refid="affairTransferShColumns"/>
+		FROM affair_transfer_sh a
+		<include refid="affairTransferShJoins"/>
+		<where>
+			
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairTransferSh">
+		SELECT 
+			<include refid="affairTransferShColumns"/>
+		FROM affair_transfer_sh a
+		<include refid="affairTransferShJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+	<insert id="insert">
+		INSERT INTO affair_transfer_sh(
+			id,
+			transfer_id,
+			sh_person,
+			sh_organization,
+			sh_organization_id,
+			opinion,
+			status,
+			date
+		) VALUES (
+			#{id},
+			#{transferId},
+			#{shPerson},
+			#{shOrganization},
+			#{shOrganizationId},
+			#{opinion},
+			#{status},
+			#{date}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_transfer_sh SET 	
+			transfer_id = #{transferId},
+			sh_person = #{shPerson},
+			sh_organization = #{shOrganization},
+			sh_organization_id = #{shOrganizationId},
+			opinion = #{opinion},
+			status = #{status},
+			date = #{date}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM affair_transfer_sh
+		WHERE id = #{id}
+	</update>
+
+	<select id="findNumByTransferId" resultType="java.lang.Integer">
+		select count(1) from affair_transfer_sh s where s.transfer_id = #{transferId} and  s.status = '1'
+	</select>
+
+    <delete id="deleteByIds">
+		delete from  affair_transfer_sh
+		WHERE transfer_id in <foreach collection="ids" item="item" index="index"
+			 open="(" separator="," close=")">#{item}</foreach>
+	</delete>
+
+	<select id="findInfoByTranSferId" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairTransferSh">
+		SELECT
+		<include refid="affairTransferShColumns"/>
+		FROM affair_transfer_sh a
+		WHERE a.transfer_id = #{tranSferId}
+	</select>
+</mapper>

@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairOneHelpOneMainDao">
+    
+	<sql id="affairOneHelpOneMainColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.job AS "job",
+		a.be_name AS "beName",
+		a.unit_job AS "unitJob",
+		a.situation AS "situation",
+		a.address AS "address",
+		a.money AS "money",
+		a.tel AS "tel",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.main_id AS "mainId",
+		a.date AS "date"
+	</sql>
+	
+	<sql id="affairOneHelpOneMainJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairOneHelpOneMain">
+		SELECT 
+			<include refid="affairOneHelpOneMainColumns"/>
+		FROM affair_one_help_one_main a
+		<include refid="affairOneHelpOneMainJoins"/>
+		WHERE a.id = #{id}
+	</select>
+
+
+	
+	<select id="findList" resultType="AffairOneHelpOneMain">
+		SELECT 
+			<include refid="affairOneHelpOneMainColumns"/>
+		FROM affair_one_help_one_main a
+		<include refid="affairOneHelpOneMainJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+			</if>
+			<if test="beName != null and beName != ''">
+				AND a.be_name = #{beName}
+			</if>
+			<if test="address != null and address != ''">
+				AND a.address = #{address}
+			</if>
+			<if test="tel != null and tel != ''">
+				AND a.tel = #{tel}
+			</if>
+			<if test="mainId != null and mainId != ''">
+				AND a.main_id = #{mainId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairOneHelpOneMain">
+		SELECT 
+			<include refid="affairOneHelpOneMainColumns"/>
+		FROM affair_one_help_one_main a
+		<include refid="affairOneHelpOneMainJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_one_help_one_main(
+			id,
+			name,
+			job,
+			be_name,
+			unit_job,
+			situation,
+			address,
+			money,
+			tel,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			main_id,
+			date
+		) VALUES (
+			#{id},
+			#{name},
+			#{job},
+			#{beName},
+			#{unitJob},
+			#{situation},
+			#{address},
+			#{money},
+			#{tel},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{mainId},
+			#{date}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_one_help_one_main SET 	
+			name = #{name},
+			job = #{job},
+			be_name = #{beName},
+			unit_job = #{unitJob},
+			situation = #{situation},
+			address = #{address},
+			money = #{money},
+			tel = #{tel},
+			create_org_id = #{createOrgId},
+			create_id_no = #{createIdNo},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			main_id = #{mainId},
+			date = #{date}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_one_help_one_main SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByParentIds">
+		UPDATE affair_one_help_one_main SET
+		del_flag = '1'
+		WHERE main_id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+	
+</mapper>

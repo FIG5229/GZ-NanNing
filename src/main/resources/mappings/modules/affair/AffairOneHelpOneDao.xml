@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairOneHelpOneDao">
+    
+	<sql id="affairOneHelpOneColumns">
+		a.id AS "id",
+		a.title AS "title",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.name AS "name",
+		a.job AS "job",
+		a.be_name AS "beName",
+		a.unit_job AS "unitJob",
+		a.situation AS "situation",
+		a.address AS "address",
+		a.money AS "money",
+		a.tel AS "tel",
+		a.date AS "date",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+
+	<sql id="affairOneHelpOneJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+
+	<select id="get" resultType="AffairOneHelpOne">
+		SELECT
+			<include refid="affairOneHelpOneColumns"/>
+		FROM affair_one_help_one a
+		<include refid="affairOneHelpOneJoins"/>
+		WHERE a.id = #{id}
+	</select>
+
+	<select id="getIdByTitle" resultType="AffairOneHelpOne">
+		SELECT
+		<include refid="affairOneHelpOneColumns"/>
+		FROM affair_one_help_one a
+		<include refid="affairOneHelpOneJoins"/>
+		WHERE a.del_flag = '0' and a.title = #{title} and a.unit = #{unit}
+	</select>
+
+	<select id="findList" resultType="AffairOneHelpOne">
+		SELECT
+			<include refid="affairOneHelpOneColumns"/>
+		FROM affair_one_help_one a
+		<include refid="affairOneHelpOneJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="title != null and title != ''">
+				AND a.title like
+				<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{title}||'%'</if>
+			</if>
+			<if test="unit != null and unit != ''">
+				AND a.unit = #{unit}
+			</if>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findAllList" resultType="AffairOneHelpOne">
+		SELECT
+			<include refid="affairOneHelpOneColumns"/>
+		FROM affair_one_help_one a
+		<include refid="affairOneHelpOneJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<insert id="insert">
+		INSERT INTO affair_one_help_one(
+			id,
+			title,
+			unit,
+			unit_id,
+			name,
+			job,
+			be_name,
+			unit_job,
+			situation,
+			address,
+			money,
+			tel,
+			date,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{title},
+			#{unit},
+			#{unitId},
+			#{name},
+			#{job},
+			#{beName},
+			#{unitJob},
+			#{situation},
+			#{address},
+			#{money},
+			#{tel},
+			#{date},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+
+	<update id="update">
+		UPDATE affair_one_help_one SET
+			title = #{title},
+			unit = #{unit},
+			unit_id = #{unitId},
+			name = #{name},
+			job = #{job},
+			be_name = #{beName},
+			unit_job = #{unitJob},
+			situation = #{situation},
+			address = #{address},
+			money = #{money},
+			tel = #{tel},
+			date = #{date},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+
+	<update id="delete">
+		UPDATE affair_one_help_one SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_one_help_one SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<!--这是List页面专用查询,当建设时间，所属单位，小家建设名称，建设项目相同时，只取一条id最大的字段-->
+	<sql id="affairOneHelpOneList">
+        MAX(a.id) AS "id",
+		a.unit AS "unit",
+		a.title AS "title"
+	</sql>
+	<!--这是List页面专用查询,当建设时间，所属单位，小家建设名称，建设项目相同时，只取一条id最大的字段-->
+	<select id="findInList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairOneHelpOne">
+		SELECT
+		<include refid="affairOneHelpOneList"/>
+		FROM affair_one_help_one a
+		<include refid="affairOneHelpOneJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="unit != null and unit != ''">
+				AND a.unit = #{unit}
+			</if>
+			<if test="title != null and title != ''">
+				AND a.title = #{title}
+			</if>
+			${sqlMap.dsf}
+		</where>
+		group by
+		a.title,
+		a.unit
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+		</choose>
+	</select>
+
+	<select id="selectOneHelpOne" resultType="java.lang.Integer">
+		SELECT
+			count(*)
+		FROM
+			affair_one_help_one
+		WHERE
+			del_flag = '0'
+			AND SUBSTRING (cast ( "date" as VARCHAR ),0,4) BETWEEN #{lastYearDate} AND #{nowYearDate}
+			AND unit_id = #{unitId}
+	</select>
+	
+</mapper>

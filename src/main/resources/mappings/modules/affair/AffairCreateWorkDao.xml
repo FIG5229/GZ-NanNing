@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairCreateWorkDao">
+    
+	<sql id="affairCreateWorkColumns">
+		a.id AS "id",
+		a.title AS "title",
+		a.level AS "level",
+		a.year AS "year",
+		a.standard AS "standard",
+		a.method AS "method",
+		a.score AS "score",
+		a.content AS "content",
+		a.file_path AS "filePath",
+		a.status AS "status",
+		a.report_time AS "reportTime",
+		a.sign_time AS "signTime",
+		a.check_man AS "checkMan",
+		a.submit_man AS "submitMan",
+		a.check_id AS "checkId",
+		a.submit_id AS "submitId",
+		a.sh_opinion AS "shOpinion",
+		a.working_conditions AS "workingConditions",
+		a.self_rating AS "selfRating",
+		a.assessment_score AS "assessmentScore",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.classify AS "classify"
+	</sql>
+	
+	<sql id="affairCreateWorkJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairCreateWork">
+		SELECT 
+			<include refid="affairCreateWorkColumns"/>
+		FROM affair_create_work a
+		<include refid="affairCreateWorkJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairCreateWork">
+		SELECT 
+			<include refid="affairCreateWorkColumns"/>
+		FROM affair_create_work a
+		<include refid="affairCreateWorkJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			/*签收时  不能查看未上报的数据*/
+			<!--<if test="status != null and status != ''">
+				and a.status  &lt;&gt; '1'
+			</if>-->
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{title}||'%'</if>
+			</if>
+			<if test="level != null and level != ''">
+				AND a.level = #{level}
+			</if>
+
+			<choose>
+				<when test="beginYear != null and beginYear != '' and endYear != null and endYear != ''">
+					AND a.year BETWEEN #{beginYear} AND #{endYear}
+				</when>
+				<when test="beginYear != null and beginYear != ''">
+					AND a.year >= #{beginYear}
+				</when>
+				<when test="endYear != null and endYear != ''">
+					AND  #{endYear} >= a.endYear
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.year DESC,a.level desc,a.title desc, a.standard desc
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairCreateWork">
+		SELECT 
+			<include refid="affairCreateWorkColumns"/>
+		FROM affair_create_work a
+		<include refid="affairCreateWorkJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_create_work(
+			id,
+			title,
+			level,
+			year,
+			standard,
+			method,
+			score,
+			content,
+			file_path,
+			status,
+			report_time,
+			sign_time,
+			check_man,
+			submit_man,
+			check_id,
+			submit_id,
+			sh_opinion,
+			working_conditions,
+			self_rating,
+			assessment_score,
+			create_by,
+			create_org_id,
+			create_date,
+			update_by,
+			update_org_id,
+			update_date,
+			del_flag,
+			unit,
+			unit_id,
+			classify
+		) VALUES (
+			#{id},
+			#{title},
+			#{level},
+			#{year},
+			#{standard},
+			#{method},
+			#{score},
+			#{content},
+			#{filePath},
+			#{status},
+			#{reportTime},
+			#{signTime},
+			#{checkMan},
+			#{submitMan},
+			#{checkId},
+			#{submitId},
+			#{shOpinion},
+			#{workingConditions},
+			#{selfRating},
+			#{assessmentScore},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateDate},
+			#{delFlag},
+			#{unit},
+			#{unitId},
+			#{classify}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_create_work SET 	
+			title = #{title},
+			level = #{level},
+			year = #{year},
+			standard = #{standard},
+			method = #{method},
+			score = #{score},
+			content = #{content},
+			file_path = #{filePath},
+			status = #{status},
+			report_time = #{reportTime},
+			sign_time = #{signTime},
+			check_man = #{checkMan},
+			submit_man = #{submitMan},
+			check_id = #{checkId},
+			submit_id = #{submitId},
+			sh_opinion = #{shOpinion},
+			working_conditions = #{workingConditions},
+			self_rating = #{selfRating},
+			assessment_score = #{assessmentScore},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_date = #{updateDate},
+			unit = #{unit},
+			unit_id = #{unitId},
+			classify = #{classify}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_create_work SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_create_work SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+	
+</mapper>

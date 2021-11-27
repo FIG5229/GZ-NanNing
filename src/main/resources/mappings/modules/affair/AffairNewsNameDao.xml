@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairNewsNameDao">
+    
+	<sql id="affairNewsNameColumns">
+		a.id AS "id",
+		a.news_name AS "newsName",
+		a.news_id_number AS "newsIdNumber",
+		a.news_id AS "newsId",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="affairNewsNameJoins">
+	</sql>
+    
+	<select id="get" resultType="AffairNewsName">
+		SELECT 
+			<include refid="affairNewsNameColumns"/>
+		FROM affair_news_name a
+		<include refid="affairNewsNameJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairNewsName">
+		SELECT 
+			<include refid="affairNewsNameColumns"/>
+		FROM affair_news_name a
+		<include refid="affairNewsNameJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="newsName != null and newsName != ''">
+				AND a.news_name = #{newsName}
+			</if>
+			<if test="newsIdNumber != null and newsIdNumber != ''">
+				AND a.news_id_number = #{newsIdNumber}
+			</if>
+			<if test="newsId != null and newsId != ''">
+				AND a.news_id = #{newsId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairNewsName">
+		SELECT 
+			<include refid="affairNewsNameColumns"/>
+		FROM affair_news_name a
+		<include refid="affairNewsNameJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+    <select id="selectAllNewsId" resultType="java.lang.String">
+		select
+			news_id
+		from
+			affair_news_author
+		where
+			del_flag = '0' and
+			id_number = #{idNumber}
+	</select>
+
+    <insert id="insert">
+		INSERT INTO affair_news_name(
+			id,
+			news_name,
+			news_id_number,
+			news_id,
+			del_flag
+		) VALUES (
+			#{id},
+			#{newsName},
+			#{newsIdNumber},
+			#{newsId},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_news_name SET 	
+			news_name = #{newsName},
+			news_id_number = #{newsIdNumber},
+			news_id = #{newsId}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_news_name SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE news_id = #{id}
+	</update>
+	<update id="deleteByIds">
+		UPDATE affair_news_name SET
+		del_flag = '1'
+		WHERE news_id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+</mapper>

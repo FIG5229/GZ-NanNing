@@ -1,0 +1,444 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairWenyiDao">
+    
+	<sql id="affairWenyiColumns">
+		a.id AS "id",
+		a.pro_name AS "proName",
+		a.type AS "type",
+		a.peo_name AS "peoName",
+		a.pro_content AS "proContent",
+		a.unit_name AS "unitName",
+		a.unit_id AS "unitId",
+		a.award_name AS "awardName",
+		a.award_level AS "awardLevel",
+		a.ratify_unit AS "ratifyUnit",
+		a.ratify_time AS "ratifyTime",
+		a.adopt_media AS "adoptMedia",
+		a.adopt_time AS "adoptTime",
+		a.ju_check_man AS "juCheckMan",
+		a.chu_check_man AS "chuCheckMan",
+		a.submit_man AS "submitMan",
+		a.check_type AS "checkType",
+		a.ju_check_id AS "juCheckId",
+		a.chu_check_id AS "chuCheckId",
+		a.submit_id AS "submitId",
+		a.opinion AS "opinion",
+		a.appendfile AS "appendfile",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="affairWenyiJoins">
+		LEFT JOIN sys_office o11 ON o11.id = a.unit_name
+	</sql>
+    
+	<select id="get" resultType="AffairWenyi">
+		SELECT 
+			<include refid="affairWenyiColumns"/>
+		FROM affair_wenyi a
+		<include refid="affairWenyiJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairWenyi">
+		SELECT 
+			<include refid="affairWenyiColumns"/>
+		FROM affair_wenyi a
+		<include refid="affairWenyiJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="proName != null and proName != ''">
+				AND a.pro_name = #{proName}
+			</if>
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+			<if test="peoName != null and peoName != ''">
+				AND a.peo_name = #{peoName}
+			</if>
+			<if test="unitName != null and unitName != ''">
+				AND a.unit_name = #{unitName}
+			</if>
+			<if test="awardName != null and awardName != ''">
+				AND a.award_name = #{awardName}
+			</if>
+			<if test="awardLevel != null and awardLevel != ''">
+				AND a.award_level = #{awardLevel}
+			</if>
+			<if test="ratifyUnit != null and ratifyUnit != ''">
+				AND a.ratify_unit = #{ratifyUnit}
+			</if>
+			<if test="ratifyTime != null and ratifyTime != ''">
+				AND a.ratify_time = #{ratifyTime}
+			</if>
+			<!--审核特殊查询页面-->
+			<!--根据officeID-->
+			<choose>
+				<when test="officeId != null and (officeId == 5 or officeId == 144 or officeId == 265 or officeId == 29)">
+					AND (
+					(a.create_by = #{userId} or a.submit_id = #{userId})
+					OR
+					((a.check_type = '2' or a.check_type = '4') and (a.ju_check_id = #{userId} or a.chu_check_id = #{userId}))
+					OR
+					(a.check_type = '3' and (a.ju_check_id = #{userId}))
+					OR a.unit_id=#{officeId}
+					)
+				</when>
+				<otherwise>
+					AND (a.create_by = #{userId} or a.submit_id = #{userId} OR a.unit_id=#{officeId})
+				</otherwise>
+			</choose>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairWenyi">
+		SELECT 
+			<include refid="affairWenyiColumns"/>
+		FROM affair_wenyi a
+		<include refid="affairWenyiJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	<select id="findByIds" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairWenyi">
+		select <include refid="affairWenyiColumns"/>
+		from affair_wenyi a
+		where a.id in <foreach collection="ids" item="item" index="index"
+							 open="("  separator="," close=")">#{item}</foreach>
+
+	</select>
+
+	<insert id="insert">
+		INSERT INTO affair_wenyi(
+			id,
+			pro_name,
+			type,
+			peo_name,
+			pro_content,
+			unit_name,
+			unit_id,
+			award_name,
+			award_level,
+			ratify_unit,
+			ratify_time,
+			adopt_media,
+			adopt_time,
+			ju_check_man,
+			chu_check_man,
+			submit_man,
+			check_type,
+			ju_check_id,
+			chu_check_id,
+			submit_id,
+			opinion,
+			appendfile,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{proName},
+			#{type},
+			#{peoName},
+			#{proContent},
+			#{unitName},
+			#{unitId},
+			#{awardName},
+			#{awardLevel},
+			#{ratifyUnit},
+			#{ratifyTime},
+			#{adoptMedia},
+			#{adoptTime},
+			#{juCheckMan},
+			#{chuCheckMan},
+			#{submitMan},
+			#{checkType},
+			#{juCheckId},
+			#{chuCheckId},
+			#{submitId},
+			#{opinion},
+			#{appendfile},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_wenyi SET 	
+			pro_name = #{proName},
+			type = #{type},
+			peo_name = #{peoName},
+			pro_content = #{proContent},
+			unit_name = #{unitName},
+			unit_id = #{unitId},
+			award_name = #{awardName},
+			award_level = #{awardLevel},
+			ratify_unit = #{ratifyUnit},
+			ratify_time = #{ratifyTime},
+			adopt_media = #{adoptMedia},
+			adopt_time = #{adoptTime},
+			ju_check_man = #{juCheckMan},
+			chu_check_man = #{chuCheckMan},
+			submit_man = #{submitMan},
+			check_type = #{checkType},
+			ju_check_id = #{juCheckId},
+			chu_check_id = #{chuCheckId},
+			submit_id = #{submitId},
+			opinion = #{opinion},
+			appendfile = #{appendfile},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_wenyi SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_wenyi SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<select id="countJuLiteraryWorks" resultType="map">
+		select count( CASE WHEN ( a.award_level = '1' ) THEN a.award_level END ) AS country,
+		count( CASE WHEN ( a.award_level = '2' ) THEN a.award_level END ) AS province,
+		count( CASE WHEN ( a.award_level = '3' ) THEN a.award_level END ) AS office,
+		count( CASE WHEN ( a.award_level = '4' ) THEN a.award_level END ) AS county,
+		count( CASE WHEN ( a.award_level = '5' ) THEN a.award_level END ) AS other,
+		'南宁处' as label
+		from affair_wenyi a
+		left join sys_office o on o.id=a.unit_id
+		where a.del_flag = '0'
+		and (o."id" = '34' or o."parent_id" ='34' or o.parent_ids like '%34%')
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.ratify_time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.ratify_time) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.ratify_time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.ratify_time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.ratify_time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		union all
+		select count( CASE WHEN ( a.award_level = '1' ) THEN a.award_level END ) AS country,
+		count( CASE WHEN ( a.award_level = '2' ) THEN a.award_level END ) AS province,
+		count( CASE WHEN ( a.award_level = '3' ) THEN a.award_level END ) AS office,
+		count( CASE WHEN ( a.award_level = '4' ) THEN a.award_level END ) AS county,
+		count( CASE WHEN ( a.award_level = '5' ) THEN a.award_level END ) AS other,
+		'北海处' as label
+		from affair_wenyi a
+		left join sys_office o on o.id=a.unit_id
+		where a.del_flag = '0'
+		and (o."id" = '156' or o."parent_id" ='156' or o.parent_ids like '%156%')
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.ratify_time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.ratify_time) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.ratify_time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.ratify_time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.ratify_time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		union all
+		select count( CASE WHEN ( a.award_level = '1' ) THEN a.award_level END ) AS country,
+		count( CASE WHEN ( a.award_level = '2' ) THEN a.award_level END ) AS province,
+		count( CASE WHEN ( a.award_level = '3' ) THEN a.award_level END ) AS office,
+		count( CASE WHEN ( a.award_level = '4' ) THEN a.award_level END ) AS county,
+		count( CASE WHEN ( a.award_level = '5' ) THEN a.award_level END ) AS other,
+		'柳州处' as label
+		from affair_wenyi a
+		left join sys_office o on o.id=a.unit_id
+		where a.del_flag = '0'
+		and (o."id" = '95' or o."parent_id" ='95' or o.parent_ids like '%95%')
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.ratify_time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.ratify_time) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.ratify_time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.ratify_time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.ratify_time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		union all
+		select count( CASE WHEN ( a.award_level = '1' ) THEN a.award_level END ) AS country,
+		count( CASE WHEN ( a.award_level = '2' ) THEN a.award_level END ) AS province,
+		count( CASE WHEN ( a.award_level = '3' ) THEN a.award_level END ) AS office,
+		count( CASE WHEN ( a.award_level = '4' ) THEN a.award_level END ) AS county,
+		count( CASE WHEN ( a.award_level = '5' ) THEN a.award_level END ) AS other,
+		'公安局' as label
+		from affair_wenyi a
+		left join sys_office o on o.id=a.unit_id
+		where a.del_flag = '0'
+		and (o.id = '0' or o.id = '1' or o.parent_id in ('1','307','312','316') or o.parent_id like '0')
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.ratify_time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.ratify_time) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.ratify_time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.ratify_time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.ratify_time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="countChuLiteraryWorks" resultType="map">
+		select count( CASE WHEN ( a.award_level = '1' ) THEN a.award_level END ) AS country,
+		count( CASE WHEN ( a.award_level = '2' ) THEN a.award_level END ) AS province,
+		count( CASE WHEN ( a.award_level = '3' ) THEN a.award_level END ) AS office,
+		count( CASE WHEN ( a.award_level = '4' ) THEN a.award_level END ) AS county,
+		count( CASE WHEN ( a.award_level = '5' ) THEN a.award_level END ) AS other,
+		o.name as label
+		from affair_wenyi a
+		left join sys_office o on o.id=a.unit_id
+		where a.del_flag = '0'
+		and (o."id" = #{officeId} or o."parent_id" =#{officeId} or o.parent_ids like '%${officeId}%')
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.ratify_time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.ratify_time) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.ratify_time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.ratify_time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.ratify_time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY o."name"
+	</select>
+
+	<select id="findLiteraryWorkList" resultType="AffairWenyi">
+		select <include refid="affairWenyiColumns"/>
+		from affair_wenyi a
+		left join sys_office o on o."id" = a.unit_id
+		left join sys_dict sd  on sd."value" = a.award_level
+		where a.del_flag = '0' and sd."type" = 'affair_wenyi_level'
+		and sd.label = #{label}
+		<choose>
+			<when test="unitId != 'top'">
+				and (o."id" = #{unitId} or o."parent_id" =#{unitId} or o.parent_ids like '%${unitId}%')
+			</when>
+			<otherwise>
+				and (o.id = '0' or o.id = '1' or o.parent_id in ('1','307','312','316') or o.parent_id like '0')
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.ratify_time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.ratify_time) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.ratify_time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.ratify_time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.ratify_time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+</mapper>

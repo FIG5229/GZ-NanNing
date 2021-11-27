@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairTrainCombatDao">
+    
+	<sql id="affairTrainCombatColumns">
+		a.id AS "id",
+		a.user_name AS "userName",
+		a.number AS "number",
+		a.date AS "date",
+		a.name AS "name",
+		a.id_number AS "idNumber",
+		a.project_type AS "projectType",
+		a.police_classification AS "policeClassification",
+		a.police_rank AS "policeRank",
+		a.person_type AS "personType",
+		a.management_type AS "managementType",
+		a.post AS "post",
+		a.post_level AS "postLevel",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.region AS "region",
+		a.count AS "count",
+		a.average AS "average",
+		a.remarks AS "remarks",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.region_id AS "regionId",
+		a.del_flag AS "delFlag",
+		a.organization AS "organization",
+		a.organization_id AS "organizationId"
+	</sql>
+	
+	<sql id="affairTrainCombatJoins">
+		LEFT JOIN sys_office o ON o.id = a.organization_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairTrainCombat">
+		SELECT 
+			<include refid="affairTrainCombatColumns"/>
+		FROM affair_train_combat a
+		<include refid="affairTrainCombatJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairTrainCombat">
+		SELECT 
+			<include refid="affairTrainCombatColumns"/>
+		FROM affair_train_combat a
+		<include refid="affairTrainCombatJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="userName != null and userName != ''">
+				AND a.user_name LIKE
+				<if test="dbName == 'oracle'">'%'||#{userName}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{userName}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{userName},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{userName}||'%'</if>
+			</if>
+			<if test="number != null and number != ''">
+				AND a.number LIKE
+				<if test="dbName == 'oracle'">'%'||#{number}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{number}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{number},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{number}||'%'</if>
+			</if>
+			<if test="date != null and date != ''">
+				AND a.date = #{date}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+			</if>
+			<if test="idNumber != null and idNumber != ''">
+				AND a.id_number LIKE
+				<if test="dbName == 'oracle'">'%'||#{idNumber}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{idNumber}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{idNumber},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{idNumber}||'%'</if>
+			</if>
+			<if test="projectType != null and projectType != ''">
+				AND a.project_type = #{projectType}
+			</if>
+			<if test="policeClassification != null and policeClassification != ''">
+				AND a.police_classification = #{policeClassification}
+			</if>
+			<if test="policeRank != null and policeRank != ''">
+				AND a.police_rank = #{policeRank}
+			</if>
+			<if test="personType != null and personType != ''">
+				AND a.person_type = #{personType}
+			</if>
+			<if test="managementType != null and managementType != ''">
+				AND a.management_type = #{managementType}
+			</if>
+			<if test="post != null and post != ''">
+				AND a.post = #{post}
+			</if>
+			<if test="postLevel != null and postLevel != ''">
+				AND a.post_level = #{postLevel}
+			</if>
+			<if test="unit != null and unit != ''">
+				AND a.unit = #{unit}
+			</if>
+			<if test="region != null and region != ''">
+				AND a.region = #{region}
+			</if>
+			<if test="organizationId != null and organizationId != ''">
+				AND (a.organization_id = #{organizationId} or o.parent_ids like '%,'||#{organizationId}||',%')
+			</if>
+			<choose>
+				<when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+					AND a.date between #{startDate} and #{endDate}
+				</when>
+				<when test="startDate != null and startDate != ''">
+					AND a.date>= #{startDate}
+				</when>
+				<when test="endDate != null and endDate != ''">
+					AND  #{endDate} >= a.date
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			<choose>
+				<when test="maxBulletNum != null and maxBulletNum != '' and minBulletNum != null and minBulletNum != ''">
+					AND cast(a.average as float8) between #{minBulletNum} and #{maxBulletNum}
+				</when>
+				<when test="maxBulletNum != null and maxBulletNum != ''">
+					AND #{maxBulletNum} >= cast(a.average as float8)
+				</when>
+				<when test="minBulletNum != null and minBulletNum != ''">
+					AND  cast(a.average as float8) >= #{minBulletNum}
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairTrainCombat">
+		SELECT 
+			<include refid="affairTrainCombatColumns"/>
+		FROM affair_train_combat a
+		<include refid="affairTrainCombatJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_train_combat(
+			id,
+			user_name,
+			number,
+			date,
+			name,
+			id_number,
+			project_type,
+			police_classification,
+			police_rank,
+			person_type,
+			management_type,
+			post,
+			post_level,
+			unit,
+			unit_id,
+			region,
+			count,
+			average,
+			remarks,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			region_id,
+			del_flag,
+			organization,
+			organization_id
+		) VALUES (
+			#{id},
+			#{userName},
+			#{number},
+			#{date},
+			#{name},
+			#{idNumber},
+			#{projectType},
+			#{policeClassification},
+			#{policeRank},
+			#{personType},
+			#{managementType},
+			#{post},
+			#{postLevel},
+			#{unit},
+			#{unitId},
+			#{region},
+			#{count},
+			#{average},
+			#{remarks},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{regionId},
+			#{delFlag},
+			#{organization},
+			#{organizationId}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_train_combat SET 	
+			user_name = #{userName},
+			number = #{number},
+			date = #{date},
+			name = #{name},
+			id_number = #{idNumber},
+			project_type = #{projectType},
+			police_classification = #{policeClassification},
+			police_rank = #{policeRank},
+			person_type = #{personType},
+			management_type = #{managementType},
+			post = #{post},
+			post_level = #{postLevel},
+			unit = #{unit},
+			unit_id = #{unitId},
+			region = #{region},
+			count = #{count},
+			average = #{average},
+			remarks = #{remarks},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			organization_id = #{organization},
+			organization_id = #{organizationId}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_train_combat SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_train_combat SET
+		del_flag = '1'
+		WHERE id in
+		<foreach collection="ids" item="item" index="index"
+				 open="(" separator="," close=")">#{item}
+		</foreach>
+	</update>
+
+	<select id="findByIds" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairTrainCombat">
+		select
+		<include refid="affairTrainCombatColumns"/>
+		from affair_train_combat a where id in
+		<foreach collection="ids" item="item" index="index"
+				 open="(" separator="," close=")">#{item}
+		</foreach>
+	</select>
+    <select id="findofficeId" resultType="com.thinkgem.jeesite.modules.personnel.entity.PersonnelBase">
+		SELECT
+			workunit_name,
+			workunit_id
+		FROM
+			personnel_base
+		WHERE
+			id_number = #{idNumber}
+	</select>
+
+</mapper>

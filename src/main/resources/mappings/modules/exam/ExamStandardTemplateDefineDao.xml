@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.exam.dao.ExamStandardTemplateDefineDao">
+    
+	<sql id="examStandardTemplateDefineColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.startrow_num AS "startrowNum",
+		a.endrow_num AS "endrowNum",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.exam_stardard_id AS "examStardardId",
+		a.cycle AS "cycle",
+		a.object_category AS "objectCategory",
+		a.kp_type AS "kpType"
+	</sql>
+	
+	<sql id="examStandardTemplateDefineJoins">
+	</sql>
+    
+	<select id="get" resultType="ExamStandardTemplateDefine">
+		SELECT 
+			<include refid="examStandardTemplateDefineColumns"/>
+		FROM exam_standard_template_define a
+		<include refid="examStandardTemplateDefineJoins"/>
+		<where>
+			<if test="_parameter != null and _parameter != ''">
+				AND a.id = #{_parameter}
+			</if>
+		</where>
+	</select>
+
+	<select id="getNew" resultType="ExamStandardTemplateDefine" parameterType="Map">
+		SELECT
+		<include refid="examStandardTemplateDefineColumns"/>
+		FROM exam_standard_template_define a
+		<include refid="examStandardTemplateDefineJoins"/>
+		<where>
+			<if test="id != null and id != ''">
+				AND a.id = #{id}
+			</if>
+			<if test="examStardardId != null and examStardardId != ''">
+				AND a.exam_stardard_id = #{examStardardId}
+			</if>
+		</where>
+	</select>
+	
+	<select id="findList" resultType="ExamStandardTemplateDefine">
+		SELECT 
+			<include refid="examStandardTemplateDefineColumns"/>
+		FROM exam_standard_template_define a
+		<include refid="examStandardTemplateDefineJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="examStardardId != null and examStardardId != ''">
+				AND a.exam_stardard_id = #{examStardardId}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name like '%'||#{name}||'%'
+			</if>
+			<if test="cycle != null and cycle != ''">
+				AND a.cycle = #{cycle}
+			</if>
+			<if test="objectCategory != null and objectCategory != ''">
+				AND a.object_category = #{objectCategory}
+			</if>
+			<if test="kpType != null and kpType != ''">
+				AND a.kp_type = #{kpType}
+			</if>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ExamStandardTemplateDefine">
+		SELECT 
+			<include refid="examStandardTemplateDefineColumns"/>
+		FROM exam_standard_template_define a
+		<include refid="examStandardTemplateDefineJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="selectTemplateDatas" parameterType="Map" resultType="Map">
+		SELECT
+			d.id,
+			d.row_num,
+			d.item_id,
+			f.column_type,
+			f.column_order,
+			d.item_value,
+			f.column_name
+		FROM
+		exam_standard_template_data d
+		LEFT JOIN exam_standard_template_item_define f ON d.item_id = f.ID
+		LEFT JOIN exam_standard_template_define T ON f.template_id = T.ID
+		<where>
+			<if test="examStardardId != null and ''!= examStardardId">
+				AND T.exam_stardard_id = #{examStardardId}
+			</if>
+		</where>
+		ORDER BY
+			d.row_num asc,
+			f.column_order asc
+	</select>
+	<select id="findTemplateDatasBeta"  resultType="Map">
+		SELECT
+			cast(d.row_num as varchar) as row_num,
+			d.item_id,
+			f.column_type,
+			f.column_order,
+			d.item_value
+		FROM
+		exam_standard_template_data d
+		LEFT JOIN exam_standard_template_item_define f ON d.item_id = f.ID
+		LEFT JOIN exam_standard_template_define T ON f.template_id = T.ID
+		<where>
+			<if test="standardId != null and ''!= standardId">
+				AND T.exam_stardard_id = #{standardId}
+			</if>
+			<if test="rowId != null and ''!= rowId">
+				AND T.row_num = #{rowId}
+			</if>
+			<if test="itemValue != null and itemValue != ''">
+				and d.item_value = #{itemValue}
+			</if>
+			<if test="optionId != null and optionId != ''">
+				and d.id = #{optionId}
+			</if>
+		</where>
+		ORDER BY
+			d.row_num asc,
+			f.column_order asc
+	</select>
+
+	<insert id="insert">
+		INSERT INTO exam_standard_template_define(
+			id,
+			name,
+			startrow_num,
+			endrow_num,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag,
+			exam_stardard_id,
+			cycle,
+			object_category,
+			kp_type
+		) VALUES (
+			#{id},
+			#{name},
+			#{startrowNum},
+			#{endrowNum},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag},
+			#{examStardardId},
+			#{cycle},
+			#{objectCategory},
+			#{kpType}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE exam_standard_template_define SET
+			name = #{name},
+			startrow_num = #{startrowNum},
+			endrow_num = #{endrowNum},
+			cycle = #{cycle},
+			object_category = #{objectCategory},
+			kp_type = #{kpType}
+		WHERE id = #{id}
+	</update>
+
+	<update id="updateExamStardardId">
+		UPDATE exam_standard_template_define SET
+			exam_stardard_id = #{examStardardId}
+		WHERE id = #{id}
+	</update>
+
+	<update id="clearExamStardardId">
+		UPDATE exam_standard_template_define SET
+			exam_stardard_id = ''
+		WHERE exam_stardard_id = #{examStardardId}
+	</update>
+
+	
+	<update id="delete">
+		UPDATE exam_standard_template_define SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<select id="findTemplateDatasByOption" resultType="map">
+
+	SELECT
+			d.id,
+			d.row_num,
+			d.item_id,
+			f.column_type,
+			f.column_order,
+			d.item_value,
+			f.column_name
+		FROM
+		exam_standard_template_data d
+		LEFT JOIN exam_standard_template_item_define f ON d.item_id = f.ID
+		LEFT JOIN exam_standard_template_define T ON f.template_id = T.ID
+		where
+
+				 T.exam_stardard_id = #{standardId}
+				 and d.row_num = (
+				 	select row_num from exam_standard_template_data where id = #{optionId} limit 1
+				 )
+				 and (f.column_type = '2' or f.column_type = '3')
+
+
+		ORDER BY
+			d.row_num asc,
+			f.column_order asc
+	</select>
+
+</mapper>

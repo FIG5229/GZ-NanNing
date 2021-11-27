@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairOrganziationBuildSignDao">
+    
+	<sql id="affairOrganziationBuildSignColumns">
+		a.id AS "id",
+		a.ob_id AS "obId",
+		a.committee AS "committee",
+		a.committee_name AS "committeeName",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="affairOrganziationBuildSignJoins">
+	</sql>
+    
+	<select id="get" resultType="AffairOrganziationBuildSign">
+		SELECT 
+			<include refid="affairOrganziationBuildSignColumns"/>
+		FROM affair_organziation_build_sign a
+		<include refid="affairOrganziationBuildSignJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairOrganziationBuildSign">
+		SELECT 
+			<include refid="affairOrganziationBuildSignColumns"/>
+		FROM affair_organziation_build_sign a
+		<include refid="affairOrganziationBuildSignJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="committee != null and committee != ''">
+				AND a.committee = #{committee}
+			</if>
+			<if test="committeeName != null and committeeName != ''">
+				AND a.committee_name = #{committeeName}
+			</if>
+			<if test="id != null and id != ''">
+				AND a.ob_id = #{id}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairOrganziationBuildSign">
+		SELECT 
+			<include refid="affairOrganziationBuildSignColumns"/>
+		FROM affair_organziation_build_sign a
+		<include refid="affairOrganziationBuildSignJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_organziation_build_sign(
+			id,
+			ob_id,
+			committee,
+			committee_name,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{obId},
+			#{committee},
+			#{committeeName},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_organziation_build_sign SET 	
+			ob_id = #{obId},
+			committee = #{committee},
+			committee_name = #{committeeName},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateOrgId},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_organziation_build_sign SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	<update id="deleteByMainId">
+		UPDATE affair_organziation_build_sign SET
+			del_flag = '1'
+		WHERE ob_id = #{obId}
+	</update>
+	<update id="deleteByMainIds">
+		UPDATE affair_organziation_build_sign SET
+		del_flag = '1'
+		WHERE ob_id in <foreach collection="obIds" item="item" index="index"
+								  open="(" separator="," close=")">#{item}</foreach>
+	</update>
+	
+</mapper>

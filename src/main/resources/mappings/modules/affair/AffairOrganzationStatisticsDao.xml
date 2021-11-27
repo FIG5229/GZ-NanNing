@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairOrganzationStatisticsDao">
+    
+	<sql id="affairOrganzationStatisticsColumns">
+		a.id AS "id",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.class_name AS "className",
+		a.classify AS "classify",
+		a.begin_time AS "beginTime",
+		a.end_time AS "endTime",
+		a.people_sum AS "peopleSum",
+		a.study_sum AS "studySum",
+		a.study_ratio AS "studyRatio",
+		a.study_time_sum AS "studyTimeSum",
+		a.study_time_avg AS "studyTimeAvg",
+		a.study_time_avg_all AS "studyTimeAvgAll",
+		a.study_number AS "studyNumber",
+		a.people_avg AS "peopleAvg",
+		a.people_avg_all AS "peopleAvgAll",
+		a.course_pass_number AS "coursePassNumber",
+		a.course_pass_people AS "coursePassPeople",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="affairOrganzationStatisticsJoins">
+	</sql>
+    
+	<select id="get" resultType="AffairOrganzationStatistics">
+		SELECT 
+			<include refid="affairOrganzationStatisticsColumns"/>
+		FROM affair_organzation_statistics a
+		<include refid="affairOrganzationStatisticsJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairOrganzationStatistics">
+		SELECT 
+			<include refid="affairOrganzationStatisticsColumns"/>
+		FROM affair_organzation_statistics a
+		<include refid="affairOrganzationStatisticsJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="unit != null and unit != ''">
+				AND a.unit LIKE
+				<if test="dbName == 'oracle'">'%'||#{unit}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{unit}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{unit},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{unit}||'%'</if>
+			</if>
+			<if test="className != null and className != ''">
+				AND a.class_name LIKE
+				<if test="dbName == 'oracle'">'%'||#{className}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{className}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{className},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{className}||'%'</if>
+			</if>
+			<if test="classify != null and classify != ''">
+				AND a.classify LIKE
+				<if test="dbName == 'oracle'">'%'||#{classify}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{classify}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{classify},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{classify}||'%'</if>
+			</if>
+			<choose>
+				<when test="beginTime != null and beginTime != '' and endTime != null and endTime != ''">
+					AND a.begin_time between #{beginTime} and #{endTime}
+				</when>
+				<when test="beginTime != null and beginTime != ''">
+					AND a.begin_time>= #{beginTime}
+				</when>
+				<when test="endTime != null and endTime != ''">
+					AND  #{endTime} >= a.end_time
+				</when>
+			</choose>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairOrganzationStatistics">
+		SELECT 
+			<include refid="affairOrganzationStatisticsColumns"/>
+		FROM affair_organzation_statistics a
+		<include refid="affairOrganzationStatisticsJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_organzation_statistics(
+			id,
+			unit,
+			unit_id,
+			class_name,
+			classify,
+			begin_time,
+			end_time,
+			people_sum,
+			study_sum,
+			study_ratio,
+			study_time_sum,
+			study_time_avg,
+			study_time_avg_all,
+			study_number,
+			people_avg,
+			people_avg_all,
+			course_pass_number,
+			course_pass_people,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{unit},
+			#{unitId},
+			#{className},
+			#{classify},
+			#{beginTime},
+			#{endTime},
+			#{peopleSum},
+			#{studySum},
+			#{studyRatio},
+			#{studyTimeSum},
+			#{studyTimeAvg},
+			#{studyTimeAvgAll},
+			#{studyNumber},
+			#{peopleAvg},
+			#{peopleAvgAll},
+			#{coursePassNumber},
+			#{coursePassPeople},
+			#{createBy.id},
+			#{createOrgId},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateOrgId},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_organzation_statistics SET 	
+			unit = #{unit},
+			unit_id = #{unitId},
+			class_name = #{className},
+		 	classify = #{classify},
+		 	begin_time = #{beginTime},
+		 	end_time = #{endTime},
+			people_sum = #{peopleSum},
+			study_sum = #{studySum},
+			study_ratio = #{studyRatio},
+			study_time_sum = #{studyTimeSum},
+			study_time_avg = #{studyTimeAvg},
+			study_time_avg_all = #{studyTimeAvgAll},
+			study_number = #{studyNumber},
+			people_avg = #{peopleAvg},
+			people_avg_all = #{peopleAvgAll},
+			course_pass_number = #{coursePassNumber},
+			course_pass_people = #{coursePassPeople},
+			create_org_id = #{createOrgId},
+			create_id_no = #{createIdNo},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateOrgId},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_organzation_statistics SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+
+	<update id="deleteByIds">
+		UPDATE affair_organzation_statistics SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+</mapper>

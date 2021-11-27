@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairJobTrainingDao">
+    
+	<sql id="affairJobTrainingColumns">
+		a.id AS "id",
+		a.username AS "username",
+		a.police_number AS "policeNumber",
+		a.police_rank AS "policeRank",
+		a.police_classification AS "policeClassification",
+		a.drill_date_begin AS "drillDateBegin",
+		a.drill_date_over AS "drillDateOver",
+		a.name AS "name",
+		a.id_number AS "idNumber",
+		a.item_classification AS "itemClassification",
+		a.personnel_category AS "personnelCategory",
+		a.management_class AS "managementClass",
+		a.administrative_post AS "administrativePost",
+		a.job_level AS "jobLevel",
+		a.organization AS "organization",
+		a.creator AS "creator",
+		a.creation_time AS "creationTime",
+		a.region AS "region",
+		a.region_id AS "regionId",
+		a.drill_general_situation AS "drillGeneralSituation",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.create_org_id as "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		xunlian_time AS "xunlianTime",
+		a.appendfile AS "appendfile",
+		a.organization_id AS "organizationId"
+	</sql>
+	<sql id="affairJobTrainingJoins">
+<!--
+		LEFT JOIN sys_area a18 ON a18.id = a.region
+-->
+		LEFT JOIN sys_office o ON o.id = a.organization_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairJobTraining">
+		SELECT 
+			<include refid="affairJobTrainingColumns"/>
+		FROM affair_job_training a
+		<include refid="affairJobTrainingJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairJobTraining">
+		SELECT 
+			<include refid="affairJobTrainingColumns"/>
+		FROM affair_job_training a
+		<include refid="affairJobTrainingJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="username != null and username != ''">
+				AND a.username  like '%'||#{username}||'%'
+			</if>
+			<if test="policeNumber != null and policeNumber != ''">
+				AND a.police_number = #{policeNumber}
+			</if>
+			<if test="policeRank != null and policeRank != ''">
+				AND a.police_rank = #{policeRank}
+			</if>
+			<if test="policeClassification != null and policeClassification != ''">
+				AND a.police_classification = #{policeClassification}
+			</if>
+			<if test="drillDateBegin != null and drillDateBegin != ''">
+				AND a.drill_date_begin = #{drillDateBegin}
+			</if>
+			<if test="drillDateOver != null and drillDateOver != ''">
+				AND a.drill_date_over = #{drillDateOver}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+			</if>
+			<if test="idNumber != null and idNumber != ''">
+				AND a.id_number = #{idNumber}
+			</if>
+			<if test="itemClassification != null and itemClassification != ''">
+				AND a.item_classification = #{itemClassification}
+			</if>
+			<if test="personnelCategory != null and personnelCategory != ''">
+				AND a.personnel_category = #{personnelCategory}
+			</if>
+			<if test="managementClass != null and managementClass != ''">
+				AND a.management_class = #{managementClass}
+			</if>
+			<if test="administrativePost != null and administrativePost != ''">
+				AND a.administrative_post = #{administrativePost}
+			</if>
+			<if test="jobLevel != null and jobLevel != ''">
+				AND a.job_level = #{jobLevel}
+			</if>
+			<if test="organizationId != null and organizationId != ''">
+				AND (a.organization_id = #{organizationId} or o.parent_ids like '%,'||#{organizationId}||',%')
+			</if>
+			<if test="creationTime != null and creationTime != ''">
+				AND a.creation_time = #{creationTime}
+			</if>
+			<if test="region != null and region != ''">
+				AND a.region = #{region}
+			</if>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairJobTraining">
+		SELECT 
+			<include refid="affairJobTrainingColumns"/>
+		FROM affair_job_training a
+		<include refid="affairJobTrainingJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+    <select id="findofficeId" resultType="java.lang.String">
+		select id from sys_office where name = #{organization}
+	</select>
+
+    <insert id="insert">
+		INSERT INTO affair_job_training(
+			id,
+			username,
+			police_number,
+			police_rank,
+			police_classification,
+			drill_date_begin,
+			drill_date_over,
+			name,
+			id_number,
+			item_classification,
+			personnel_category,
+			management_class,
+			administrative_post,
+			job_level,
+			organization,
+			creator,
+			creation_time,
+			region,
+			region_id,
+			drill_general_situation,
+			remarks,
+			del_flag,
+			xunlian_time,
+			appendfile,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			organization_id
+		) VALUES (
+			#{id},
+			#{username},
+			#{policeNumber},
+			#{policeRank},
+			#{policeClassification},
+			#{drillDateBegin},
+			#{drillDateOver},
+			#{name},
+			#{idNumber},
+			#{itemClassification},
+			#{personnelCategory},
+			#{managementClass},
+			#{administrativePost},
+			#{jobLevel},
+			#{organization},
+			#{creator},
+			#{creationTime},
+			#{region},
+			#{regionId},
+			#{drillGeneralSituation},
+			#{remarks},
+			#{delFlag},
+			#{xunlianTime},
+			#{appendfile},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{organizationId}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_job_training SET 	
+			username = #{username},
+			police_number = #{policeNumber},
+			police_rank = #{policeRank},
+			police_classification = #{policeClassification},
+			drill_date_begin = #{drillDateBegin},
+			drill_date_over = #{drillDateOver},
+			name = #{name},
+			id_number = #{idNumber},
+			item_classification = #{itemClassification},
+			personnel_category = #{personnelCategory},
+			management_class = #{managementClass},
+			administrative_post = #{administrativePost},
+			job_level = #{jobLevel},
+			organization = #{organization},
+			creator = #{creator},
+			creation_time = #{creationTime},
+			region = #{region},
+			region_id = #{regionId},
+			drill_general_situation = #{drillGeneralSituation},
+			remarks = #{remarks},
+			xunlian_time = #{xunlianTime},
+			appendfile = #{appendfile},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			organization_id = #{organizationId}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_job_training SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_job_training SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+
+</mapper>

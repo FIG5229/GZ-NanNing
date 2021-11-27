@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairLifeMeetDao">
+    
+	<sql id="affairLifeMeetColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.party_organization AS "partyOrganization",
+		a.party_organization_id AS "partyOrganizationId",
+		a.date AS "date",
+		a.hold AS "hold",
+		a.note_taker AS "noteTaker",
+		a.agenda AS "agenda",
+		a.person1 AS "person1",
+		a.person2 AS "person2",
+		a.person3 AS "person3",
+		a.file_path AS "filePath",
+		a.add_status AS "addStatus",
+		a.sh_person AS "shPerson",
+		a.status AS "status",
+		a.reason AS "reason",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.person2_id AS "person2Id",
+		a.person3_id AS "person3Id"
+	</sql>
+	
+	<sql id="affairLifeMeetJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairLifeMeet">
+		SELECT 
+			<include refid="affairLifeMeetColumns"/>
+		FROM affair_life_meet a
+		<include refid="affairLifeMeetJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairLifeMeet">
+		<choose>
+			<when test="hasAuth == true">/*审核人*/
+				SELECT
+					<include refid="affairLifeMeetColumns"/>
+				FROM affair_life_meet a
+				<include refid="affairLifeMeetJoins"/>
+				LEFT JOIN affair_general_situation s
+				ON s.id = a.party_organization_id
+				where a.del_flag = #{DEL_FLAG_NORMAL} and a.add_status = '2'
+			</when>
+			<otherwise>/*非审核人*/
+				SELECT
+					<include refid="affairLifeMeetColumns"/>
+				FROM affair_life_meet a
+				<include refid="affairLifeMeetJoins"/>
+				LEFT JOIN affair_general_situation s
+				ON s.id = a.party_organization_id
+				where a.del_flag = #{DEL_FLAG_NORMAL}
+			</otherwise>
+		</choose>
+			<if test="name != null and name != ''">
+				AND a.name LIKE concat('%',#{name},'%')
+			</if>
+			<if test="partyOrganizationId != null and partyOrganizationId != ''">
+				AND a.party_organization_id = #{partyOrganizationId}
+			</if>
+			<choose>
+				<when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+					AND a.date between #{startDate} and #{endDate}
+				</when>
+				<otherwise>
+					<if test="startDate != null and startDate != ''">
+						AND a.date >= #{startDate}
+					</if>
+					<if test="endDate != null and endDate != ''">
+						AND  #{endDate} >= a.date
+					</if>
+				</otherwise>
+			</choose>
+			<if test="hold != null and hold != ''">
+				AND a.hold LIKE concat('%',#{hold},'%')
+			</if>
+			<if test="noteTaker != null and noteTaker != ''">
+				AND a.note_taker LIKE concat('%',#{noteTaker},'%')
+			</if>
+			<if test="treeId != null and treeId != ''">
+				<!--AND (a.party_organization_id = #{treeId} OR s.parent_ids LIKE CONCAT('%,', #{treeId}, ',%'))-->
+				AND a.party_organization_id = #{treeId}
+			</if>
+			<!-- 数据范围过滤 -->
+			${sqlMap.dsf}
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairLifeMeet">
+		SELECT 
+			<include refid="affairLifeMeetColumns"/>
+		FROM affair_life_meet a
+		<include refid="affairLifeMeetJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+    <insert id="insert">
+		INSERT INTO affair_life_meet(
+			id,
+			name,
+			party_organization,
+			party_organization_id,
+			date,
+			hold,
+			note_taker,
+			agenda,
+			person1,
+			person2,
+			person3,
+			file_path,
+			add_status,
+			sh_person,
+			status,
+			reason,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			person2_id,
+			person3_id
+		) VALUES (
+			#{id},
+			#{name},
+			#{partyOrganization},
+			#{partyOrganizationId},
+			#{date},
+			#{hold},
+			#{noteTaker},
+			#{agenda},
+			#{person1},
+			#{person2},
+			#{person3},
+			#{filePath},
+			#{addStatus},
+			#{shPerson},
+			#{status},
+			#{reason},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{person2Id},
+			#{person3Id}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_life_meet SET 	
+			name = #{name},
+			party_organization = #{partyOrganization},
+			party_organization_id = #{partyOrganizationId},
+			date = #{date},
+			hold = #{hold},
+			note_taker = #{noteTaker},
+			agenda = #{agenda},
+			person1 = #{person1},
+			person2 = #{person2},
+			person3 = #{person3},
+			file_path = #{filePath},
+			add_status = #{addStatus},
+			reason = #{reason},
+			sh_person = #{shPerson},
+			/*审核状态*/
+			status = #{status},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			person2_id = #{person2Id},
+			person3_id = #{person3Id}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_life_meet SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="shenHeSave">
+		UPDATE affair_life_meet SET
+			sh_person = #{affairLifeMeet.shPerson},
+			status = #{affairLifeMeet.status},
+			reason = #{affairLifeMeet.reason},
+			update_date = #{affairLifeMeet.updateDate}
+		WHERE id = #{affairLifeMeet.id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_life_meet SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+			 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<select id="findFinishSumByPId" resultType="map">
+		<!-- 党小组的parent_ids 为 '1,'-->
+		SELECT count(DISTINCT a.party_organization_id )as done,
+		( SELECT COUNT ( 1 ) AS SUM
+		FROM affair_general_situation ags
+		LEFT JOIN sys_office o ON o.id = ags.create_org_id
+		LEFT JOIN sys_user u ON u.id = ags.create_by
+		where ags.del_flag = '0' and ags.parent_ids &lt;&gt; '1,'
+		<if test="id != null and id != ''">
+			${id}
+		</if>
+		) AS "sum"
+		FROM
+		affair_life_meet a
+		LEFT JOIN affair_general_situation G ON A.party_organization_id = G.ID
+		<include refid="affairLifeMeetJoins"/>
+		WHERE a.del_flag = '0'and G.del_flag = '0'
+		<if test="id != null and id != ''">
+			${id}
+		</if>
+		<!--组织树不再使用
+		<if test="id != null and id != ''">
+			AND a.party_organization_id = #{id}
+		</if>-->
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findFinishSumByPIds" resultType="java.lang.Integer">
+		SELECT count(DISTINCT a.party_organization_id )
+		FROM
+		affair_life_meet a
+		WHERE a.del_flag = '0'
+		<if test="idList != null and idList != ''">
+			AND a.party_organization_id in <foreach collection="idList" item="item" index="index"
+			  open="(" separator="," close=")">#{item}</foreach>
+		</if>
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+    <select id="selectNumber" resultType="java.lang.Integer">
+		select	COUNT(a.party_organization_id)
+		from affair_life_meet a
+		where
+		a.del_flag = '0'
+		AND to_char ( "create_date", 'yyyy-mm-dd' ) BETWEEN #{yearL} AND #{yearT}
+		AND a.party_organization_id = #{id}
+	</select>
+
+</mapper>

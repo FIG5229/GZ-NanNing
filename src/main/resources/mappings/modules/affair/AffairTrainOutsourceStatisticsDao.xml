@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairTrainOutsourceStatisticsDao">
+    
+	<sql id="affairTrainOutsourceStatisticsColumns">
+		a.id AS "id",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.people_sum AS "peopleSum",
+		a.off_job AS "offJob",
+		a.half_job AS "halfJob",
+		a.not_job AS "notJob",
+		a.hq AS "hq",
+		a.provincial AS "provincial",
+		a.city AS "city",
+		a.county AS "county",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="affairTrainOutsourceStatisticsJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairTrainOutsourceStatistics">
+		SELECT 
+			<include refid="affairTrainOutsourceStatisticsColumns"/>
+		FROM affair_train_outsource_statistics a
+		<include refid="affairTrainOutsourceStatisticsJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairTrainOutsourceStatistics">
+		SELECT 
+			<include refid="affairTrainOutsourceStatisticsColumns"/>
+		FROM affair_train_outsource_statistics a
+		<include refid="affairTrainOutsourceStatisticsJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${sqlMap.dsf}
+			<!--<if test="userId != '' and userId != null and officeId != '' and officeId != null ">
+				AND ( o.ID = #{userId} OR o.parent_ids LIKE'%,'||#{userId}||',%' OR u.ID = #{officeId}  or u.office_id = #{userId})
+			</if>-->
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairTrainOutsourceStatistics">
+		SELECT 
+			<include refid="affairTrainOutsourceStatisticsColumns"/>
+		FROM affair_train_outsource_statistics a
+		<include refid="affairTrainOutsourceStatisticsJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_train_outsource_statistics(
+			id,
+			unit,
+			unit_id,
+			people_sum,
+			off_job,
+			half_job,
+			not_job,
+			hq,
+			provincial,
+			city,
+			county,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{unit},
+			#{unitId},
+			#{peopleSum},
+			#{offJob},
+			#{halfJob},
+			#{notJob},
+			#{hq},
+			#{provincial},
+			#{city},
+			#{county},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_train_outsource_statistics SET 	
+			unit = #{unit},
+			unit_id = #{unitId},
+			people_sum = #{peopleSum},
+			off_job = #{offJob},
+			half_job = #{halfJob},
+			not_job = #{notJob},
+			hq = #{hq},
+			provincial = #{provincial},
+			city = #{city},
+			county = #{county},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_train_outsource_statistics SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_train_outsource_statistics SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+</mapper>

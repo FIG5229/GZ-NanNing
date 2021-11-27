@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairCourseResourceDao">
+    
+	<sql id="affairCourseResourceColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.code AS "code",
+		a.type AS "type",
+		a.label AS "label",
+		a.time AS "time",
+		a.open AS "open",
+		a.teacher AS "teacher",
+		a.state AS "state",
+		a.classify AS "classify",
+		a.language AS "language",
+		a.author AS "author",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.description AS "description",
+		a.adjunct AS "adjunct",
+		a.terminal AS "terminal",
+		a.formset AS "formset",
+		a.norm AS "norm",
+		a.stencil AS "stencil",
+		a.entrance AS "entrance",
+		a.swf AS "swf",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.class_id AS "classId",
+		a.plan AS "plan",
+		a.learn_time AS "learnTime",
+		a.score AS "score",
+		a.assess AS "assess",
+		a.score_self AS "scoreSelf",
+		a.kq_test AS "kqTest",
+		a.precondition AS "precondition",
+		a.schedule AS "schedule",
+		a.qt_learn_time AS "qtLearnTime",
+		a.test_time AS "testTime",
+		a.shape AS "shape",
+		a.degree AS "degree",
+		a.grade AS "grade",
+		a.paper AS "paper",
+		a.kh_test AS "khTest",
+		a.premise AS "premise",
+		a.premise_schedule AS "premiseSchedule",
+		a.premise_time AS "premiseTime",
+		a.kh_time AS "khTime",
+		a.kh_shape AS "khShape",
+		a.kh_degree AS "khDegree",
+		a.kh_paper AS "khPaper",
+		a.lesson_approval AS "lessonApproval",
+		a.answer AS "answer",
+		a.learn_score AS "learnScore"
+	</sql>
+	
+	<sql id="affairCourseResourceJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairCourseResource">
+		SELECT 
+			<include refid="affairCourseResourceColumns"/>
+		FROM affair_course_resource a
+		<include refid="affairCourseResourceJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairCourseResource">
+		SELECT 
+			<include refid="affairCourseResourceColumns"/>
+		FROM affair_course_resource a
+		<include refid="affairCourseResourceJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="code != null and code != ''">
+				AND a.code LIKE
+					<if test="dbName == 'oracle'">'%'||#{code}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{code}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{code},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{code}||'%'</if>
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+			</if>
+			<if test="label != null and label != ''">
+				AND a.label LIKE
+					<if test="dbName == 'oracle'">'%'||#{label}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{label}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{label},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{label}||'%'</if>
+			</if>
+			<if test="type != null and type != ''">
+				AND a.type LIKE
+					<if test="dbName == 'oracle'">'%'||#{type}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{type}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{type},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{type}||'%'</if>
+			</if>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairCourseResource">
+		SELECT 
+			<include refid="affairCourseResourceColumns"/>
+		FROM affair_course_resource a
+		<include refid="affairCourseResourceJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findType" resultType="java.lang.String">
+		select
+			type
+		from
+			affair_course_resource
+		where
+			del_flag = '0' and
+			id = #{id}
+	</select>
+
+	<select id="findClassId" resultType="java.lang.String">
+		select
+			class_id
+		from
+			affair_course_resource
+		where
+			del_flag = '0' and
+			id = #{id}
+	</select>
+
+
+    <insert id="insert">
+		INSERT INTO affair_course_resource(
+			id,
+			name,
+			code,
+			type,
+			label,
+			time,
+			open,
+			teacher,
+			state,
+			classify,
+			language,
+			author,
+			unit,
+			unit_id,
+			description,
+			adjunct,
+			terminal,
+			formset,
+			norm,
+			stencil,
+			entrance,
+			swf,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			class_id,
+			plan,
+			learn_time,
+			score,
+			assess,
+			score_self,
+			kq_test,
+			precondition,
+			schedule,
+			qt_learn_time,
+			test_time,
+			shape,
+			degree,
+			grade,
+			paper,
+			kh_test,
+			premise,
+			premise_schedule,
+			premise_time,
+			kh_time,
+			kh_shape,
+			kh_degree,
+			kh_paper,
+			lesson_approval,
+			answer,
+			learn_score
+
+		) VALUES (
+			#{id},
+			#{name},
+			#{code},
+			#{type},
+			#{label},
+			#{time},
+			#{open},
+			#{teacher},
+			#{state},
+			#{classify},
+			#{language},
+			#{author},
+			#{unit},
+			#{unitId},
+			#{description},
+			#{adjunct},
+			#{terminal},
+			#{formset},
+			#{norm},
+			#{stencil},
+			#{entrance},
+			#{swf},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{classId},
+			#{plan},
+			#{learnTime},
+			#{score},
+			#{assess},
+			#{scoreSelf},
+			#{kqTest},
+			#{precondition},
+			#{schedule},
+			#{qtLearnTime},
+			#{testTime},
+			#{shape},
+			#{degree},
+			#{grade},
+			#{paper},
+			#{khTest},
+			#{premise},
+			#{premiseSchedule},
+			#{premiseTime},
+			#{khTime},
+			#{khShape},
+			#{khDegree},
+			#{khPaper},
+			#{lessonApproval},
+			#{answer},
+			#{learnScore}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_course_resource SET 	
+			name = #{name},
+			code = #{code},
+			type = #{type},
+			label = #{label},
+			time = #{time},
+			open = #{open},
+			teacher = #{teacher},
+			state = #{state},
+			classify = #{classify},
+			language = #{language},
+			author = #{author},
+			unit = #{unit},
+			unit_id = #{unitId},
+			description = #{description},
+			adjunct = #{adjunct},
+			terminal = #{terminal},
+			formset = #{formset},
+			norm = #{norm},
+			stencil = #{stencil},
+			entrance = #{entrance},
+			swf = #{swf},
+			create_org_id = #{createBy.office.id},
+			create_id_no = #{createIdNo},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			class_id = #{classId},
+			learnScore = #{leanScore},
+
+			plan  = #{plan},
+			learn_time = #{learnTime},
+			score  = #{score},
+			assess = #{assess},
+			score_self = #{scoreSelf},
+			kq_test = #{kqTest},
+			precondition = #{precondition},
+			schedule = #{schedule},
+			qt_learn_time = #{qtLearnTime},
+			test_time = #{testTime},
+			shape = #{shape},
+			degree = #{degree},
+			grade = #{grade},
+			paper = #{paper},
+			kh_test = #{khTest},
+			premise = #{premise},
+			premise_schedule = #{premiseSchedule},
+			premise_time = #{premiseTime},
+			kh_time = #{khTime},
+			kh_shape = #{khShape},
+			kh_degree =	#{khDegree},
+			kh_paper = #{khPaper},
+			lesson_approval = #{lessonApproval},
+			answer = #{answer}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_course_resource SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_course_resource SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+</mapper>

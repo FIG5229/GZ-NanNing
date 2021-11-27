@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairChuPartyCongressRepresentativeDao">
+    
+	<sql id="affairChuPartyCongressRepresentativeColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.sex AS "sex",
+		a.nation AS "nation",
+		a.age AS "age",
+		a.education AS "education",
+		a.is_work AS "isWork",
+		a.session AS "session",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.unit AS "unit",
+		a.unit_id AS "unitId"
+	</sql>
+	
+	<sql id="affairChuPartyCongressRepresentativeJoins">
+   		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairChuPartyCongressRepresentative">
+		SELECT 
+			<include refid="affairChuPartyCongressRepresentativeColumns"/>
+		FROM affair_chu_party_congress_representative a
+		<include refid="affairChuPartyCongressRepresentativeJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairChuPartyCongressRepresentative">
+		SELECT 
+			<include refid="affairChuPartyCongressRepresentativeColumns"/>
+		FROM affair_chu_party_congress_representative a
+		<include refid="affairChuPartyCongressRepresentativeJoins"/>
+		LEFT JOIN affair_general_situation s
+		ON s.id = a.unit_id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE '%'||#{name}||'%'
+			</if>
+			<if test="sex != null and sex != ''">
+				AND a.sex = #{sex}
+			</if>
+			<if test="session != null and session != ''">
+				AND a.session = #{session}
+			</if>
+			<if test="treeId != null and treeId != ''">
+				AND (a.unit_id = #{treeId} OR s.parent_ids LIKE CONCAT('%,', #{treeId}, ',%'))
+			</if>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairChuPartyCongressRepresentative">
+		SELECT 
+			<include refid="affairChuPartyCongressRepresentativeColumns"/>
+		FROM affair_chu_party_congress_representative a
+		<include refid="affairChuPartyCongressRepresentativeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_chu_party_congress_representative(
+			id,
+			name,
+			sex,
+			nation,
+			age,
+			education,
+			is_work,
+			session,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			unit,
+			unit_id
+		) VALUES (
+			#{id},
+			#{name},
+			#{sex},
+			#{nation},
+			#{age},
+			#{education},
+			#{isWork},
+			#{session},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{unit},
+			#{unitId}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_chu_party_congress_representative SET 	
+			name = #{name},
+			sex = #{sex},
+			nation = #{nation},
+			age = #{age},
+			education = #{education},
+			is_work = #{isWork},
+			session = #{session},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			unit = #{unit},
+			unit_id = #{unitId}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_chu_party_congress_representative SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_chu_party_congress_representative SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+	
+</mapper>

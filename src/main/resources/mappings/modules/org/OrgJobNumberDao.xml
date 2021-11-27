@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.org.dao.OrgJobNumberDao">
+    
+	<sql id="orgJobNumberColumns">
+		a.id AS "id",
+		a.org_id AS "orgId",
+		a.date AS "date",
+		a.unit AS "unit",
+		a.file_no AS "fileNo",
+		a.bz_num AS "bzNum",
+		a.bf_num AS "bfNum",
+		a.tz_num AS "tzNum",
+		a.tf_num AS "tfNum",
+		a.tzf_num AS "tzfNum",
+		a.tff_num AS "tffNum",
+		a.cz_num AS "czNum",
+		a.cf_num AS "cfNum",
+		a.czf_num AS "czfNum",
+		a.cff_num AS "cffNum",
+		a.kz_num AS "kzNum",
+		a.kf_num AS "kfNum",
+		a.kzf_num AS "kzfNum",
+		a.kff_num AS "kffNum",
+		a.gz_num AS "gzNum",
+		a.gf_num AS "gfNum",
+		a.remark AS "remark",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="orgJobNumberJoins">
+	</sql>
+    
+	<select id="get" resultType="OrgJobNumber">
+		SELECT 
+			<include refid="orgJobNumberColumns"/>
+		FROM org_job_number a
+		<include refid="orgJobNumberJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="OrgJobNumber">
+		SELECT 
+			<include refid="orgJobNumberColumns"/>
+		FROM org_job_number a
+		<include refid="orgJobNumberJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			/*必须和相应的机构对应*/
+			<if test="orgId != null and orgId != ''">
+				AND a.org_id = #{orgId}
+			</if>
+			<choose>
+				<when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+					AND a.date between  #{startDate} and #{endDate}
+				</when>
+				<otherwise>
+					<if test="startDate != null and startDate != ''">
+						AND a.date >= #{startDate}
+					</if>
+					<if test="endDate != null and endDate != ''">
+						AND  #{endDate} >= a.date
+					</if>
+				</otherwise>
+			</choose>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="OrgJobNumber">
+		SELECT 
+			<include refid="orgJobNumberColumns"/>
+		FROM org_job_number a
+		<include refid="orgJobNumberJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO org_job_number(
+			id,
+			org_id,
+			date,
+			unit,
+			file_no,
+			bz_num,
+			bf_num,
+			tz_num,
+			tf_num,
+			tzf_num,
+			tff_num,
+			cz_num,
+			cf_num,
+			czf_num,
+			cff_num,
+			kz_num,
+			kf_num,
+			kzf_num,
+			kff_num,
+			gz_num,
+			gf_num,
+			remark,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{orgId},
+			#{date},
+			#{unit},
+			#{fileNo},
+			#{bzNum},
+			#{bfNum},
+			#{tzNum},
+			#{tfNum},
+			#{tzfNum},
+			#{tffNum},
+			#{czNum},
+			#{cfNum},
+			#{czfNum},
+			#{cffNum},
+			#{kzNum},
+			#{kfNum},
+			#{kzfNum},
+			#{kffNum},
+			#{gzNum},
+			#{gfNum},
+			#{remark},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE org_job_number SET 	
+			org_id = #{orgId},
+			date = #{date},
+			unit = #{unit},
+			file_no = #{fileNo},
+			bz_num = #{bzNum},
+			bf_num = #{bfNum},
+			tz_num = #{tzNum},
+			tf_num = #{tfNum},
+			tzf_num = #{tzfNum},
+			tff_num = #{tffNum},
+			cz_num = #{czNum},
+			cf_num = #{cfNum},
+			czf_num = #{czfNum},
+			cff_num = #{cffNum},
+			kz_num = #{kzNum},
+			kf_num = #{kfNum},
+			kzf_num = #{kzfNum},
+			kff_num = #{kffNum},
+			gz_num = #{gzNum},
+			gf_num = #{gfNum},
+			remark = #{remark},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE org_job_number SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE org_job_number SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+			 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+	
+	<select id="findInfoByOrgId" resultType="java.util.HashMap">
+		SELECT
+			sum( bf_num ) "bfNum",
+			sum( tz_num ) "tzNum",
+			sum( tf_num ) "tfNum",
+			sum( tzf_num ) "tzfNum",
+			sum( tff_num )  "tffNum",
+			sum( cz_num ) "czNum",
+			sum( cf_num ) "cfNum",
+			sum ( czf_num ) "czfNum",
+			sum ( cff_num ) "cffNum",
+			sum ( kz_num ) "kzNum",
+			sum ( kf_num ) "kfNum",
+			sum ( kzf_num ) "kzfNum",
+			sum ( kff_num ) "kffNum",
+			sum ( gz_num ) "gzNum",
+			sum ( gf_num ) "gfNum"
+		FROM
+			org_job_number
+			WHERE
+			 extract(year from date) &lt;= #{year}  and del_flag = '0'
+		<if test="id != null and id != ''">
+			and org_id = #{id}
+		GROUP BY
+			org_id
+		</if>
+	</select>
+	
+	<select id="findInfoByOrgIds" resultType="java.util.HashMap">
+		SELECT
+			sum( bf_num ) "bfNum",
+			sum( tz_num ) "tzNum",
+			sum( tf_num ) "tfNum",
+			sum( tzf_num ) "tzfNum",
+			sum( tff_num )  "tffNum",
+			sum( cz_num ) "czNum",
+			sum( cf_num ) "cfNum",
+			sum ( czf_num ) "czfNum",
+			sum ( cff_num ) "cffNum",
+			sum ( kz_num ) "kzNum",
+			sum ( kf_num ) "kfNum",
+			sum ( kzf_num ) "kzfNum",
+			sum ( kff_num ) "kffNum",
+			sum ( gz_num ) "gzNum",
+			sum ( gf_num ) "gfNum"
+		FROM
+			org_job_number
+		WHERE
+		extract(year from date) &lt;= #{year}  and del_flag = '0'
+		and org_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+		 	#{id}
+		 </foreach>		
+		)
+	</select>
+
+	<delete id="deleteByOrgId">
+		UPDATE org_job_number SET
+			del_flag = '1'
+		WHERE org_id = #{orgId}
+	</delete>
+</mapper>

@@ -1,0 +1,556 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.exam.dao.ExamUnitAllPublicYearDao">
+    
+	<sql id="examUnitAllPublicYearColumns">
+		a.id AS "id",
+		a.unit_name AS "unitName",
+		a.unit_id AS "unitId",
+		a.work_name AS "workName",
+		a.weight AS "weight",
+		a.hundred AS "hundred",
+		a.zsqzh_score AS "zsqzhScore",
+		a.public_score AS "publicScore",
+		a.analysis AS "analysis",
+		a.workflow_id AS "workflowId",
+		a.value_type AS "valueType",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="examUnitAllPublicYearJoins">
+	</sql>
+    
+	<select id="get" resultType="ExamUnitAllPublicYear">
+		SELECT 
+			<include refid="examUnitAllPublicYearColumns"/>
+		FROM exam_unit_all_public_year a
+		<include refid="examUnitAllPublicYearJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ExamUnitAllPublicYear">
+		SELECT 
+			<include refid="examUnitAllPublicYearColumns"/>
+		FROM exam_unit_all_public_year a
+		<include refid="examUnitAllPublicYearJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ExamUnitAllPublicYear">
+		SELECT 
+			<include refid="examUnitAllPublicYearColumns"/>
+		FROM exam_unit_all_public_year a
+		<include refid="examUnitAllPublicYearJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+    <insert id="insert">
+		INSERT INTO exam_unit_all_public_year(
+			id,
+			unit_name,
+			unit_id,
+			work_name,
+			weight,
+			hundred,
+			zsqzh_score,
+			public_score,
+			analysis,
+			workflow_id,
+			value_type,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{unitName},
+			#{unitId},
+			#{workName},
+			#{weight},
+			#{hundred},
+			#{zsqzhScore},
+			#{publicScore},
+			#{analysis},
+			#{workflowId},
+			#{valueType},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE exam_unit_all_public_year SET 	
+			unit_name = #{unitName},
+			unit_id = #{unitId},
+			work_name = #{workName},
+			weight = #{weight},
+			hundred = #{hundred},
+			zsqzh_score = #{zsqzhScore},
+			public_score = #{publicScore},
+			analysis = #{analysis},
+			workflow_id = #{workflowId},
+			value_type = #{valueType},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE exam_unit_all_public_year SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<select id="getUnitIdsByWorkflowId" resultType="java.util.Map">
+		select y.unit_name as "unitName" ,y.unit_id as "unitId"
+		<if test='isJKC != null and isJKC != "" and isJKC == "0"'>
+			,u.office_id as officeId
+		</if>
+        from exam_unit_all_public_year y
+		<if test='isJKC != null and isJKC != "" and isJKC == "0"'>
+			left join sys_user u on u.id = y.unit_id
+		</if>
+        where y.workflow_id = #{workflowId} and y.del_flag = '0'
+		<if test='isJKC != null and isJKC != "" and isJKC == "0"'>
+			and u.del_flag = '0'
+		</if>
+		group by y.unit_name,y.unit_id
+		<if test='isJKC != null and isJKC != "" and isJKC == "0"'>
+			,u.office_id
+		</if>
+		<choose>
+			<when test='isJKC != null and isJKC != "" and isJKC == "1"'>
+				order by cast(y.unit_id as INTEGER) ASC
+			</when>
+			<when test='isJKC != null and isJKC != "" and isJKC == "0"'>
+				order by cast(u.office_id as INTEGER) ASC
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findWorkNameList" resultType="java.util.Map">
+		SELECT
+			DISTINCT t.label,t.value,T.weights as weight,t.sort
+		FROM exam_unit_all_public_year y LEFT JOIN ( SELECT
+			d.label,d.value,w.weights,sort
+		    FROM exam_weights_main w LEFT JOIN sys_dict d on w.work_name = d.value
+		    WHERE d.type = 'exam_weigths' and d.del_flag = '0' and w.del_flag = '0'
+        ) T on y.work_name = t.value
+		 WHERE y.workflow_id = #{workflowId} and y.del_flag = '0' order by T.sort asc;
+	</select>
+
+	<select id="getMapByWorkflowIdAndUnitId" resultType="java.util.Map">
+		SELECT w.weights as weight,
+ 		(case y.work_name
+ 			  when '32' then y.hundred
+ 			  when '33' then y.hundred
+ 			  else (ROUND(CAST((100+y.hundred) as numeric), 2)) end ) as "hundredSum" ,
+		(case y.work_name
+			when '32' then  y.zsqzh_score
+			when '33' then   y.zsqzh_score
+			else (ROUND(CAST((w.weights + y.zsqzh_score) as numeric ),2))  end ) as "zsqzhScore"
+		 FROM exam_unit_all_public_year y LEFT JOIN exam_weights_main w on y.work_name = w.work_name
+		 WHERE y.workflow_id = #{workflowId} and y.unit_id = #{unitId}  and y.work_name = #{workName} and y.del_flag = '0'
+	</select>
+
+	<select id="getMapByWorkflowIdAndUnitId2" resultType="java.util.Map">
+		SELECT w.weights as "weight",
+ 		SUM(y.hundred) as "hundredSum" ,
+		SUM(y.zsqzh_score ) as "zsqzhScore"
+		 FROM exam_unit_all_public_year y
+		 LEFT JOIN exam_weights_main w on y.work_name = w.work_name
+		 LEFT JOIN exam_weights ew on ew.id = w.ew_id
+		 WHERE y.workflow_id = #{workflowId}
+		  and y.unit_id = #{unitId}
+		  and y.work_name = #{workName}
+		  and y.del_flag = '0'
+		  and w.del_flag = '0'
+		  and ew.kp_type = '1'
+		  and ew.del_flag = '0'
+		 GROUP BY w.weights,w.work_name_type
+	</select>
+
+	<select id="getWeightScore" resultType="java.lang.Double">
+		SELECT  ROUND(cast (sum(y.zsqzh_score)  as numeric),2)
+         FROM exam_unit_all_public_year y
+         <!--*LEFT JOIN exam_weights_main w ON y.work_name = w.work_name-->
+         WHERE y.workflow_id = #{workflowId} and y.unit_id = #{unitId} and y.del_flag = '0'
+		<if test="isYW!='' and isYW != null and isYW == 'isYW'">
+			and y.work_name != '32'
+		</if>
+	</select>
+
+	<select id="getDepByWorkflowIdAndUnitId" resultType="java.util.Map">
+		SELECT y.unit_id as "depId",y.unit_name as "depName",cast( abs( sum(zsqzh_score) ) as varchar ) as "sum"
+		 FROM exam_unit_all_public_year y
+		 WHERE y.workflow_id = #{workflowId} and y.unit_id = #{unitId}
+		 <if test="valueType!= null and valueType != ''">
+			 and y.value_type = #{valueType}
+		 </if>
+		 and y.del_flag = '0'  group by y.unit_id,y.unit_name
+	</select>
+
+	<select id="getJGDepByWorkflowIdAndUnitId" resultType="java.util.Map">
+		SELECT y.unit_id as "depId",y.unit_name as "depName",cast( abs( sum(hundred) ) as varchar ) as "sum"
+		 FROM exam_unit_all_public_year y
+		 WHERE y.workflow_id = #{workflowId} and y.unit_id = #{unitId} and y.value_type = #{valueType}
+		 and y.del_flag = '0'  group by y.unit_id,y.unit_name
+	</select>
+
+<!--	局考处-->
+	<select id="findInfoByUnitId"  resultType="java.util.HashMap">
+		SELECT
+		w.unit_name AS "unit",
+		w.unit_id as "unitId",
+		w.workflow_id as "workflowId",
+		cast(SUM(w.zsqzh_score) as  decimal(10,2)) AS sum
+		FROM exam_unit_all_public_year w
+		LEFT JOIN exam_workflow ew ON w.workflow_id = ew.id
+		left join exam_workflow_define ewd on ew.flow_template_id = ewd.id
+		WHERE w.del_flag = '0'
+		<if test="id != null and id != ''">
+			AND w.unit_id = #{id}
+		</if>
+		/*AND w.workflow_id = ew.id
+		AND ew.flow_template_id = ewd.id*/
+		AND ewd.exam_type = '1'
+		<if test='workName != null and workName != "" and workName != "0" '>
+			AND w.work_name = #{workName}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND ew.time = #{year}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY w.unit_name,w.unit_id,w.workflow_id
+		ORDER BY CAST(w.unit_id AS INTEGER)
+	</select>
+
+	<select id="findInfoByUnitIds" resultType="java.util.HashMap">
+		SELECT
+		w.unit_name AS "unit",
+		w.unit_id as "unitId",
+		w.workflow_id as "workflowId",
+		cast(SUM(w.zsqzh_score) as  decimal(10,2)) AS sum
+		FROM exam_unit_all_public_year w
+		LEFT JOIN exam_workflow ew ON w.workflow_id = ew.id
+		left join exam_workflow_define ewd on ew.flow_template_id = ewd.id
+		WHERE w.del_flag = '0'
+		AND  w.unit_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+		/*AND w.workflow_id = ew.id
+		AND ew.flow_template_id = ewd.id*/
+		AND ewd.exam_type = '1'
+		<if test='workName != null and workName != "" and workName != "0" '>
+			AND w.work_name = #{workName}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND ew.time = #{year}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY w.unit_name,w.unit_id,w.workflow_id
+		ORDER BY CAST(w.unit_id AS INTEGER)
+	</select>
+
+<!--	局考局-->
+	<select id="findJkjInfoByUnitId"  resultType="java.util.HashMap">
+		SELECT
+		w.unit_name "unit",
+		<choose>
+		    <when test="isWeight">
+		        cast(SUM(w.zsqzh_score)  as  decimal(10,3)) AS sum
+            </when>
+			<when test="baseSum!=null">
+				cast(SUM(w.hundred) +${baseSum}  as  decimal(10,3)) AS sum
+			</when>
+			<otherwise>
+				cast(SUM(w.hundred) +100  as  decimal(10,3)) AS sum
+			</otherwise>
+		</choose>
+		FROM exam_unit_all_public_year w
+		LEFT JOIN exam_workflow ew ON w.workflow_id = ew.id
+		left join exam_workflow_define ewd on ew.flow_template_id = ewd.id
+		WHERE w.del_flag = '0'
+		and ew.del_flag = '0'
+		<if test="id != null and id != ''">
+			AND w.unit_id = #{id}
+		</if>
+		/*AND w.workflow_id = ew.id
+		AND ew.flow_template_id = ewd.id*/
+		AND ewd.exam_type = '2'
+		<choose>
+			<when test="year != null and year !=''">
+				AND ew.time = #{year}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY w.unit_name
+	</select>
+
+	<select id="findJkjInfoByUnitIds" resultType="java.util.HashMap">
+		SELECT
+		w.unit_name "unit",
+		<choose>
+		    <when test="isWeight">
+		        cast(SUM(w.zsqzh_score)  as  decimal(10,3)) AS sum
+            </when>
+			<when test="baseSum!=null">
+				cast(SUM(w.hundred) +${baseSum}  as  decimal(10,3)) AS sum
+			</when>
+			<otherwise>
+				cast(SUM(w.hundred) +100  as  decimal(10,3)) AS sum
+			</otherwise>
+		</choose>
+		FROM exam_unit_all_public_year w
+		LEFT JOIN exam_workflow ew ON w.workflow_id = ew.id
+		left join exam_workflow_define ewd on ew.flow_template_id = ewd.id
+		WHERE w.del_flag = '0'
+		and ew.del_flag = '0'
+		AND  w.unit_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+		/*AND w.workflow_id = ew.id
+		AND ew.flow_template_id = ewd.id*/
+		AND ewd.exam_type = '2'
+		<choose>
+			<when test="year != null and year !=''">
+				AND ew.time = #{year}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY w.unit_name
+	</select>
+
+<!--	处考队所-->
+	<select id="findCkdsInfoByUnitId"  resultType="java.util.HashMap">
+		SELECT
+		w.unit_name "unit",
+		cast(SUM(w.zsqzh_score)  as  decimal(10,2)) AS sum
+		<!--<choose>
+			<when test='workName != null and workName != "" and workName != "0" '>
+				cast(SUM(w.zsqzh_score)  as  decimal(10,2)) AS sum
+			</when>
+			<otherwise>
+				cast(SUM(w.zsqzh_score) +100  as  decimal(10,2)) AS sum
+			</otherwise>
+		</choose>-->
+		FROM exam_unit_all_public_year w
+		LEFT JOIN exam_workflow ew ON w.workflow_id = ew.id
+		left join exam_workflow_define ewd on ew.flow_template_id = ewd.id
+		WHERE w.del_flag = '0' and ew.del_flag = '0'
+		<if test="id != null and id != ''">
+			AND w.unit_id = #{id}
+		</if>
+		/*AND w.workflow_id = ew.id
+		AND ew.flow_template_id = ewd.id*/
+		AND ewd.exam_type = '3'
+		<if test='workName != null and workName != "" and workName != "0" '>
+			AND w.work_name = #{workName}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND ew.time = #{year}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY w.unit_name
+	</select>
+
+	<select id="findCkdsInfoByUnitIds" resultType="java.util.HashMap">
+		SELECT
+		w.unit_name "unit",
+		cast(SUM(w.zsqzh_score)  as  decimal(10,2)) AS sum
+		<!--<choose>
+			<when test='workName != null and workName != "" and workName != "0" '>
+				cast(SUM(w.zsqzh_score)  as  decimal(10,2)) AS sum
+			</when>
+			<otherwise>
+				cast(SUM(w.zsqzh_score) +100  as  decimal(10,2)) AS sum
+			</otherwise>
+		</choose>-->
+		FROM exam_unit_all_public_year w
+		LEFT JOIN exam_workflow ew ON w.workflow_id = ew.id
+		left join exam_workflow_define ewd on ew.flow_template_id = ewd.id
+		WHERE w.del_flag = '0' and ew.del_flag = '0'
+		AND  w.unit_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+		/*AND w.workflow_id = ew.id
+		AND ew.flow_template_id = ewd.id*/
+		AND ewd.exam_type = '3'
+		<if test='workName != null and workName != "" and workName != "0" '>
+			AND w.work_name = #{workName}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND ew.time = #{year}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY w.unit_name
+	</select>
+
+<!--	处考处机关-->
+	<select id="findCkcjgInfoByUnitId"  resultType="java.util.HashMap">
+		SELECT
+		w.unit_name "unit",
+		<choose>
+		    <when test="isWeight">
+		        cast(SUM(w.zsqzh_score)  as  decimal(10,3)) AS sum
+            </when>
+			<when test="baseSum!=null">
+				cast(SUM(w.hundred) +${baseSum}  as  decimal(10,3)) AS sum
+			</when>
+			<otherwise>
+				cast(SUM(w.hundred) +100  as  decimal(10,3)) AS sum
+			</otherwise>
+		</choose>
+		FROM exam_unit_all_public_year w
+		LEFT JOIN exam_workflow ew ON w.workflow_id = ew.id
+		left join exam_workflow_define ewd on ew.flow_template_id = ewd.id
+		WHERE w.del_flag = '0'
+		and ew.del_flag = '0'
+		<if test="id != null and id != ''">
+			AND w.unit_id = #{id}
+		</if>
+		/*AND w.workflow_id = ew.id
+		AND ew.flow_template_id = ewd.id*/
+		AND ewd.exam_type = '4'
+		<choose>
+			<when test="year != null and year !=''">
+				AND ew.time = #{year}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY w.unit_name
+	</select>
+
+	<select id="findCkcjgInfoByUnitIds" resultType="java.util.HashMap">
+		SELECT
+		w.unit_name "unit",
+		<choose>
+		    <when test="isWeight">
+		        cast(SUM(w.zsqzh_score)  as  decimal(10,3)) AS sum
+            </when>
+			<when test="baseSum!=null">
+				cast(SUM(w.hundred) +${baseSum}  as  decimal(10,3)) AS sum
+			</when>
+			<otherwise>
+				cast(SUM(w.hundred) +100  as  decimal(10,3)) AS sum
+			</otherwise>
+		</choose>
+		FROM exam_unit_all_public_year w
+		LEFT JOIN exam_workflow ew ON w.workflow_id = ew.id
+		left join exam_workflow_define ewd on ew.flow_template_id = ewd.id
+		WHERE w.del_flag = '0'
+		and ew.del_flag = '0'
+		AND  w.unit_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+		/*AND w.workflow_id = ew.id
+		AND ew.flow_template_id = ewd.id*/
+		AND ewd.exam_type = '4'
+		<choose>
+			<when test="year != null and year !=''">
+				AND ew.time = #{year}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY w.unit_name
+	</select>
+
+	<select id="selItemByWFIDObjId" resultType="java.lang.String">
+		select items
+		 from exam_workflow_datas
+		 where workflow_id = #{workflowId}
+		 and obj_id = #{objId}
+		 and is_selected = '1'
+		 and value_type = #{valueType}
+	</select>
+
+	<select id="getWeightIsNull" resultType="java.lang.Integer">
+	    select count(*)
+        from exam_unit_all_public_year p
+		WHERE p.workflow_id = #{workflowId}
+		and (p.work_name = '99' or p.work_name is null or p.weight is null or p.value_type = -1 or p.value_type is null)
+		and p.del_flag = '0'
+    </select>
+
+    <select id="getWeightIsNullByUserIdYear" resultType="java.lang.Integer">
+    SELECT
+		count(*)
+		FROM exam_unit_all_public_year w
+		LEFT JOIN exam_workflow ew ON w.workflow_id = ew.id
+		left join exam_workflow_define ewd on ew.flow_template_id = ewd.id
+		WHERE w.del_flag = '0'
+		and ew.del_flag = '0'
+		<if test="userId != null and userId != ''">
+			AND w.unit_id = #{userId}
+		</if>
+		AND ewd.exam_type = #{examType}
+		and (w.work_name = '99' or w.work_name is null or w.weight is null or w.value_type = -1 or w.value_type is null)
+		<choose>
+			<when test="year != null and year !=''">
+				AND ew.time = #{year}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+    </select>
+
+    <update id="deleteByWorkflowId">
+        UPDATE exam_unit_all_public_year SET
+			del_flag = '1'
+		WHERE workflow_id = #{workflowId}
+    </update>
+</mapper>

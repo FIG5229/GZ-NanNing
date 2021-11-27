@@ -1,0 +1,438 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairSwapExerciseDao">
+    
+	<sql id="affairSwapExerciseColumns">
+		a.id AS "id",
+		a.user_name AS "userName",
+		a.number AS "number",
+		a.name AS "name",
+		a.id_number AS "idNumber",
+		a.swap_name AS "swapName",
+		a.size_type AS "sizeType",
+		a.job_type AS "jobType",
+		a.study_type AS "studyType",
+		a.date AS "date",
+		a.start_date AS "startDate",
+		a.end_date AS "endDate",
+		a.police_classification AS "policeClassification",
+		a.police_rank AS "policeRank",
+		a.person_type AS "personType",
+		a.management_type AS "managementType",
+		a.post AS "post",
+		a.post_level AS "postLevel",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.region AS "region",
+		a.region_id AS "regionId",
+		a.service_condition AS "serviceCondition",
+		a.study_identity AS "studyIdentity",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="affairSwapExerciseJoins">
+		LEFT JOIN sys_office o ON o.id = a.unit_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairSwapExercise">
+		SELECT 
+			<include refid="affairSwapExerciseColumns"/>
+		FROM affair_swap_exercise a
+		<include refid="affairSwapExerciseJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairSwapExercise">
+		SELECT 
+			<include refid="affairSwapExerciseColumns"/>
+		FROM affair_swap_exercise a
+		<include refid="affairSwapExerciseJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+
+			<if test="userName != null and userName != ''">
+				AND a.user_name LIKE
+				<if test="dbName == 'oracle'">'%'||#{userName}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{userName}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{userName},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{userName}||'%'</if>
+			</if>
+
+			<if test="number != null and number != ''">
+				AND a.number LIKE
+				<if test="dbName == 'oracle'">'%'||#{number}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{number}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{number},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{number}||'%'</if>
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+			</if>
+
+			<if test="idNumber != null and idNumber != ''">
+				AND a.id_number LIKE
+				<if test="dbName == 'oracle'">'%'||#{idNumber}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{idNumber}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{idNumber},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{idNumber}||'%'</if>
+			</if>
+			<if test="swapName != null and swapName != ''">
+				AND a.swap_name LIKE
+				<if test="dbName == 'oracle'">'%'||#{swapName}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{swapName}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{swapName},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{swapName}||'%'</if>
+			</if>
+
+
+			<if test="sizeType != null and sizeType != ''">
+				AND a.size_type LIKE
+				<if test="dbName == 'oracle'">'%'||#{sizeType}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{sizeType}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{sizeType},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{sizeType}||'%'</if>
+			</if>
+
+			<if test="jobType != null and jobType != ''">
+				AND a.job_type LIKE
+				<if test="dbName == 'oracle'">'%'||#{jobType}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{jobType}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{jobType},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{jobType}||'%'</if>
+			</if>
+			<if test="studyType != null and studyType != ''">
+				AND a.study_type LIKE
+				<if test="dbName == 'oracle'">'%'||#{studyType}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{studyType}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{studyType},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{studyType}||'%'</if>
+			</if>
+			<if test="date != null and date != ''">
+				AND a.date = #{date}
+			</if>
+
+
+			<if test="policeClassification != null and policeClassification != ''">
+				AND a.police_classification LIKE
+				<if test="dbName == 'oracle'">'%'||#{policeClassification}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{policeClassification}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{policeClassification},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{policeClassification}||'%'</if>
+			</if>
+
+			<if test="policeRank != null and policeRank != ''">
+				AND a.police_rank LIKE
+				<if test="dbName == 'oracle'">'%'||#{policeRank}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{policeRank}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{policeRank},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{policeRank}||'%'</if>
+			</if>
+
+			<if test="personType != null and personType != ''">
+				AND a.person_type LIKE
+				<if test="dbName == 'oracle'">'%'||#{personType}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{personType}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{personType},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{personType}||'%'</if>
+			</if>
+
+			<if test="managementType != null and managementType != ''">
+				AND a.management_type LIKE
+				<if test="dbName == 'oracle'">'%'||#{managementType}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{managementType}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{managementType},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{managementType}||'%'</if>
+			</if>
+
+			<if test="post != null and post != ''">
+				AND a.post LIKE
+				<if test="dbName == 'oracle'">'%'||#{post}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{post}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{post},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{post}||'%'</if>
+			</if>
+
+			<if test="postLevel != null and postLevel != ''">
+				AND a.post_level LIKE
+				<if test="dbName == 'oracle'">'%'||#{postLevel}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{postLevel}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{postLevel},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{postLevel}||'%'</if>
+			</if>
+			<if test="unitId != null and unitId != ''">
+				AND (a.unit_id = #{unitId} or o.parent_ids like '%,'||#{unitId}||',%')
+			</if>
+			<if test="region != null and region != ''">
+				AND a.region =
+				<if test="dbName == 'oracle'">'%'||#{region}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{region}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{region},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{region}||'%'</if>
+			</if>
+			<choose>
+				<when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+					AND a.start_date between #{startDate} and #{endTime}
+				</when>
+				<otherwise>
+					<if test="startDate != null and startDate != ''">
+						AND a.start_date  >= #{startDate}
+					</if>
+					<if test="endDate != null and endDate != ''">
+						AND #{endDate} >= a.end_date
+					</if>
+				</otherwise>
+			</choose>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairSwapExercise">
+		SELECT 
+			<include refid="affairSwapExerciseColumns"/>
+		FROM affair_swap_exercise a
+		<include refid="affairSwapExerciseJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_swap_exercise(
+			id,
+			user_name,
+			number,
+			name,
+			id_number,
+			swap_name,
+			size_type,
+			job_type,
+			study_type,
+			date,
+			start_date,
+			end_date,
+			police_classification,
+			police_rank,
+			person_type,
+			management_type,
+			post,
+			post_level,
+			unit,
+			unit_id,
+			region,
+			region_id,
+			service_condition,
+			study_identity,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{userName},
+			#{number},
+			#{name},
+			#{idNumber},
+			#{swapName},
+			#{sizeType},
+			#{jobType},
+			#{studyType},
+			#{date},
+			#{startDate},
+			#{endDate},
+			#{policeClassification},
+			#{policeRank},
+			#{personType},
+			#{managementType},
+			#{post},
+			#{postLevel},
+			#{unit},
+			#{unitId},
+			#{region},
+			#{regionId},
+			#{serviceCondition},
+			#{studyIdentity},
+			#{createBy.id},
+			#{createOrgId},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateOrgId},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_swap_exercise SET 	
+			user_name = #{userName},
+			number = #{number},
+			name = #{name},
+			id_number = #{idNumber},
+			swap_name = #{swapName},
+			size_type = #{sizeType},
+			job_type = #{jobType},
+			study_type = #{studyType},
+			date = #{date},
+			start_date = #{startDate},
+			end_date = #{endDate},
+			police_classification = #{policeClassification},
+			police_rank = #{policeRank},
+			person_type = #{personType},
+			management_type = #{managementType},
+			post = #{post},
+			post_level = #{postLevel},
+			unit = #{unit},
+			unit_id = #{unitId},
+			region = #{region},
+			region_id = #{regionId},
+			service_condition = #{serviceCondition},
+			study_identity = #{studyIdentity},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateOrgId},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_swap_exercise SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_swap_exercise SET
+		del_flag = '1'
+		WHERE id in
+		<foreach collection="ids" item="item" index="index"
+				 open="(" separator="," close=")">#{item}
+		</foreach>
+	</update>
+
+	<select id="findByIds" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairSwapExercise">
+		select
+		<include refid="affairSwapExerciseColumns"/>
+		from affair_swap_exercise a where id in
+		<foreach collection="ids" item="item" index="index"
+				 open="(" separator="," close=")">#{item}
+		</foreach>
+	</select>
+
+	<select id="findBean" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairSwapExercise">
+		SELECT
+			a.user_name,
+			a."number",
+			a."name",
+			a.id_number,
+			a.police_rank,
+			a.police_classification,
+			a.post,
+			a.post_level,
+			COUNT ( a.id_number ) total
+		FROM
+			affair_swap_exercise a
+		WHERE
+			a.del_flag = '0'
+
+			<if test="userName != null and userName != ''">
+				AND a.user_name LIKE #{userName}
+			</if>
+
+			<if test="number != null and number != ''">
+				AND a.number LIKE #{number}
+			</if>
+
+			<if test="name != null and name != ''">
+				AND a.name LIKE #{name}
+			</if>
+
+			<if test="idNumber != null and idNumber != ''">
+				AND a.id_number LIKE #{idNumber}
+			</if>
+
+			<if test="policeClassification != null and policeClassification != ''">
+				AND a.police_classification LIKE #{policeClassification}
+			</if>
+
+			<if test="policeRank != null and policeRank != ''">
+				AND a.police_rank LIKE #{policeRank}
+			</if>
+
+			<if test="personType != null and personType != ''">
+				AND a.person_type LIKE #{personType}
+			</if>
+
+			<if test="managementType != null and managementType != ''">
+				AND a.management_type LIKE #{managementType}
+			</if>
+
+			<if test="postLevel != null and postLevel != ''">
+				AND a.post_level LIKE #{postLevel}
+			</if>
+
+			GROUP BY
+				a.user_name,
+				a."number",
+				a."name",
+				a.id_number,
+				a.police_rank,
+				a.police_classification,
+				a.post,
+				a.post_level
+		</select>
+
+
+	<select id="selectTrain" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairSwapExercise">
+		SELECT
+			a.user_name,
+			a."name",
+			a.swap_name,
+			a.unit,
+			a.start_date,
+			a.end_date
+		FROM
+			affair_swap_exercise a
+		WHERE
+			a.id_number = #{idNubmer}
+	</select>
+    <select id="findofficeId" resultType="java.lang.String">
+
+	</select>
+
+
+</mapper>

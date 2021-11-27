@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairAttendanceFlagDao">
+    
+	<sql id="affairAttendanceFlagColumns">
+		a.id AS "id",
+		a.year AS "year",
+		a.name AS "name",
+		a.date AS "date",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.week AS "week"
+	</sql>
+	
+	<sql id="affairAttendanceFlagJoins">
+	</sql>
+
+	<select id="get" resultType="AffairAttendanceFlag">
+		SELECT
+			<include refid="affairAttendanceFlagColumns"/>
+		FROM affair_attendance_flag a
+		<include refid="affairAttendanceFlagJoins"/>
+		WHERE a.id = #{id}
+	</select>
+
+	<select id="findList" resultType="AffairAttendanceFlag">
+		SELECT 
+			<include refid="affairAttendanceFlagColumns"/>
+		FROM affair_attendance_flag a
+		<include refid="affairAttendanceFlagJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="year != null and year != ''">
+				AND cast(substr(a.date,1,4) as INTEGER) = #{year}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.date ASC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findAllList" resultType="AffairAttendanceFlag">
+		SELECT
+			<include refid="affairAttendanceFlagColumns"/>
+		FROM affair_attendance_flag a
+		<include refid="affairAttendanceFlagJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<insert id="insert">
+		INSERT INTO affair_attendance_flag(
+			id,
+			year,
+			name,
+			date,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			week
+		) VALUES (
+			#{id},
+			#{year},
+			#{name},
+			#{date},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{week}
+		)
+	</insert>
+
+	<update id="update">
+		UPDATE affair_attendance_flag SET
+			year = #{year},
+			name = #{name},
+			date = #{date},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			week =  #{week}
+		WHERE id = #{id}
+	</update>
+
+	<update id="delete">
+		UPDATE affair_attendance_flag SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_attendance_flag SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<select id="findAllDay"  resultType="java.lang.Integer">
+		select count(1)
+		from affair_attendance_flag  a
+		where
+		a.name = '1'
+		and a.del_flag = '0'
+		and cast(substr(a.date,1,4) as INTEGER ) = #{ye}
+		and cast(substr(a.date,6,2) as INTEGER) = #{mo}
+	</select>
+
+	<select id="countXiuDays" resultType="java.lang.Integer">
+		select count(1)
+		from affair_attendance_flag a
+		where a.del_flag = '0'
+		and a.name = '1'
+		and a.date BETWEEN #{startDate} AND #{endDate}
+	</select>
+	
+</mapper>

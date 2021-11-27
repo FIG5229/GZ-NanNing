@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairBaseSkillDao">
+    
+	<sql id="affairBaseSkillColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.id_number AS "idNumber",
+		a.age AS "age",
+		a.sex AS "sex",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.job AS "job",
+		a.item_one AS "itemOne",
+		a.item_two AS "itemTwo",
+		a.item_three AS "itemThree",
+		a.item_four AS "itemFour",
+		a.item_five AS "itemFive",
+		a.item_six AS "itemSix",
+		a.item_seven AS "itemSeven",
+		a.item_eight AS "itemEight",
+		a.item_nine AS "itemNine",
+		a.item_ten AS "itemTen",
+		a.assessment AS "assessment",
+		a.remark AS "remark",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.number AS "number",
+		a.year_month AS "yearMonth"
+	</sql>
+	
+	<sql id="affairBaseSkillJoins">
+		LEFT JOIN sys_office o ON o.id = a.unit_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairBaseSkill">
+		SELECT 
+			<include refid="affairBaseSkillColumns"/>
+		FROM affair_base_skill a
+		<include refid="affairBaseSkillJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairBaseSkill">
+		SELECT 
+			<include refid="affairBaseSkillColumns"/>
+		FROM affair_base_skill a
+		<include refid="affairBaseSkillJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+			</if>
+			<if test="yearMonth != '' and yearMonth != null">
+				AND a.year_month = #{yearMonth}
+			</if>
+			<if test="idNumber != null and idNumber != ''">
+				AND a.id_number LIKE '%'||#{idNumber}||'%'
+			</if>
+			<if test="sex != null and sex != ''">
+				AND a.sex = #{sex}
+			</if>
+			<if test="assessment != null and assessment != ''">
+				AND a.assessment = #{assessment}
+			</if>
+			<if test="unitId != null and unitId != ''">
+				AND (a.unit_id = #{unitId} or o.parent_ids like '%,'||#{unitId}||',%')
+			</if>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairBaseSkill">
+		SELECT 
+			<include refid="affairBaseSkillColumns"/>
+		FROM affair_base_skill a
+		<include refid="affairBaseSkillJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.number DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_base_skill(
+			id,
+			name,
+			id_number,
+			age,
+			sex,
+			unit,
+			unit_id,
+			job,
+			item_one,
+			item_two,
+			item_three,
+			item_four,
+			item_five,
+			item_six,
+			item_seven,
+			item_eight,
+			item_nine,
+			item_ten,
+			assessment,
+			remark,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			number,
+			year_month
+		) VALUES (
+			#{id},
+			#{name},
+			#{idNumber},
+			#{age},
+			#{sex},
+			#{unit},
+			#{unitId},
+			#{job},
+			#{itemOne},
+			#{itemTwo},
+			#{itemThree},
+			#{itemFour},
+			#{itemFive},
+			#{itemSix},
+			#{itemSeven},
+			#{itemEight},
+			#{itemNine},
+			#{itemTen},
+			#{assessment},
+			#{remark},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{number},
+			#{yearMonth}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_base_skill SET 	
+			name = #{name},
+			id_number = #{idNumber},
+			age = #{age},
+			sex = #{sex},
+			unit = #{unit},
+			unit_id = #{unitId},
+			job = #{job},
+			item_one = #{itemOne},
+			item_two = #{itemTwo},
+			item_three = #{itemThree},
+			item_four = #{itemFour},
+			item_five = #{itemFive},
+			item_six = #{itemSix},
+			item_seven = #{itemSeven},
+			item_eight = #{itemEight},
+			item_nine = #{itemNine},
+			item_ten = #{itemTen},
+			assessment = #{assessment},
+			remark = #{remark},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			number = #{number},
+			year_month = #{yearMonth}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_base_skill SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_base_skill SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+	
+</mapper>

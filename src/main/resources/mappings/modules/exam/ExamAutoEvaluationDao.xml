@@ -1,0 +1,1682 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.exam.dao.ExamAutoEvaluationDao">
+    
+	<sql id="examAutoEvaluationColumns">
+		a.id AS "id",
+		a.type AS "type",
+		a.eval_type AS "evalType",
+		a.period AS "period",
+		a.year AS "year",
+		a.month AS "month",
+		a.details AS "details",
+		a.name AS "name",
+		a.id_number AS "idNumber",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.assess AS "assess",
+		a.assess_id AS "assessId",
+		a.remark AS "remark",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.model AS "model",
+		a.model_id AS "modelId",
+		a.option AS "option",
+		a.option_id AS "optionId",
+		a.score AS "score",
+		a.time AS "time",
+		a.happen_time AS "happenTime",
+		a.check_time AS "checkTime",
+		a.evaluation_id AS "evaluationId",
+		a.row_num as "rowNum",
+		a.from_sys AS "fromSys"
+	</sql>
+	
+	<sql id="examAutoEvaluationJoins">
+	</sql>
+	<delete id="deleteBean">
+		DELETE
+		FROM
+			exam_auto_evaluation
+		WHERE
+			id_number = #{idNumber}
+			AND YEAR = #{year}
+			AND MONTH = #{month}
+			AND period = #{period}
+			AND details LIKE'%旷工%'
+	</delete>
+
+	<select id="get" resultType="ExamAutoEvaluation">
+		SELECT 
+			<include refid="examAutoEvaluationColumns"/>
+		FROM exam_auto_evaluation a
+		<include refid="examAutoEvaluationJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ExamAutoEvaluation">
+		<!--exam_office中存在诡异数据 id 116，明明有一条数据，sql查询出来却有两条，改一条两条数据同时改变，暂时先这么处理-->
+		SELECT 
+			distinct <include refid="examAutoEvaluationColumns"/>
+		FROM exam_auto_evaluation a
+		<include refid="examAutoEvaluationJoins"/>
+		left join sys_user u on u."id" = a.evaluation_id
+		left join exam_office o on u.office_id = o."id"
+		<where>
+		<!--查询有效数据，被考评对象为对应的类型
+		局考处的 仅查询被考评对象为处机关的-->
+		<choose>
+			<when test="evalType == '1'.toString()">
+				(a.eval_type = '1' and o.type = '2')
+			</when>
+			<when test="evalType == '2'.toString()">
+				(a.eval_type = '2' and o.type = '1')
+			</when>
+			<when test="evalType == '3'.toString()">
+				a.eval_type  =o.type
+			</when>
+			<when test="evalType == '4'.toString()">
+				(a.eval_type = '4' and o."type" = '2')
+			</when>
+			<when test="evalType == '5'.toString()">
+				a.eval_type  =o.type
+			</when>
+			<when test="evalType == '6'.toString()">
+				a.eval_type  =o.type
+			</when>
+			<when test="evalType == '7'.toString()">
+				a.eval_type  =o.type
+			</when>
+			<otherwise>
+				(a.eval_type  =o.type or (a.eval_type = '4' and o."type" = '2') or (a.eval_type = '1' and o.type = '2') or (a.eval_type = '2' and o.type = '1'))
+			</otherwise>
+		</choose>
+		<if test="period == '1'.toString()">
+			and month &lt;&gt; '' and month is not null
+		</if>
+		<!--有效数据 行号 被考评对象ID 模板都不能为空，周期为月度的  月度也不可为空-->
+			and a.row_num &lt;&gt; ''
+			and a.row_num is not null
+			and a.evaluation_id is not null
+			and a.model_id &lt;&gt; ''
+			and a.model_id is not null
+			<!--
+			(a.eval_type  =o.type or (a.eval_type = '4' and o."type" = '2') or (a.eval_type = '1' and o.type = '2') or (a.eval_type = '2' and o.type = '1'))
+			-->
+			and a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+			</if>
+			<if test="modelId != null and modelId != ''">
+				and model_id = #{modelId}
+			</if>
+			<if test="model != null and model != ''">
+				and model like '%${model}%'
+			</if>
+			<if test="option != null and option != ''">
+				and option like '%${option}%'
+			</if>
+			<if test="details != null and details != ''">
+				and details like '%${details}%'
+			</if>
+			<if test="evaluationId != null and evaluationId != ''">
+				and evaluation_id = #{evaluationId}
+			</if>
+			<if test="period != null and period != ''">
+				and period = #{period}
+			</if>
+			<if test="rowNum != null and rowNum != ''">
+				and row_num = #{rowNum}
+			</if>
+			<if test="year != null and year != ''">
+				and year = #{year}
+			</if>
+			<if test="month != null and month != ''">
+				and month = #{month}
+			</if>
+			<if test="evalType != null and evalType != ''">
+				and eval_type = #{evalType}
+			</if>
+			<choose>
+				<when test="flagType != '' and flagType != null and flagType == '1'.toString()">
+					AND from_sys = '智慧政工'
+				</when>
+				<when test="flagType != '' and flagType != null and flagType == '2'.toString()">
+					AND from_sys = '警综平台'
+				</when>
+				<when test="flagType != '' and flagType != null and flagType == '3'.toString()">
+					AND from_sys = '高铁安保卫士'
+				</when>
+				<when test="flagType != '' and flagType != null and flagType == '4'.toString()">
+					AND from_sys = '查缉追逃网络管理系统'
+				</when>
+				<when test="flagType != '' and flagType != null and flagType == '5'.toString()">
+					AND from_sys = '宁铁公安109联侦平台'
+				</when>
+				<when test="flagType != '' and flagType != null and flagType == '6'.toString()">
+					AND from_sys = '执法办案系统'
+				</when>
+				<when test="flagType != '' and flagType != null and flagType == '7'.toString()">
+					AND from_sys = '微信报警'
+				</when>
+				<when test="flagType != '' and flagType != null and flagType == '8'.toString()">
+					AND from_sys = '保安管理系统'
+				</when>
+				<otherwise></otherwise>
+			</choose>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findScoreHistoryList" resultType="ExamAutoEvaluation">
+		<!--exam_office中存在诡异数据 id 116，明明有一条数据，sql查询出来却有两条，改一条两条数据同时改变，暂时先这么处理-->
+		SELECT
+			distinct <include refid="examAutoEvaluationColumns"/>
+		FROM exam_auto_evaluation a
+		<include refid="examAutoEvaluationJoins"/>
+		left join sys_user u on u."id" = a.evaluation_id
+		left join exam_office o on u.office_id = o."id"
+		<where>
+		<!--查询有效数据，被考评对象为对应的类型
+		局考处的 仅查询被考评对象为处机关的-->
+		<choose>
+			<when test="evalType == '1'.toString()">
+				(a.eval_type = '1' and o.type = '2')
+			</when>
+			<when test="evalType == '2'.toString()">
+				(a.eval_type = '2' and o.type = '1')
+			</when>
+			<when test="evalType == '3'.toString()">
+				a.eval_type  =o.type
+			</when>
+			<when test="evalType == '4'.toString()">
+				(a.eval_type = '4' and o."type" = '2')
+			</when>
+			<when test="evalType == '5'.toString()">
+				a.eval_type  =o.type
+			</when>
+			<when test="evalType == '6'.toString()">
+				a.eval_type  =o.type
+			</when>
+			<when test="evalType == '7'.toString()">
+				a.eval_type  =o.type
+			</when>
+			<otherwise>
+				(a.eval_type  =o.type or (a.eval_type = '4' and o."type" = '2') or (a.eval_type = '1' and o.type = '2') or (a.eval_type = '2' and o.type = '1'))
+			</otherwise>
+		</choose>
+			<!--
+			(a.eval_type  =o.type or (a.eval_type = '4' and o."type" = '2') or (a.eval_type = '1' and o.type = '2') or (a.eval_type = '2' and o.type = '1'))
+			-->
+			and a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+			</if>
+			<if test="modelId != null and modelId != ''">
+				and model_id = #{modelId}
+			</if>
+			<if test="model != null and model != ''">
+				and model like '%${model}%'
+			</if>
+			<if test="option != null and option != ''">
+				and option like '%${option}%'
+			</if>
+			<if test="evaluationId != null and evaluationId != ''">
+				and evaluation_id = #{evaluationId}
+			</if>
+			<if test="period != null and period != ''">
+				and period = #{period}
+			</if>
+			<if test="rowNum != null and rowNum != ''">
+				and row_num = #{rowNum}
+			</if>
+			<if test="year != null and year != ''">
+				and year = #{year}
+			</if>
+			<if test="month != null and month != ''">
+				and month = #{month}
+			</if>
+			<if test="evalType != null and evalType != ''">
+				and eval_type = #{evalType}
+			</if>
+			<choose>
+				<when test="flagType != '' and flagType != null and flagType == '1'.toString()">
+					AND from_sys = '智慧政工'
+				</when>
+				<when test="flagType != '' and flagType != null and flagType == '2'.toString()">
+					AND from_sys = '警综平台'
+				</when>
+				<when test="flagType != '' and flagType != null and flagType == '3'.toString()">
+					AND from_sys = '高铁安保卫士'
+				</when>
+				<when test="flagType != '' and flagType != null and flagType == '4'.toString()">
+					AND from_sys = '查缉追逃网络管理系统'
+				</when>
+				<when test="flagType != '' and flagType != null and flagType == '5'.toString()">
+					AND from_sys = '宁铁公安109联侦平台'
+				</when>
+				<when test="flagType != '' and flagType != null and flagType == '6'.toString()">
+					AND from_sys = '执法办案系统'
+				</when>
+				<when test="flagType != '' and flagType != null and flagType == '7'.toString()">
+					AND from_sys = '微信报警'
+				</when>
+				<when test="flagType != '' and flagType != null and flagType == '8'.toString()">
+					AND from_sys = '保安管理系统'
+				</when>
+				<otherwise></otherwise>
+			</choose>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ExamAutoEvaluation">
+		SELECT 
+			<include refid="examAutoEvaluationColumns"/>
+		FROM exam_auto_evaluation a
+		<include refid="examAutoEvaluationJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO exam_auto_evaluation(
+			id,
+			type,
+			eval_type,
+			period,
+			year,
+			month,
+			details,
+			name,
+			id_number,
+			unit,
+			unit_id,
+			assess,
+			assess_id,
+			remark,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			model,
+			model_id,
+			option,
+			option_id,
+			score,
+			time,
+			happen_time,
+			check_time,
+			evaluation_id,
+			row_num,
+			from_sys
+		) VALUES (
+			#{id},
+			#{type},
+			#{evalType},
+			#{period},
+			#{year},
+			#{month},
+			#{details},
+			#{name},
+			#{idNumber},
+			#{unit},
+			#{unitId},
+			#{assess},
+			#{assessId},
+			#{remark},
+			#{createBy.id},
+			#{createOrgId},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateOrgId},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{model},
+			#{modelId},
+			#{option},
+			#{optionId},
+			#{score},
+			#{time},
+			#{happenTime},
+			#{checkTime},
+			#{evaluationId},
+			#{rowNum},
+			#{fromSys}
+		)
+	</insert>
+
+    <insert id="save">
+		INSERT INTO exam_auto_evaluation(
+			id,
+			type,
+			eval_type,
+			period,
+			year,
+			month,
+			details,
+			name,
+			id_number,
+			unit,
+			unit_id,
+			assess,
+			assess_id,
+			remark,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			model,
+			model_id,
+			option,
+			option_id,
+			score,
+			time,
+			happen_time,
+			check_time,
+			evaluation_id,
+			row_num,
+			from_sys
+		) VALUES (
+			#{id},
+			#{type},
+			#{evalType},
+			#{period},
+			#{year},
+			#{month},
+			#{details},
+			#{name},
+			#{idNumber},
+			#{unit},
+			#{unitId},
+			#{assess},
+			#{assessId},
+			#{remark},
+			#{createBy.id},
+			#{createOrgId},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateOrgId},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{model},
+			#{modelId},
+			#{option},
+			#{optionId},
+			#{score},
+			#{time},
+			#{happenTime},
+			#{checkTime},
+			#{evaluationId},
+			#{rowNum},
+			#{fromSys}
+		)
+	</insert>
+
+    <update id="update">
+		UPDATE exam_auto_evaluation SET 	
+			type = #{type},
+			eval_type = #{evalType},
+			period = #{period},
+			year = #{year},
+			month = #{month},
+			details = #{details},
+			name = #{name},
+			id_number = #{idNumber},
+			unit = #{unit},
+			unit_id = #{unitId},
+			assess = #{assess},
+			assess_id = #{assessId},
+			remark = #{remark},
+			create_org_id = #{createOrgId},
+			create_id_no = #{createIdNo},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateOrgId},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			model = #{model},
+			model_id = #{modelId},
+			option = #{option},
+			option_id = #{optionId},
+			score = #{score},
+			time = #{time},
+			happen_time = #{happenTime},
+			check_time = #{checkTime},
+			evaluation_id = #{evaluationId},
+			row_num = #{rowNum},
+			from_sys = #{fromSys}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE exam_auto_evaluation SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<select id="findYearPartyDayCount" resultType="java.lang.String">
+		select
+		count (1)
+		from
+		exam_auto_evaluation a
+		where a.del_flag = '0'
+		AND a.year = #{year}
+		AND a.type = #{type}
+		AND a.eval_type = #{evalType}
+		AND a.period = #{period}
+		AND a.unit = #{partyOrganizationName}
+		AND a.unit_id = #{partyOrganizationId}
+		AND a.model_id = #{modelId}
+		AND a.option_id  = #{optionId}
+	</select>
+
+	<select id="findCountById" resultType="java.lang.String">
+		select
+		count (1)
+		from
+		exam_auto_evaluation a
+		where a.del_flag = '0'
+		AND a.id = #{id}
+	</select>
+
+	<select id="findEvaluationId" resultType="java.lang.String">
+		select
+		a.id
+		from
+		sys_user a
+		where
+		a.del_flag = '0'
+		AND a.name = #{name}
+		AND a.no = #{idNumber}
+	</select>
+
+    <select id="selListByYear" resultType="java.util.Map">
+		select b.*,
+		a.id AS "unitId",
+		a.parent_id AS "parentId",
+		a.parent_ids AS "parentIds",
+		a.name AS "unitName",
+		a.code AS "unitCode"
+		from aj_xz_001 b
+		left join  sys_office a  on b.cjdwdm = a.code
+		where (ajlb like '%擅自进入铁路防护网%' OR ajlb like '%高铁入网%')
+		and  (xgdw like '%支队%' or xgdw like '%派出所%')
+		and (a.id in ('34','95','156') or a.parent_ids like '%,34,%' or a.parent_ids like '%,95,%' or a.parent_ids like '%,156,%')
+		and substr(fasj,1,4) = #{year}
+		and b.XLXZ = '高铁'
+	</select>
+
+	<select id="selListByMonth" resultType="java.util.Map">
+		select b.*,
+		a.id AS "unitId",
+		a.parent_id AS "parentId",
+		a.parent_ids AS "parentIds",
+		a.name AS "unitName",
+		a.code AS "unitCode"
+		from aj_xz_001 b
+		left join  sys_office a  on b.cjdwdm = a.code
+		where (ajlb like '%擅自进入铁路防护网%' OR ajlb like '%高铁入网%')
+		and (xlxzbs = '高铁案件' or xlxz = '高铁')
+		and  xgdw like '%支队%' or xgdw like '%派出所%'
+		and (a.id in ('34','95','156') or a.parent_ids like '%,34,%' or a.parent_ids like '%,95,%' or a.parent_ids like '%,156,%')
+		and substr(fasj,1,4) = #{year}
+		and substr(fasj,6,7) = #{month}
+	</select>
+	<select id="ckpcsByMonth" resultType="java.util.Map">
+		select b.*,
+		a.id AS "unitId",
+		a.parent_id AS "parentId",
+		a.parent_ids AS "parentIds",
+		a.name AS "unitName",
+		a.code AS "unitCode",
+		u.id AS "userId"
+		from aj_xz_001 b
+		left join  sys_office a  on b.cjdwdm = a.code
+		left join  sys_user u on b.cjdwdm = u.no
+		where (ajlb like '%擅自进入铁路防护网%' OR ajlb like '%高铁入网%')
+		and (xlxzbs = '高铁案件' or xlxz = '高铁')
+		and  xgdw like '%派出所%'
+		and (a.id in ('34','95','156') or a.parent_ids like '%,34,%' or a.parent_ids like '%,95,%' or a.parent_ids like '%,156,%')
+		and substr(fasj,1,4) = #{year}
+		and substr(fasj,6,2) = #{month}
+	</select>
+	<select id="ckcjgLWSWByMonth" resultType="java.util.Map">
+		select a.*,
+		o.id AS "unitId",
+		o.parent_id AS "parentId",
+		o.parent_ids AS "parentIds",
+		o.name AS "unitName",
+		o.code AS "unitCode",
+		u.id AS "userId"
+		from sg_001 a
+		left join  sys_office o  on a.cjdwdm = o.code
+		left join  sys_user u on a.cjdwdm = u.no
+		where sglb like '%路外伤亡事故%'
+		AND sfgtlx = 'Y'
+		and (a.cjdw like '%支队%' or a.cjdw like '%支队%大队%')
+		and (o.id in ('34','95','156') or o.parent_ids like '%,34,%' or o.parent_ids like '%,95,%' or o.parent_ids like '%,156,%')
+		and substr(fssj,1,4) = #{year}
+		and substr(fssj,6,2) = #{month}
+	</select>
+
+
+	<select id="lwswItemByYearCode" resultType="String">
+		select a.sgyy
+		from sg_001 a
+		where a.cjdwdm = #{code}
+		and substr(fssj,1,4) = #{year}
+	</select>
+
+	<select id="ckcjgZYSCByMonth" resultType="java.util.Map">
+		select a.*,
+		o.id AS "unitId",
+		o.parent_id AS "parentId",
+		o.parent_ids AS "parentIds",
+		o.name AS "unitName",
+		o.code AS "unitCode",
+		u.id AS "userId"
+		from sg_001 a
+		left join  sys_office o  on a.cjdwdm = o.code
+		left join  sys_user u on a.cjdwdm = u.no
+		left join sys_user_role ur on ur.user_id = u.id
+		where sglb like '%撞轧牲畜事故%'
+		AND sfgtlx = 'Y'
+		/*c522c8beb3c6477b82a6a641e9631a7d  处机关部门（独立单位）-绩效  角色*/
+		and ur.role_id = 'c522c8beb3c6477b82a6a641e9631a7d'
+		and (o.id in ('34','95','156') or o.parent_ids like '%,34,%' or o.parent_ids like '%,95,%' or o.parent_ids like '%,156,%')
+		and substr(fssj,1,4) = #{year}
+		and substr(fssj,6,2) = #{month}
+	</select>
+
+	<select id="ckcjgZYSCByLastNowMonth" resultType="java.util.Map">
+		select  a.*,
+		o.id AS "unitId",
+		o.parent_id AS "parentId",
+		o.parent_ids AS "parentIds",
+		o.name AS "unitName",
+		o.code AS "unitCode",
+		u.id AS "userId"
+		from sg_001 a
+		left join  sys_office o  on a.cjdwdm = o.code
+		left join  sys_user u on a.cjdwdm = u.no
+		left join sys_user_role ur on ur.user_id = u.id
+		where sglb like '%撞轧牲畜事故%'
+		AND sfgtlx = 'Y'
+		/*c522c8beb3c6477b82a6a641e9631a7d  处机关部门（独立单位）-绩效  角色*/
+		and ur.role_id = 'c522c8beb3c6477b82a6a641e9631a7d'
+		and (o.id in ('34','95','156') or o.parent_ids like '%,34,%' or o.parent_ids like '%,95,%' or o.parent_ids like '%,156,%')
+		and substr(cjsj,1,10) between #{yearL}  and #{yearT}
+	</select>
+
+	<select id="ckpcsLWSWCountByYear" resultType="java.util.Map">
+		select
+		SUM (cast((case when COALESCE(a.swrs,'0')='' then '0' else COALESCE(a.swrs,'0') end) as INTEGER)) as "swrsSUM",
+		a.sglb AS "sglb",
+		o.id AS "unitId",
+		o.parent_id AS "parentId",
+		o.parent_ids AS "parentIds",
+		o.name AS "unitName",
+		o.code AS "unitCode",
+		u.id AS "userId"
+		from sg_001 a
+		left join  sys_office o  on a.cjdwdm = o.code
+		left join  sys_user u on a.cjdwdm = u.no
+		where sglb like '%路外伤亡事故%'
+		AND sfgtlx = 'Y'
+		and a.cjdw like '%派出所%'
+		and (o.id in ('34','95','156') or o.parent_ids like '%,34,%' or o.parent_ids like '%,95,%' or o.parent_ids like '%,156,%')
+		and substr(fssj,1,4) = #{year}
+		GROUP BY o.id,o.parent_id,o.parent_ids,o.name, o.code,u.id,a.sglb
+	</select>
+
+	<select id="findAllpcs" resultType="java.util.Map">
+		select
+			id,parent_id,name,code
+		from
+		 	sys_office
+		where
+		  name like '%派出所%'
+	</select>
+
+	<select id="findpcsPolice" resultType="java.lang.Integer">
+		select
+		   count(*)
+		from
+		   sys_user
+		where
+		   office_id = #{officeId}
+	</select>
+	<select id="findGatherSum" resultType="java.lang.Integer">
+		SELECT
+			count( "loginuser" )
+		FROM
+			"gather_person"
+		WHERE
+		 	"unit" = #{code}
+			and substr(writedate,6,2) = #{month}
+	</select>
+
+	<select id="findGatherSumYear" resultType="java.lang.Integer">
+		SELECT
+			count( "loginuser" )
+		FROM
+			"gather_person"
+		WHERE
+		 	"unit" = #{code} and substr(writedate,1,4) = #{year}
+	</select>
+
+	<select id="findPolices" resultType="java.util.Map">
+		SELECT
+			no,
+			company_id,
+			office_id
+		FROM
+			sys_user
+		WHERE
+			del_flag = '0'
+			AND (company_id = '95' or company_id = '34' or company_id = '156');
+	</select>
+
+	<select id="findChuLeads" resultType="java.util.Map">
+		SELECT
+			a.workunit_id,
+			a.workunit_name,
+			a.job_abbreviation,
+			a.unit_code,
+			a.name,
+			a.id_number
+		FROM
+			personnel_base a
+		WHERE
+			a.del_flag = '0'  and (a.job_abbreviation = '处长' or a.job_abbreviation = '副处长' or a.job_abbreviation = '政委')
+	</select>
+    <select id="ckpcsLWSWByMonth" resultType="java.util.Map">
+		select a.*,
+		o.id AS "unitId",
+		o.parent_id AS "parentId",
+		o.parent_ids AS "parentIds",
+		o.name AS "unitName",
+		o.code AS "unitCode",
+		u.id AS "userId"
+		from sg_001 a
+		left join  sys_office o  on a.cjdwdm = o.code
+		left join  sys_user u on a.cjdwdm = u.no
+		where sglb like '%路外伤亡事故%'
+		AND sfgtlx = 'Y'
+		and a.cjdw like '%派出所%'
+		and (o.id in ('34','95','156') or o.parent_ids like '%,34,%' or o.parent_ids like '%,95,%' or o.parent_ids like '%,156,%')
+		and substr(fssj,1,4) = #{year}
+		and substr(fssj,6,2) = #{month}
+	</select>
+	<select id="selectParty" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairPartyRewardPunish">
+		SELECT
+			*
+		FROM
+			"affair_party_reward_punish"
+		WHERE
+			del_flag = '0'
+			AND award_category = '2'
+			AND party_organization_id = #{idNumber}
+			AND create_date  BETWEEN  #{lastYearDate} AND #{nowYearDate}
+	</select>
+	<select id="selectPartyMonth" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairPartyRewardPunish">
+		SELECT
+			*
+		FROM
+			"affair_party_reward_punish"
+		WHERE
+			del_flag = '0'
+			AND award_category = '2'
+			AND party_organization_id = #{idNumber}
+			AND create_date  BETWEEN  #{lastMonthDate} AND #{nowMonthDate}
+	</select>
+
+	<select id="selectAssessPerson" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairPartyRewardPunish">
+		SELECT
+			*
+		FROM
+			"affair_party_reward_punish"
+		WHERE
+			del_flag = '0'
+			AND award_category = '2'
+			AND id_number = #{idNumber}
+			AND create_date  BETWEEN  #{lastYearDate} AND #{nowYearDate}
+	</select>
+	<select id="selectAssessPersonMonth" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairPartyRewardPunish">
+		SELECT
+			*
+		FROM
+			"affair_party_reward_punish"
+		WHERE
+			del_flag = '0'
+			AND award_category = '2'
+			AND id_number = #{idNumber}
+			AND create_date  BETWEEN  #{lastMonthDate} AND #{nowMonthDate}
+	</select>
+	<select id="selectCode" resultType="String">
+		select code from sys_office where del_flag = '0' AND id = #{officeId}
+	</select>
+
+	<select id="selectZgjb" resultType="java.lang.Integer">
+                SELECT COUNT
+                        ( * )
+                FROM
+                        cms_article
+                WHERE
+                        category_id = 'd82d42b9d0ab4c34b5405dbb8e398020'
+                        AND create_by = #{unitId}
+                        AND del_flag = '0'
+                        AND  to_char ( "create_date", 'yyyy-mm-dd' ) BETWEEN #{yearL} AND #{yearT}
+        </select>
+
+
+	<select id="selectNtga" resultType="java.lang.Integer">
+                SELECT COUNT
+                        ( * )
+                FROM
+                        cms_article
+                WHERE
+                        category_id = '88f067bce5e84ca8986879873aed0719'
+                        AND create_by = #{unitId}
+                        AND del_flag = '0'
+                        AND  to_char ( "create_date", 'yyyy-mm-dd HH' ) BETWEEN #{yearL} AND #{yearT}
+        </select>
+	<select id="findUserId" resultType="java.lang.String">
+		select id from sys_user where no = #{code}
+	</select>
+	<select id="selectUserId" resultType="java.lang.String">
+		SELECT NO
+		FROM
+			sys_user
+		WHERE
+			NO = (
+		SELECT CODE
+		FROM
+			sys_office
+		WHERE
+			id = #{id})
+	</select>
+
+    <select id="selectUnitIdById" resultType="java.lang.String">
+		SELECT NAME
+		FROM
+			sys_offices
+		WHERE
+			party_id = 'e59e2c4d60e741d087969373338ee7ac'
+	</select>
+	<select id="selectPoAnIncident" resultType="java.util.Map">
+		SELECT
+			*
+		FROM
+			aj_kz_004
+		WHERE
+			cjdwdm = #{code}
+			AND substr(cjsj,1,10) BETWEEN #{yearL} AND #{yearT}
+			<!--AND (pajk like '%危及行车%'  or pajk like '%影响行车%')-->
+	</select>
+
+	<select id="selectPoAnIncidentMonth" resultType="java.util.Map">
+		SELECT
+			*
+		FROM
+			aj_kz_004
+		WHERE
+			cjdwdm = #{code}
+			AND substr(cjsj,1,10) BETWEEN #{yearL} AND #{yearT}
+	</select>
+
+	<select id="selectPoAnIncident2" resultType="java.util.Map">
+		SELECT
+			*
+		FROM
+			aj_kz_004
+		WHERE
+			cjdwdm = #{code}
+			AND substr(cjsj,1,10) BETWEEN #{yearL} AND #{yearT}
+	</select>
+
+
+
+    <select id="seletDpcj" resultType="java.lang.Integer">
+		SELECT COUNT
+			( * )
+		FROM
+			aj_xs_001
+		WHERE
+			to_char ( "fasj", 'yyyy-mm-dd HH24:mi:ss:ff' ) = #{checkTime}
+			AND ajlb = '非法持有毒品案'
+			AND cjdwdm = #{code}
+	</select>
+
+	<select id="selectZysc" resultType="java.lang.Integer">
+		SELECT COUNT
+			( * )
+		FROM
+			sg_001
+		WHERE
+			cjsj BETWEEN #{yearL} and #{yearT}
+			AND cjdwdm = #{code}
+			AND sglbdm = '1003'
+	</select>
+
+    <select id="selectUserIdN" resultType="java.lang.String">
+		SELECT ID
+		FROM
+			sys_user
+		WHERE
+			NO = #{idN}
+			AND del_flag = '0'
+	</select>
+
+
+    <select id="selectEvId" resultType="java.lang.String">
+		SELECT ID
+		FROM
+			sys_user
+		WHERE
+			NO IN ( SELECT code FROM sys_office WHERE ID IN ( SELECT ID FROM sys_offices WHERE party_id = #{idN}) AND del_flag = '0')
+			AND del_flag = '0'
+	</select>
+
+	<select id="findFireList" resultType="map">
+		select a.*,
+		o.id AS "unitId",
+		o.parent_id AS "parentId",
+		o.parent_ids AS "parentIds",
+		o.name AS "unitName",
+		o.code AS "unitCode",
+		u.id AS "userId"
+		from sg_001 a
+		left join  sys_office o  on a.cjdwdm = o.code
+		left join  sys_user u on a.cjdwdm = u.no
+		where a.sglbdm = '3001'
+		and sgdj like '%重大%'
+		<choose>
+			<when test="day != null and day != ''">
+				and substr(a.fssj,1,10) = #{day}
+			</when>
+			<when test="month != null and month != ''">
+				and substr(a.fssj,1,4) = #{year}
+				and substr(a.fssj,6,2) = #{month}
+			</when>
+			<when test="year != null and year != ''">
+				and substr(a.fssj,1,4) = #{year}
+			</when>
+		</choose>
+	</select>
+	<select id="selectNoUserid" resultType="java.lang.String">
+		select id from sys_user where no = #{idNumber} and del_flag = '0'
+	</select>
+
+
+    <sql id="examStandardBaseInfoColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.abbreviation AS "abbreviation",
+		a.obj_type AS "objType",
+		a.kp_type AS "kpType",
+		a.cycle AS "cycle",
+		a.is_enable AS "isEnable",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.model_type AS "modelType",
+		a.unit_id AS "unitId",
+		a.unit_name AS "unitName"
+	</sql>
+    <select id="findModelByOptionList" resultType="ExamStandardBaseInfo">
+        select <include refid="examStandardBaseInfoColumns"/>
+        from exam_standard_base_info a where a.id in (
+            select exam_stardard_id from exam_standard_template_define where  id  in (
+                select template_id from exam_standard_template_item_define where id in (
+                    select item_id from exam_standard_template_data
+                    where del_flag = '0'
+                    <if test="option != null and option !=''">
+                        and item_value like '%${option}%'
+                    </if>
+                )
+            )
+        )
+        and a.del_flag = '0'
+        <if test="period != null and period != ''">
+            and a."cycle" = #{period}
+        </if>
+        <if test="evalType != null and evalType != ''">
+            and a.kp_type = #{evalType}
+        </if>
+    </select>
+
+    <select id="findOptionListByModel">
+
+    </select>
+
+    <select id="selectAllName" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairPoliticalGroup">
+		 SELECT
+			*
+		FROM
+			affair_political_group
+		WHERE
+			del_flag = '0'
+	</select>
+	<select id="selectAllPeopleMessage" resultType="com.thinkgem.jeesite.modules.personnel.entity.PersonnelBase">
+		SELECT
+			*
+		FROM
+			personnel_base
+		WHERE
+			unit_code in (
+			SELECT NO
+			FROM
+				sys_user
+			WHERE
+				ID in (
+				SELECT ID
+				FROM
+					sys_user
+				WHERE
+					NO IN ( SELECT code FROM sys_office WHERE ID IN ( SELECT ID FROM sys_offices WHERE id = #{idN}) AND del_flag = '0' )
+			AND del_flag = '0'
+		)
+	)
+	</select>
+    <select id="selectKGLastBean" resultType="com.thinkgem.jeesite.modules.exam.entity.ExamAutoEvaluation">
+		SELECT
+			*
+		FROM
+			"exam_auto_evaluation"
+		WHERE
+			del_flag = '0'
+			AND id_number = #{idNumber}
+			AND YEAR = #{year}
+			AND MONTH = #{month}
+			AND details LIKE '%旷工%'
+	</select>
+	<select id="selectNumber" resultType="java.lang.Integer">
+		SELECT
+			COUNT( * )
+		FROM
+			"exam_auto_evaluation"
+		WHERE
+			del_flag = '0'
+			AND id_number = #{idNumber}
+			AND YEAR = #{year}
+			AND MONTH = #{month}
+			AND period = #{period}
+			AND details LIKE '%旷工%'
+	</select>
+
+	<delete id="deleteInfoByMore">
+        delete from exam_auto_evaluation a
+        where
+        a.period = #{period}
+		<if test="type != null and type !='' ">
+            AND a.type = #{type}
+        </if>
+        <if test="evalType!=null and evalType != '' ">
+            AND a.eval_type = #{evalType}
+        </if>
+        <if test="year != null and year != ''">
+            AND a.year = #{year}
+        </if>
+        <if test="month != null and month != ''">
+            AND a.month = #{month}
+        </if>
+        <if test="idNumber != null and idNumber != ''">
+            AND a.id_number = #{idNumber}
+        </if>
+        <if test="unitId != null and unitId != ''">
+            AND a.unit_id = #{unitId}
+        </if>
+        <if test="fromSys!=null and fromSys != ''">
+            AND a.from_sys = #{fromSys}
+        </if>
+        AND a.model_id = #{modelId}
+        AND a.option_id = #{optionId}
+        AND evaluation_id =#{evaluationId}
+    </delete>
+	<delete id="deleteBeanYear">
+		DELETE
+		FROM
+			exam_auto_evaluation
+		WHERE
+			id_number = #{idNumber}
+			AND YEAR = #{year}
+			AND period = #{period}
+			AND details LIKE'%旷工%'
+	</delete>
+
+	<select id="selListByNowLastTime" resultType="java.util.Map">
+		select b.*,
+		a.id AS "unitId",
+		a.parent_id AS "parentId",
+		a.parent_ids AS "parentIds",
+		a.name AS "unitName",
+		a.code AS "unitCode"
+		from aj_xz_001 b
+		left join  sys_office a  on b.cjdwdm = a.code
+		where (ajlb like '%擅自进入铁路防护网%' OR ajlb like '%高铁入网%')
+		and  (xgdw like '%支队%' or xgdw like '%派出所%')
+		and (a.id in ('34','95','156') or a.parent_ids like '%,34,%' or a.parent_ids like '%,95,%' or a.parent_ids like '%,156,%')
+		and to_date(b.fasj,'yyyy-mm-dd') between #{lastYearDate} and #{nowYearDate}
+		and (xlxzbs = '高铁案件' or xlxz = '高铁')
+	</select>
+
+	<select id="ckpcsByNowLastTime" resultType="java.util.Map">
+		select b.*,
+		a.id AS "unitId",
+		a.parent_id AS "parentId",
+		a.parent_ids AS "parentIds",
+		a.name AS "unitName",
+		a.code AS "unitCode",
+		u.id AS "userId"
+		from aj_xz_001 b
+		left join  sys_office a  on b.cjdwdm = a.code
+		left join  sys_user u on b.cjdwdm = u.no
+		where (ajlb like '%擅自进入铁路防护网%' OR ajlb like '%高铁入网%')
+		and (xlxzbs = '高铁案件' or xlxz = '高铁')
+		and  xgdw like '%派出所%'
+		and (a.id in ('34','95','156') or a.parent_ids like '%,34,%' or a.parent_ids like '%,95,%' or a.parent_ids like '%,156,%')
+		and to_date(b.fasj,'yyyy-mm-dd') between #{lastMonthDate} and #{nowMonthDate}
+		order by cast(a.id as INTEGER)
+	</select>
+	<select id="ckcjgLWSWByNowLastTime" resultType="java.util.Map">
+		select a.*,
+		o.id AS "unitId",
+		o.parent_id AS "parentId",
+		o.parent_ids AS "parentIds",
+		o.name AS "unitName",
+		o.code AS "unitCode",
+		u.id AS "userId"
+		from sg_001 a
+		left join  sys_office o  on a.cjdwdm = o.code
+		left join  sys_user u on a.cjdwdm = u.no
+		where sglb like '%路外伤亡事故%'
+		AND sfgtlx = 'Y'
+		and (a.cjdw like '%支队%' or a.cjdw like '%支队%大队%')
+		and (o.id in ('34','95','156') or o.parent_ids like '%,34,%' or o.parent_ids like '%,95,%' or o.parent_ids like '%,156,%')
+		and to_date(a.cjsj,'yyyy-mm-dd') between #{lastMonthDate} and #{nowMonthDate}
+		order by cast(o.id as INTEGER)
+	</select>
+
+	<select id="ckcjgLWSWCountByNowLast" resultType="java.util.Map">
+		select
+		SUM (cast((case when COALESCE(a.swrs,'0')='' then '0' else COALESCE(a.swrs,'0') end) as INTEGER)) as "swrsSUM",
+		a.sglb AS "sglb",
+		o.id AS "unitId",
+		o.parent_id AS "parentId",
+		o.parent_ids AS "parentIds",
+		o.name AS "unitName",
+		o.code AS "unitCode",
+		u.id AS "userId"
+		from sg_001 a
+		left join  sys_office o  on a.cjdwdm = o.code
+		left join  sys_user u on a.cjdwdm = u.no
+		where sglb like '%路外伤亡事故%'
+		AND sfgtlx = 'Y'
+		and (a.cjdw like '%支队%' or a.cjdw like '%支队%大队%')
+		and (o.id in ('34','95','156') or o.parent_ids like '%,34,%' or o.parent_ids like '%,95,%' or o.parent_ids like '%,156,%')
+		and to_date(a.cjsj,'yyyy-mm-dd') between #{lastYearDate} and #{nowYearDate}
+		GROUP BY o.id,o.parent_id,o.parent_ids,o.name, o.code,u.id,a.sglb
+	</select>
+
+	<select id="ckpcsLWSWCountByNowLastYear" resultType="java.util.Map">
+		select
+		SUM (cast((case when COALESCE(a.swrs,'0')='' then '0' else COALESCE(a.swrs,'0') end) as INTEGER)) as "swrsSUM",
+		a.sglb AS "sglb",
+		o.id AS "unitId",
+		o.parent_id AS "parentId",
+		o.parent_ids AS "parentIds",
+		o.name AS "unitName",
+		o.code AS "unitCode",
+		u.id AS "userId"
+		from sg_001 a
+		left join  sys_office o  on a.cjdwdm = o.code
+		left join  sys_user u on a.cjdwdm = u.no
+		where sglb like '%路外伤亡事故%'
+		AND sfgtlx = 'Y'
+		and a.cjdw like '%派出所%'
+		and (o.id in ('34','95','156') or o.parent_ids like '%,34,%' or o.parent_ids like '%,95,%' or o.parent_ids like '%,156,%')
+		and to_date(a.cjsj,'yyyy-mm-dd') between #{lastYearDate} and #{nowYearDate}
+		GROUP BY o.id,o.parent_id,o.parent_ids,o.name, o.code,u.id,a.sglb
+	</select>
+
+	<select id="lwswItemByNowLastYearCode" resultType="java.lang.String">
+		select a.sgjyqk
+		from sg_001 a
+		where a.cjdwdm = #{unitCode}
+		and to_date(a.cjsj,'yyyy-mm-dd') between #{lastYearDate} and #{nowYearDate}
+	</select>
+
+	<select id="ckpcsLWSWByNowLastMonth" resultType="java.util.Map">
+		select a.*,
+		o.id AS "unitId",
+		o.parent_id AS "parentId",
+		o.parent_ids AS "parentIds",
+		o.name AS "unitName",
+		o.code AS "unitCode",
+		u.id AS "userId"
+		from sg_001 a
+		left join  sys_office o  on a.cjdwdm = o.code
+		left join  sys_user u on a.cjdwdm = u.no
+		where sglb like '%路外伤亡事故%'
+		AND (sfgtlx = 'Y' or  XLXZBS like '%高铁%')
+		and a.cjdw like '%派出所%'
+		and (o.id in ('34','95','156') or o.parent_ids like '%,34,%' or o.parent_ids like '%,95,%' or o.parent_ids like '%,156,%')
+		and to_date(a.cjsj,'yyyy-mm-dd') between #{lastMonthDate} and #{nowMonthDate}
+	</select>
+
+
+	<select id="jkcLWSWByNowLastMonth" resultType="java.util.Map">
+		select a.*,
+		o.id AS "unitId",
+		o.parent_id AS "parentId",
+		o.parent_ids AS "parentIds",
+		o.name AS "unitName",
+		o.code AS "unitCode",
+		u.id AS "userId"
+		from sg_001 a
+		left join  sys_office o  on a.cjdwdm = o.code
+		left join  sys_user u on a.cjdwdm = u.no
+		where sglb like '%路外伤亡事故%'
+		AND (sfgtlx = 'Y' or  XLXZBS like '%高铁%')
+		and (o.id in ('34','95','156') or o.parent_ids like '%,34,%' or o.parent_ids like '%,95,%' or o.parent_ids like '%,156,%')
+		and to_date(a.cjsj,'yyyy-mm-dd') between #{lastMonthDate} and #{nowMonthDate}
+	</select>
+
+	<select id="findProblemList" resultType="ExamAutoEvaluation">
+		select <include refid="examAutoEvaluationColumns"/>
+		from exam_auto_evaluation a
+		where a.id not in (
+
+		SELECT
+		a.id
+		FROM exam_auto_evaluation a
+		<include refid="examAutoEvaluationJoins"/>
+		left join sys_user u on u."id" = a.evaluation_id
+		left join exam_office o on u.office_id = o."id"
+		<where>
+			<!--查询有效数据，被考评对象为对应的类型
+            局考处的 仅查询被考评对象为处机关的-->
+			<choose>
+				<when test="evalType == '1'.toString()">
+					(a.eval_type = '1' and o.type = '2')
+				</when>
+				<when test="evalType == '2'.toString()">
+					(a.eval_type = '2' and o.type = '1')
+				</when>
+				<when test="evalType == '3'.toString()">
+					a.eval_type  =o.type
+				</when>
+				<when test="evalType == '4'.toString()">
+					(a.eval_type = '4' and o."type" = '2')
+				</when>
+				<when test="evalType == '5'.toString()">
+					a.eval_type  =o.type
+				</when>
+				<when test="evalType == '6'.toString()">
+					a.eval_type  =o.type
+				</when>
+				<when test="evalType == '7'.toString()">
+					a.eval_type  =o.type
+				</when>
+				<otherwise>
+					(a.eval_type  =o.type or (a.eval_type = '4' and o."type" = '2') or (a.eval_type = '1' and o.type = '2') or (a.eval_type = '2' and o.type = '1'))
+				</otherwise>
+			</choose>
+			<if test="period == '1'.toString()">
+				and month &lt;&gt; '' and month is not null
+			</if>
+			<!--有效数据 行号 被考评对象ID 模板都不能为空，周期为月度的  月度也不可为空-->
+			and a.row_num &lt;&gt; ''
+			and a.row_num is not null
+			and a.evaluation_id is not null
+			and a.model_id &lt;&gt; ''
+			and a.model_id is not null
+		</where>
+		)
+		and a.del_flag = #{DEL_FLAG_NORMAL}
+		<if test="name != null and name != ''">
+			AND a.name LIKE
+			<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+			<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+			<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			<if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+		</if>
+		<if test="modelId != null and modelId != ''">
+			and model_id = #{modelId}
+		</if>
+		<if test="model != null and model != ''">
+			and model like '%${model}%'
+		</if>
+		<if test="option != null and option != ''">
+			and option like '%${option}%'
+		</if>
+		<if test="details != null and details != ''">
+			and details like '%${details}%'
+		</if>
+		<if test="evaluationId != null and evaluationId != ''">
+			and evaluation_id = #{evaluationId}
+		</if>
+		<if test="period != null and period != ''">
+			and period = #{period}
+		</if>
+		<if test="rowNum != null and rowNum != ''">
+			and row_num = #{rowNum}
+		</if>
+		<if test="year != null and year != ''">
+			and year = #{year}
+		</if>
+		<if test="month != null and month != ''">
+			and month = #{month}
+		</if>
+		<if test="evalType != null and evalType != ''">
+			and eval_type = #{evalType}
+		</if>
+		<choose>
+			<when test="flagType != '' and flagType != null and flagType == '1'.toString()">
+				AND from_sys = '智慧政工'
+			</when>
+			<when test="flagType != '' and flagType != null and flagType == '2'.toString()">
+				AND from_sys = '警综平台'
+			</when>
+			<when test="flagType != '' and flagType != null and flagType == '3'.toString()">
+				AND from_sys = '高铁安保卫士'
+			</when>
+			<when test="flagType != '' and flagType != null and flagType == '4'.toString()">
+				AND from_sys = '查缉追逃网络管理系统'
+			</when>
+			<when test="flagType != '' and flagType != null and flagType == '5'.toString()">
+				AND from_sys = '宁铁公安109联侦平台'
+			</when>
+			<when test="flagType != '' and flagType != null and flagType == '6'.toString()">
+				AND from_sys = '执法办案系统'
+			</when>
+			<when test="flagType != '' and flagType != null and flagType == '7'.toString()">
+				AND from_sys = '微信报警'
+			</when>
+			<when test="flagType != '' and flagType != null and flagType == '8'.toString()">
+				AND from_sys = '保安管理系统'
+			</when>
+			<otherwise></otherwise>
+		</choose>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findTuanZuZhi" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairTwBase">
+		SELECT
+			*
+		FROM
+			affair_tw_base
+			A INNER JOIN sys_offices os ON A.ID = os.group_id
+		WHERE
+			A.del_flag = '0'
+			and a.id &lt;&gt; #{id}
+			and a.parent_ids like '%,'||#{id}||',%'
+			and os.name like '%派出所%'
+	</select>
+    <select id="selectOfficeId" resultType="java.lang.String">
+		select
+		 	office_id
+		from
+			sys_user
+		where
+			id = #{evi}
+		and del_flag = '0'
+	</select>
+	<select id="selectJjgUnit" resultType="com.thinkgem.jeesite.modules.sys.entity.Office">
+		select *
+		from sys_office a
+		where a.del_flag = '0'
+		and a.id not in ('0','1','2','34','95','156')
+		and a.parent_ids not like '%,34,%'
+		and a.parent_ids not like '%,95,%'
+		and a.parent_ids not like '%,156,%'
+	</select>
+	<select id="selectEvalId" resultType="java.lang.String">
+		select
+		 	id
+		from
+			sys_user
+		where
+			no = #{code}
+		and del_flag = '0'
+	</select>
+
+	<select id="getInfoByMore" resultType="com.thinkgem.jeesite.modules.exam.entity.ExamAutoEvaluation">
+		select <include refid="examAutoEvaluationColumns"/>
+		from exam_auto_evaluation a
+		where
+		a.period = #{period}
+		<if test="type != null and type !='' ">
+			AND a.type = #{type}
+		</if>
+		<if test="evalType!=null and evalType != '' ">
+			AND a.eval_type = #{evalType}
+		</if>
+		<if test="year != null and year != ''">
+			AND a.year = #{year}
+		</if>
+		<if test="month != null and month != ''">
+			AND a.month = #{month}
+		</if>
+		<if test="idNumber != null and idNumber != ''">
+			AND a.id_number = #{idNumber}
+		</if>
+		<if test="unitId != null and unitId != ''">
+			AND a.unit_id = #{unitId}
+		</if>
+		<if test="fromSys!=null and fromSys != ''">
+			AND a.from_sys = #{fromSys}
+		</if>
+		AND a.model_id = #{modelId}
+		AND a.option_id = #{optionId}
+		AND evaluation_id =#{evaluationId}
+		AND a.del_flag = '0'
+		limit 1
+	</select>
+	<select id="selectSJName" resultType="java.lang.String">
+	SELECT DISTINCT
+		( A.shuji )
+	FROM
+		affair_general_situation
+		A LEFT JOIN sys_offices s ON A.ID = s.party_id
+		LEFT JOIN sys_user u ON s.ID = u.office_id
+	WHERE
+		u.office_id = #{id}
+		AND A.del_flag = '0'
+		AND u.del_flag = '0'
+	</select>
+	<select id="selectTwEvId" resultType="java.lang.String">
+		SELECT ID
+		FROM
+			sys_user
+		WHERE
+			NO IN ( SELECT code FROM sys_office WHERE ID IN ( SELECT ID FROM sys_offices WHERE group_id = #{id} ) )
+			AND del_flag = '0'
+	</select>
+	<select id="selectZyscGt" resultType="java.lang.Integer">
+		SELECT COUNT
+			( * )
+		FROM
+			sg_001
+		WHERE
+			cjsj BETWEEN #{yearL} and #{yearT}
+			AND cjdwdm = #{code}
+			AND sglbdm = '1003'
+			AND sfgtxl = 'y'
+	</select>
+
+	<select id="ckcjgZYSCCountByNowLastYear" resultType="java.util.Map">
+		select
+		count(*) as "countSUM",
+		a.sglb AS "sglb",
+		o.id AS "unitId",
+		o.parent_id AS "parentId",
+		o.parent_ids AS "parentIds",
+		o.name AS "unitName",
+		o.code AS "unitCode",
+		u.id AS "userId"
+		from sg_001 a
+		left join  sys_office o  on a.cjdwdm = o.code
+		left join  sys_user u on a.cjdwdm = u.no
+		left join sys_user_role ur on ur.user_id = u.id
+		where sglb like '%撞轧牲畜事故%'
+		/*c522c8beb3c6477b82a6a641e9631a7d  处机关部门（独立单位）-绩效  角色*/
+		and  ur.role_id = 'c522c8beb3c6477b82a6a641e9631a7d'
+		and (o.id in ('34','95','156') or o.parent_ids like '%,34,%' or o.parent_ids like '%,95,%' or o.parent_ids like '%,156,%')
+		and substr(cjsj,1,10) between #{yearL}  and #{yearT}
+		GROUP BY o.id,o.parent_id,o.parent_ids,o.name, o.code,u.id,a.sglb
+	</select>
+
+	<select id="ckcjgZYSCInfoByNowLastYear" resultType="java.util.Map">
+		select
+		a.*,
+		o.id AS "unitId",
+		o.parent_id AS "parentId",
+		o.parent_ids AS "parentIds",
+		o.name AS "unitName",
+		o.code AS "unitCode",
+		u.id AS "userId"
+		from sg_001 a
+		left join  sys_office o  on a.cjdwdm = o.code
+		left join  sys_user u on a.cjdwdm = u.no
+		left join sys_user_role ur on ur.user_id = u.id
+		where sglb like '%撞轧牲畜事故%'
+		/*c522c8beb3c6477b82a6a641e9631a7d  处机关部门（独立单位）-绩效  角色*/
+		and  ur.role_id = 'c522c8beb3c6477b82a6a641e9631a7d'
+		and (o.id in ('34','95','156') or o.parent_ids like '%,34,%' or o.parent_ids like '%,95,%' or o.parent_ids like '%,156,%')
+		and substr(cjsj,1,10) between #{yearL}  and #{yearT}
+		and u.id = #{userId}
+	</select>
+	<select id="selCountjkcBMMJByTime" resultType="java.util.Map">
+		SELECT
+		count(*) as num,
+		u.id as "userId",
+		o.name as "officeName",
+		o.id as "officeId",
+		o.parent_id as "parentId",
+		o.parent_ids as "parentIds"
+		FROM aj_xs_001 a
+		left join sys_user u on u.no = a.cjdwdm
+		left join sys_office o on o.id = u.office_id
+		where o.id = #{chuId} or o.parent_id = #{chuId} or o.parent_ids like '%,'||#{chuId}||',%'
+		and substr(a.cjsj ,1,10) BETWEEN #{yearL} and #{yearT}
+		GROUP BY u.id,o.id,o.parent_id,o.parent_ids
+	</select>
+    <select id="ckpcsZYSCByLastNowDate" resultType="java.util.Map">
+		select  a.*,
+		o.id AS "unitId",
+		o.parent_id AS "parentId",
+		o.parent_ids AS "parentIds",
+		o.name AS "unitName",
+		o.code AS "unitCode",
+		u.id AS "userId"
+		from sg_001 a
+		left join  sys_office o  on a.cjdwdm = o.code
+		left join  sys_user u on a.cjdwdm = u.no
+		left join sys_user_role ur on ur.user_id = u.id
+		where sglb like '%撞轧牲畜事故%'
+		<!--AND sfgtlx = 'Y'-->
+		<!--dcaebd56498c49dfbc825795c542ca0c   派出所（大队）-绩效  角色-->
+		and ur.role_id = 'dcaebd56498c49dfbc825795c542ca0c'
+		and (o.id in ('34','95','156') or o.parent_ids like '%,34,%' or o.parent_ids like '%,95,%' or o.parent_ids like '%,156,%')
+		and to_date(a.cjsj, 'yyyy-MM-dd') between #{lastMonthDate}  and #{nowMonthDate}
+	</select>
+
+
+	<select id="selectWxxsaj" resultType="java.lang.Integer">
+		SELECT
+			COUNT( * )
+		FROM
+			aj_xs_001
+		WHERE
+			fasj BETWEEN #{yearL} and #{yearT}
+
+			AND cjdwdm = #{code}
+	</select>
+
+	<select id="selectWxxsajYear" resultType="java.lang.Integer">
+		SELECT
+			COUNT( * )
+		FROM
+			aj_xs_001
+		WHERE
+			fasj BETWEEN #{yearL} and #{yearT}
+
+			AND cjdwdm = #{code}
+	</select>
+
+
+	<select id="ckpcsZYSCCountByNowLastYear" resultType="java.util.Map">
+		select
+		count(*) as "countSUM",
+		a.sglb AS "sglb",
+		o.id AS "unitId",
+		o.parent_id AS "parentId",
+		o.parent_ids AS "parentIds",
+		o.name AS "unitName",
+		o.code AS "unitCode",
+		u.id AS "userId"
+		from sg_001 a
+		left join  sys_office o  on a.cjdwdm = o.code
+		left join  sys_user u on a.cjdwdm = u.no
+		left join sys_user_role ur on ur.user_id = u.id
+		where sglb like '%撞轧牲畜事故%'
+		/*dcaebd56498c49dfbc825795c542ca0c  派出所（大队）-绩效  角色*/
+		and  ur.role_id = 'dcaebd56498c49dfbc825795c542ca0c'
+		and (o.id in ('34','95','156') or o.parent_ids like '%,34,%' or o.parent_ids like '%,95,%' or o.parent_ids like '%,156,%')
+		and to_date(a.cjsj, 'yyyy-MM-dd') between #{lastYearDate}  and #{nowYearDate}
+		GROUP BY o.id,o.parent_id,o.parent_ids,o.name, o.code,u.id,a.sglb
+	</select>
+	<select id="ckpcsZYSCInfoByNowLastYear" resultType="java.util.Map">
+		select
+		a.*,
+		o.id AS "unitId",
+		o.parent_id AS "parentId",
+		o.parent_ids AS "parentIds",
+		o.name AS "unitName",
+		o.code AS "unitCode",
+		u.id AS "userId"
+		from sg_001 a
+		left join  sys_office o  on a.cjdwdm = o.code
+		left join  sys_user u on a.cjdwdm = u.no
+		left join sys_user_role ur on ur.user_id = u.id
+		where sglb like '%撞轧牲畜事故%'
+		/*dcaebd56498c49dfbc825795c542ca0c  派出所（大队）-绩效  角色*/
+		and  ur.role_id = 'dcaebd56498c49dfbc825795c542ca0c'
+		and (o.id in ('34','95','156') or o.parent_ids like '%,34,%' or o.parent_ids like '%,95,%' or o.parent_ids like '%,156,%')
+		and to_date(a.cjsj, 'yyyy-MM-dd') between #{lastYearDate}  and #{nowYearDate}
+		and u.id = #{userId}
+	</select>
+
+	<select id="selectAllpcs" resultType="java.util.Map">
+		SELECT
+			o.id AS "unitId",
+			o.name AS "unit",
+			o.parent_id AS "parentId",
+			o.parent_ids AS "parentIds",
+			o.NAME AS "unitName",
+			o.CODE AS "unitCode",
+			u.id AS "userId"
+		FROM
+			sys_office o
+			LEFT JOIN sys_user u ON o.CODE = u.
+			NO LEFT JOIN sys_user_role ur ON ur.user_id = u.id
+			AND ur.role_id = 'dcaebd56498c49dfbc825795c542ca0c'
+			AND (
+			o.id IN ( '34', '95', '156' )
+			OR o.parent_ids LIKE '%,34,%'
+			OR o.parent_ids LIKE '%,95,%'
+			OR o.parent_ids LIKE '%,156,%')
+	</select>
+
+	<select id="selectDetails" resultType="java.lang.String">
+		SELECT
+			jyaq
+		FROM
+			aj_xs_001
+		WHERE
+			fasj BETWEEN #{yearL} and #{yearT}
+
+			AND cjdwdm = #{code}
+	</select>
+
+	<select id="selectChuUnit" resultType="java.lang.String">
+		SELECT
+			code
+		FROM
+			"sys_office"
+		WHERE
+			ID = #{unit}
+			OR parent_ids LIKE '%,'||#{unit}||',%'
+	</select>
+
+	<select id="selectWxxsajListYear" resultType="java.lang.Integer">
+		SELECT
+			COUNT( * )
+		FROM
+			aj_xs_001
+		WHERE
+			fasj BETWEEN #{yearL} and #{yearT}
+
+			AND cjdwdm in <foreach collection="listCode" item="item" index="index"
+					   open="(" separator="," close=")">#{item}</foreach>
+	</select>
+	<select id="selectDetailsList" resultType="java.lang.String">
+			SELECT
+				jyaq
+			FROM
+				aj_xs_001
+			WHERE
+				fasj BETWEEN #{yearL} and #{yearT}
+
+				AND cjdwdm in <foreach collection="listCode" item="item" index="index"
+						   open="(" separator="," close=")">#{item}</foreach>
+		</select>
+
+</mapper>

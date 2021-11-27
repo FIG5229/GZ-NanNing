@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairInstructorLessonsStatisticsDao">
+    
+	<sql id="affairInstructorLessonsStatisticsColumns">
+		a.id AS "id",
+		a.id_number AS "idNumber",
+		a.name AS "name",
+		a.instructor_type AS "instructorType",
+		a.unit_id AS "unitId",
+		a.unit_name AS "unitName",
+		a.give_lessons_total AS "giveLessonsTotal",
+		a.class_hour_total AS "classHourTotal",
+		a.give_lessons_total_hour AS "giveLessonsTotalHour",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="affairInstructorLessonsStatisticsJoins">
+		<!--LEFT JOIN sys_office o5 ON o5.id = a.unit_id-->
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairInstructorLessonsStatistics">
+		SELECT 
+			<include refid="affairInstructorLessonsStatisticsColumns"/>
+		FROM affair_instructor_lessons_statistics a
+		<include refid="affairInstructorLessonsStatisticsJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairInstructorLessonsStatistics">
+		SELECT 
+			<include refid="affairInstructorLessonsStatisticsColumns"/>
+		FROM affair_instructor_lessons_statistics a
+		<include refid="affairInstructorLessonsStatisticsJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="idNumber != null and idNumber != ''">
+				AND a.id_number = #{idNumber}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+			</if>
+			<if test="unitId != null and unitId != ''">
+				AND a.unit_id = #{unitId}
+			</if>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairInstructorLessonsStatistics">
+		SELECT 
+			<include refid="affairInstructorLessonsStatisticsColumns"/>
+		FROM affair_instructor_lessons_statistics a
+		<include refid="affairInstructorLessonsStatisticsJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_instructor_lessons_statistics(
+			id,
+			id_number,
+			name,
+			instructor_type,
+			unit_id,
+			unit_name,
+			give_lessons_total,
+			class_hour_total,
+			give_lessons_total_hour,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{idNumber},
+			#{name},
+			#{instructorType},
+			#{unitId},
+			#{unitName},
+			#{giveLessonsTotal},
+			#{classHourTotal},
+			#{giveLessonsTotalHour},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_instructor_lessons_statistics SET 	
+			id_number = #{idNumber},
+			name = #{name},
+			instructor_type = #{instructorType},
+			unit_id = #{unitId},
+			unit_name = #{unitName},
+			give_lessons_total = #{giveLessonsTotal},
+			class_hour_total = #{classHourTotal},
+			give_lessons_total_hour = #{giveLessonsTotalHour},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_instructor_lessons_statistics SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_instructor_lessons_statistics SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+	
+</mapper>

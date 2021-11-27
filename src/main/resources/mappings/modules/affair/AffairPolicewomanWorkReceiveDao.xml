@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairPolicewomanWorkReceiveDao">
+    
+	<sql id="affairPolicewomanWorkReceiveColumns">
+		a.id AS "id",
+		a.pw_work_id AS "pwWorkId",
+		a.org_id AS "orgId"
+	</sql>
+	
+	<sql id="affairPolicewomanWorkReceiveJoins">
+	</sql>
+
+    <select id="get" resultType="AffairPolicewomanWorkReceive">
+		SELECT 
+			<include refid="affairPolicewomanWorkReceiveColumns"/>
+		FROM affair_policewoman_work_receive a
+		<include refid="affairPolicewomanWorkReceiveJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairPolicewomanWorkReceive">
+		SELECT 
+			<include refid="affairPolicewomanWorkReceiveColumns"/>
+		FROM affair_policewoman_work_receive a
+		<include refid="affairPolicewomanWorkReceiveJoins"/>
+		<where>
+			
+			<if test="pwWorkId != null and pwWorkId != ''">
+				AND a.pw_work_id = #{pwWorkId}
+			</if>
+			<if test="orgId != null and orgId != ''">
+				AND a.org_id = #{orgId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairPolicewomanWorkReceive">
+		SELECT 
+			<include refid="affairPolicewomanWorkReceiveColumns"/>
+		FROM affair_policewoman_work_receive a
+		<include refid="affairPolicewomanWorkReceiveJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_policewoman_work_receive(
+			id,
+			pw_work_id,
+			org_id
+		) VALUES (
+			#{id},
+			#{pwWorkId},
+			#{orgId}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_policewoman_work_receive SET 	
+			pw_work_id = #{pwWorkId},
+			org_id = #{orgId}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM affair_policewoman_work_receive
+		WHERE id = #{id}
+	</update>
+
+	<delete id="deleteByNoticeId">
+		DELETE FROM affair_policewoman_work_receive
+		WHERE pw_work_id = #{pwWorkId}
+	</delete>
+</mapper>

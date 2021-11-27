@@ -1,0 +1,616 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairNewsDao">
+    
+	<sql id="affairNewsColumns">
+		a.id AS "id",
+		a.title AS "title",
+		a.media_name AS "mediaName",
+		a.lm AS "lm",
+		a.author AS "author",
+		a.word_num AS "wordNum",
+		a.date AS "date",
+		a.typr AS "typr",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.content AS "content",
+		a.file_path AS "filePath",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.name AS "name",
+		a.id_number AS "idNumber",
+		a.object AS "object",
+		a.adopt AS "adopt",
+		a.input_adopt AS "inputAdopt",
+		a.is_year AS "isYear"
+	</sql>
+	
+	<sql id="affairNewsJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairNews">
+		SELECT 
+			<include refid="affairNewsColumns"/>
+		FROM affair_news a
+		<include refid="affairNewsJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairNews">
+		SELECT
+		distinct
+			<include refid="affairNewsColumns"/>
+		FROM affair_news a
+		<include refid="affairNewsJoins"/>
+		<if test="unitId != null and unitId !=''">
+			left join affair_news_unit anu on anu.news_id =a.id
+		</if>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="title != null and title != ''">
+				AND a.title LIKE '%'||#{title}||'%'
+			</if>
+			<if test="mediaName != null and mediaName != ''">
+				AND a.media_name LIKE '%'||#{mediaName}||'%'
+			</if>
+			<if test="lm != null and lm != ''">
+				AND a.lm LIKE '%'||#{lm}||'%'
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name = #{name}
+			</if>
+			<if test="author != null and author != ''">
+				AND a.author LIKE '%'||#{author}||'%'
+			</if>
+			<if test="idNumber != null and idNumber != ''">
+				AND a.id_number = #{idNumber}
+			</if>
+			<if test="unitNameId != null and unitNameId != ''">
+				AND a.unit_id = #{unitNameId}
+			</if>
+			<choose>
+				<when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+					AND a.date between #{startDate} and #{endDate}
+				</when>
+				<when test="startDate != null and startDate != ''">
+					AND a.date >= #{startDate}
+				</when>
+				<when test="endDate != null and endDate != ''">
+					AND  #{endDate} >= a.date
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			<if test="typr != null and typr != ''">
+				AND a.typr = #{typr}
+			</if>
+		<!--	<if test="unitId != null and unitId != ''">
+			AND a.unit_id = #{unitId}
+		</if>-->
+			<choose>
+				<when test="unitId != null and unitId != '' ">
+					AND ( o.ID = #{unitId} OR o.parent_ids LIKE'%,'||#{unitId}||',%' OR u.ID = #{createBy.id} or a.unit_id=#{unitId} or anu.news_unit_id = #{unitId})
+				</when>
+
+				<!--<when test="unitNameId != null and unitNameId != '' ">
+					AND ( o.ID = #{unitNameId} OR o.ID = #{unitNameId} OR o.parent_ids LIKE'%,'||#{unitNameId}||',%' OR u.ID = #{createBy.id} or a.unit_id=#{unitNameId})
+				</when>-->
+				<otherwise>
+					AND ( o.ID = #{unitId} OR u.ID = #{createBy.id} or a.unit_id=#{unitId})
+				</otherwise>
+			</choose>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairNews">
+		SELECT 
+			<include refid="affairNewsColumns"/>
+		FROM affair_news a
+		<include refid="affairNewsJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_news(
+			id,
+			title,
+			media_name,
+			lm,
+			word_num,
+			date,
+			typr,
+			unit,
+			unit_id,
+			content,
+			file_path,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			id_number,
+			object,
+			adopt,
+			input_adopt,
+			is_year
+		) VALUES (
+			#{id},
+			#{title},
+			#{mediaName},
+			#{lm},
+			#{wordNum},
+			#{date},
+			#{typr},
+			#{unit},
+			#{unitId},
+			#{content},
+			#{filePath},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{idNumber},
+			#{object},
+			#{adopt},
+			#{inputAdopt},
+			#{isYear}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_news SET 	
+			title = #{title},
+			media_name = #{mediaName},
+			lm = #{lm},
+			word_num = #{wordNum},
+			date = #{date},
+			typr = #{typr},
+			unit = #{unit},
+			unit_id = #{unitId},
+			content = #{content},
+			file_path = #{filePath},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			id_number = #{idNumber},
+			object = #{object},
+			adopt = #{adopt},
+			input_adopt = #{inputAdopt},
+			is_year = #{isYear}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_news SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_news SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+
+	<select id="findInfoByUnitId" resultType="java.util.HashMap">
+		SELECT
+		an.typr,
+		count( an.typr ),
+		sd.label
+		FROM
+		affair_news an
+		LEFT JOIN sys_dict sd ON an.typr = sd.
+		VALUE
+
+		WHERE
+		an.del_flag = '0'
+		AND	sd.type = 'affair_news' AND sd.del_flag = '0'
+		<if test="id != null and id != ''">
+			AND an.unit_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from an.date) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(an.date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND an.date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND an.date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= an.date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		an.typr,
+		sd.label
+	</select>
+
+	<select id="findInfoByUnitIds" resultType="java.util.HashMap">
+		SELECT
+		an.typr,
+		count( an.typr ),
+		sd.label
+		FROM
+		affair_news an
+		LEFT JOIN sys_dict sd ON an.typr = sd.
+		VALUE
+
+		WHERE
+		an.del_flag != '1'
+		AND	sd.type = 'affair_news' AND sd.del_flag = '0'
+		AND an.unit_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from an.date) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(an.date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND an.date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND an.date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= an.date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		an.typr,
+		sd.label
+	</select>
+
+	<select id="selectBeenByUserId" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairNews">
+		SELECT
+			title,
+			date
+		FROM
+			affair_news
+		WHERE
+			id = #{newId}
+			AND del_flag = '0'
+	</select>
+
+
+	<select id="selectContributionByUserId" resultType="string">
+		SELECT
+			title
+		FROM
+			affair_news
+		WHERE
+			id_number = #{idNumber}
+			AND del_flag = '0'
+	</select>
+
+	<select id="findPerson" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairCorrespondent">
+		SELECT
+		a.name,
+		a.id_number
+		FROM affair_correspondent a
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			AND a.name =#{name}
+		</where>
+	</select>
+
+	<select id="findEchartsInfoByUnit" resultType="java.util.HashMap">
+		select news_unit AS unit ,news_unit_id as unit_id,sum(num1+num2+num3+num4+num5) as sum,
+		sum(num1) As sum1,
+		sum(num2) As sum2,
+		sum(num3) As sum3,
+		sum(num4) As sum4,
+		sum(num5) As sum5
+		from (
+		SELECT b.news_unit,
+		b.news_unit_id,
+		(case when a.typr='1' then 1 else 0 end) As num1,
+		(case when a.typr='2' then 1 else 0 end) As num2,
+		(case when a.typr='3' then 1 else 0 end) As num3,
+		(case when a.typr='4' then 1 else 0 end) As num4,
+		(case when a.typr='5' then 1 else 0 end) As num5
+		FROM affair_news a  right   JOIN  affair_news_unit b on a.id= b.news_id LEFT JOIN news_unit_name c on b.news_unit_id= c.unit_id
+		where a.del_flag = '0'
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.date) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND date_trunc('day', a.date) between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= date_trunc('day', a.date)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		) d GROUP BY unit,unit_id
+		order by sum DESC
+	</select>
+
+	<select id="findChuEchartsInfoByUnit" resultType="java.util.HashMap">
+		select news_unit AS unit ,news_unit_id as unit_id,sum(num1+num2+num3+num4+num5) as sum,
+		sum(num1) As sum1,
+		sum(num2) As sum2,
+		sum(num3) As sum3,
+		sum(num4) As sum4,
+		sum(num5) As sum5
+		from (
+		SELECT b.news_unit,
+		b.news_unit_id,
+		(case when a.typr='1' then 1 else 0 end) As num1,
+		(case when a.typr='2' then 1 else 0 end) As num2,
+		(case when a.typr='3' then 1 else 0 end) As num3,
+		(case when a.typr='4' then 1 else 0 end) As num4,
+		(case when a.typr='5' then 1 else 0 end) As num5
+		FROM affair_news a  right   JOIN  affair_news_unit b on a.id= b.news_id LEFT JOIN news_unit_name c on b.news_unit_id= c.unit_id
+		where
+		b.news_unit_id in(
+		SELECT e.unit_id from news_unit_name e
+		)
+		and c.company_id = #{officeId} and a.del_flag='0'
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.date) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND date_trunc('day', a.date) between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= date_trunc('day', a.date)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		) d GROUP BY unit,unit_id
+		order by sum DESC
+	</select>
+
+	<select id="findEchartsDetailInfo" resultType="AffairNews">
+		SELECT
+		<include refid="affairNewsColumns"/>
+		FROM affair_news a
+		LEFT JOIN sys_office o ON o.id = a.unit_id
+		LEFT JOIN affair_news_unit u on u.news_id = a.id
+		where a.del_flag = '0'
+		AND u.del_flag = '0'
+		AND u.news_unit LIKE '%'||#{unit}||'%'
+		<if test="typr != null and typr != ''">
+			AND a.typr = #{typr}
+		</if>
+		<!--<choose>
+			<when test="unitId != 'top'">
+				and (o."id" = #{unitId} or o."parent_id" =#{unitId} or o.parent_ids like '%${unitId}%')
+			</when>
+			<otherwise>
+				and (o.id = '0' or o.id = '1' or o.parent_id in ('1','307','312','316') or parent_id like '0')
+			</otherwise>
+		</choose>-->
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.date) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND date_trunc('day', a.date) between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= date_trunc('day', a.date)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		/*${sqlMap.dsf}*/
+	</select>
+
+	<select id="getOne" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairNews">
+		SELECT
+		<include refid="affairNewsColumns"/>
+		FROM affair_news a
+		<include refid="affairNewsJoins"/>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		<if test="title != null and title != ''">
+			and a.title = #{title}
+		</if>
+		<if test="mediaName != null and mediaName != ''">
+			and a.media_name = #{mediaName}
+		</if>
+		<if test="lm != null and lm != ''">
+			and a.lm = #{lm}
+		</if>
+		<if test="date != null and date != ''">
+			and a.date = #{date}
+		</if>
+		<if test="object != null and object != ''">
+			and a.object = #{object}
+		</if>
+		<if test="wordNum != null and wordNum != ''">
+			and a.word_num = #{wordNum}
+		</if>
+		order BY a.update_date DESC
+		limit 1
+
+	</select>
+
+	<select id="selectNum" resultType="java.lang.Integer">
+        SELECT COUNT
+                ( * )
+        FROM
+                affair_news A
+        WHERE
+                to_char ( "date", 'yyyy-mm-dd HH24:mi:ss:ff' ) = #{time}
+                AND unit_id = #{unitId}
+                AND del_flag = '0'
+                AND typr = #{typr}
+        </select>
+    <select id="selectAllKg" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairNews">
+		SELECT
+			*
+		FROM
+			affair_news
+			A LEFT JOIN affair_news_unit au ON A.ID = au.news_id
+		WHERE
+			A.del_flag = '0'
+			AND au.del_flag = '0'
+			AND to_char ( A."date", 'yyyy-mm-dd' ) BETWEEN #{yearL}
+			AND #{yearT}
+			AND au.news_unit_id = #{unitId}
+	</select>
+    <select id="selectAllKgPeople" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairNews">
+		SELECT
+			*
+		FROM
+			affair_news
+			A LEFT JOIN affair_news_author an ON A."id" = an.news_id
+		WHERE
+			A.del_flag = '0'
+			AND an.del_flag = '0'
+			AND an.id_number = #{idN}
+			AND to_char ( A."date", 'yyyy-mm-dd' ) BETWEEN #{yearL}
+			AND #{yearT}
+	</select>
+
+	<select id="findAuthor" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairNewsAuthor">
+		SELECT
+			*
+		FROM
+			affair_news_author
+		WHERE
+			news_id = #{authorId}
+	</select>
+	<select id="findUnit" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairNewsUnit">
+		SELECT
+			a.id AS "id",
+			a.news_unit AS "newsUnit",
+			a.news_unit_id AS "newsUnitId",
+			a.news_id AS "newsId",
+			a.del_flag AS "delFlag"
+		FROM
+			affair_news_unit a
+		WHERE
+			a.del_flag = '0'
+			AND a.news_id = #{authorId};
+	</select>
+    <select id="selectNumber" resultType="java.lang.Integer">
+		SELECT COUNT
+			( * )
+		FROM
+			affair_news
+			A LEFT JOIN affair_news_unit au ON A.ID = au.news_id
+		WHERE
+			A.del_flag = '0'
+			AND au.del_flag = '0'
+			AND to_char ( A."date", 'yyyy-mm-dd' ) BETWEEN #{yearL}
+			AND #{yearT}
+			AND au.news_unit_id = #{idN}
+			AND A.adopt = #{adopt}
+	</select>
+	<select id="selectNumberInYear" resultType="java.lang.Integer">
+		SELECT COUNT
+			( * )
+		FROM
+			affair_news
+			A LEFT JOIN affair_news_unit au ON A.ID = au.news_id
+		WHERE
+			A.del_flag = '0'
+			AND au.del_flag = '0'
+			AND to_char ( A."date", 'yyyy-mm-dd' ) BETWEEN #{yearL}
+			AND #{yearT}
+			AND au.news_unit_id = #{idN}
+			AND A.adopt = #{adopt}
+	</select>
+
+	<select id="findUnitId" resultType="String">
+		SELECT
+			id
+		FROM
+			sys_office
+		WHERE
+			name = #{unitName}
+	</select>
+
+	<select id="findListInIds" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairNews">
+		select <include refid="affairNewsColumns"/>
+		from affair_news a
+		where a.del_flag = '0'
+		<if test="newsIdList != null and newsIdList.size() > 0">
+			and id in (
+			<foreach collection="newsIdList" item="id" index="index" separator=",">
+				#{id}
+			</foreach>
+			)
+		</if>
+
+	</select>
+
+
+</mapper>

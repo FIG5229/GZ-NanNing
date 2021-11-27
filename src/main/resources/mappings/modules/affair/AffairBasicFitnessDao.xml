@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairBasicFitnessDao">
+    
+	<sql id="affairBasicFitnessColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.id_number AS "idNumber",
+		a.age AS "age",
+		a.sex AS "sex",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.job AS "job",
+		a.fifty_run_score AS "fiftyRunScore",
+		a.fifty_run_status AS "fiftyRunStatus",
+		a.nv_sit_ups_score AS "nvSitUpsScore",
+		a.nv_sit_ups_status AS "nvSitUpsStatus",
+		a.nan_pull_ups_score AS "nanPullUpsScore",
+		a.nan_pull_ups_status AS "nanPullUpsStatus",
+		a.nan_push_ups_score AS "nanPushUpsScore",
+		a.nan_push_ips_status AS "nanPushIpsStatus",
+		a.grip_score AS "gripScore",
+		a.grip_status AS "gripStatus",
+		a.jump_score AS "jumpScore",
+		a.jump_status AS "jumpStatus",
+		a.twokm_run_score AS "twokmRunScore",
+		a.twokm_run_status AS "twokmRunStatus",
+		a.sitting_forward_bending_score AS "sittingForwardBendingScore",
+		a.sitting_forward_bending_status AS "sittingForwardBendingStatus",
+		a.comprehensive_assessment AS "comprehensiveAssessment",
+		a.remark AS "remark",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.number AS "number",
+		a.year_month AS "yearMonth",
+		a.height AS "height",
+		a.weight AS "weight",
+		a.value AS "value",
+		a.assess AS "assess"
+	</sql>
+	
+	<sql id="affairBasicFitnessJoins">
+		LEFT JOIN sys_office o ON o.id = a.unit_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairBasicFitness">
+		SELECT 
+			<include refid="affairBasicFitnessColumns"/>
+		FROM affair_basic_fitness a
+		<include refid="affairBasicFitnessJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairBasicFitness">
+		SELECT 
+			<include refid="affairBasicFitnessColumns"/>
+		FROM affair_basic_fitness a
+		<include refid="affairBasicFitnessJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="yearMonth != '' and yearMonth != null">
+				AND a.year_month = #{yearMonth}
+			</if>
+			<if test="idNumber != null and idNumber != ''">
+				AND a.id_number LIKE '%'||#{idNumber}||'%'
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+			</if>
+			<if test="sex != null and sex != ''">
+				AND a.sex = #{sex}
+			</if>
+			<if test="comprehensiveAssessment != null and comprehensiveAssessment != ''">
+				AND a.comprehensive_assessment = #{comprehensiveAssessment}
+			</if>
+			<if test="unitId != null and unitId != ''">
+				AND (a.unit_id = #{unitId} or o.parent_ids like '%,'||#{unitId}||',%')
+			</if>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairBasicFitness">
+		SELECT 
+			<include refid="affairBasicFitnessColumns"/>
+		FROM affair_basic_fitness a
+		<include refid="affairBasicFitnessJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.number ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_basic_fitness(
+			id,
+			name,
+			id_number,
+			age,
+			sex,
+			unit,
+			unit_id,
+			job,
+			fifty_run_score,
+			fifty_run_status,
+			nv_sit_ups_score,
+			nv_sit_ups_status,
+			nan_pull_ups_score,
+			nan_pull_ups_status,
+			nan_push_ups_score,
+			nan_push_ips_status,
+			grip_score,
+			grip_status,
+			jump_score,
+			jump_status,
+			twokm_run_score,
+			twokm_run_status,
+			sitting_forward_bending_score,
+			sitting_forward_bending_status,
+			comprehensive_assessment,
+			remark,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			number,
+			year_month,
+			height,
+			weight,
+			value,
+			assess
+		) VALUES (
+			#{id},
+			#{name},
+			#{idNumber},
+			#{age},
+			#{sex},
+			#{unit},
+			#{unitId},
+			#{job},
+			#{fiftyRunScore},
+			#{fiftyRunStatus},
+			#{nvSitUpsScore},
+			#{nvSitUpsStatus},
+			#{nanPullUpsScore},
+			#{nanPullUpsStatus},
+			#{nanPushUpsScore},
+			#{nanPushIpsStatus},
+			#{gripScore},
+			#{gripStatus},
+			#{jumpScore},
+			#{jumpStatus},
+			#{twokmRunScore},
+			#{twokmRunStatus},
+			#{sittingForwardBendingScore},
+			#{sittingForwardBendingStatus},
+			#{comprehensiveAssessment},
+			#{remark},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{number},
+			#{yearMonth},
+			#{height},
+			#{weight},
+			#{value},
+			#{assess}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_basic_fitness SET 	
+			name = #{name},
+			id_number = #{idNumber},
+			age = #{age},
+			sex = #{sex},
+			unit = #{unit},
+			unit_id = #{unitId},
+			job = #{job},
+			fifty_run_score = #{fiftyRunScore},
+			fifty_run_status = #{fiftyRunStatus},
+			nv_sit_ups_score = #{nvSitUpsScore},
+			nv_sit_ups_status = #{nvSitUpsStatus},
+			nan_pull_ups_score = #{nanPullUpsScore},
+			nan_pull_ups_status = #{nanPullUpsStatus},
+			nan_push_ups_score = #{nanPushUpsScore},
+			nan_push_ips_status = #{nanPushIpsStatus},
+			grip_score = #{gripScore},
+			grip_status = #{gripStatus},
+			jump_score = #{jumpScore},
+			jump_status = #{jumpStatus},
+			twokm_run_score = #{twokmRunScore},
+			twokm_run_status = #{twokmRunStatus},
+			sitting_forward_bending_score = #{sittingForwardBendingScore},
+			sitting_forward_bending_status = #{sittingForwardBendingStatus},
+			comprehensive_assessment = #{comprehensiveAssessment},
+			remark = #{remark},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			number = #{number},
+			year_month = #{yearMonth},
+			height = #{height},
+			weight = #{weight},
+			value = #{value},
+			assess = #{assess}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_basic_fitness SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_basic_fitness SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+	
+</mapper>

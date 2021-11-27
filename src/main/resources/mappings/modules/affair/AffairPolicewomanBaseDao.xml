@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairPolicewomanBaseDao">
+    
+	<sql id="affairPolicewomanBaseColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.birthday AS "birthday",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.is_party_member AS "isPartyMember",
+		a.xl AS "xl",
+		a.jszc AS "jszc",
+		a.school AS "school",
+		a.major AS "major",
+		a.situation AS "situation",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.id_number AS "idNumber"
+	</sql>
+	
+	<sql id="affairPolicewomanBaseJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairPolicewomanBase">
+		SELECT 
+			<include refid="affairPolicewomanBaseColumns"/>
+		FROM affair_policewoman_base a
+		<include refid="affairPolicewomanBaseJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairPolicewomanBase">
+		SELECT 
+			<include refid="affairPolicewomanBaseColumns"/>
+		FROM affair_policewoman_base a
+		<include refid="affairPolicewomanBaseJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE '%'||#{name}||'%'
+			</if>
+			<choose>
+				<when test="startBirthdayDate != null and startBirthdayDate != '' and endBirthdayDate != null and endBirthdayDate != ''">
+					AND a.birthday between #{startBirthdayDate} and #{endBirthdayDate}
+				</when>
+				<when test="startBirthdayDate != null and startBirthdayDate != ''">
+					AND a.birthday >= #{startDate}
+				</when>
+				<when test="endBirthdayDate != null and endBirthdayDate != ''">
+					AND  #{endBirthdayDate} >= a.birthday
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			<if test="unitId != null and unitId != ''">
+				AND a.unit_id = #{unitId}
+			</if>
+			<if test="isPartyMember != null and isPartyMember != ''">
+				AND a.is_party_member = #{isPartyMember}
+			</if>
+			<if test="xl != null and xl != ''">
+				AND a.xl = #{xl}
+			</if>
+			<if test="jszc != null and jszc != ''">
+				AND a.jszc = #{jszc}
+			</if>
+			<choose>
+				<when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+					AND a.create_date between #{startDate} and #{endDate}
+				</when>
+				<when test="startDate != null and startDate != ''">
+					AND a.create_date >= #{startDate}
+				</when>
+				<when test="endDate != null and endDate != ''">
+					AND  #{endDate} >= a.create_date
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairPolicewomanBase">
+		SELECT 
+			<include refid="affairPolicewomanBaseColumns"/>
+		FROM affair_policewoman_base a
+		<include refid="affairPolicewomanBaseJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_policewoman_base(
+			id,
+			name,
+			birthday,
+			unit,
+			unit_id,
+			is_party_member,
+			xl,
+			jszc,
+			school,
+			major,
+			situation,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			id_number
+		) VALUES (
+			#{id},
+			#{name},
+			#{birthday},
+			#{unit},
+			#{unitId},
+			#{isPartyMember},
+			#{xl},
+			#{jszc},
+			#{school},
+			#{major},
+			#{situation},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{idNumber}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_policewoman_base SET 	
+			name = #{name},
+			birthday = #{birthday},
+			unit = #{unit},
+			unit_id = #{unitId},
+			is_party_member = #{isPartyMember},
+			xl = #{xl},
+			jszc = #{jszc},
+			school = #{school},
+			major = #{major},
+			situation = #{situation},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			id_number = #{idNumber}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_policewoman_base SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_policewoman_base SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<select id="findInfoByCreateOrgId" resultType="java.util.HashMap">
+		SELECT
+		apb.xl,
+		count( apb.xl ),
+		sd.label
+		FROM
+		affair_policewoman_base apb
+		LEFT JOIN sys_dict sd ON apb.xl = sd.
+		VALUE
+
+		WHERE
+		apb.del_flag != '1'
+		AND sd.type = 'affair_xueli'
+		<if test="id != null and id != ''">
+			AND apb.unit_id = #{id}
+		</if>
+		GROUP BY
+		apb.xl,
+		sd.label
+	</select>
+
+	<select id="findInfoByCreateOrgIds" resultType="java.util.HashMap">
+
+		SELECT
+		apb.xl,
+		count( apb.xl ),
+		sd.label
+		FROM
+		affair_policewoman_base apb
+		LEFT JOIN sys_dict sd ON apb.xl = sd.
+		VALUE
+		WHERE
+		apb.del_flag != '1'
+		AND sd.type = 'affair_xueli'
+		AND apb.unit_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+		GROUP BY
+		apb.xl,
+		sd.label
+	</select>
+
+</mapper>

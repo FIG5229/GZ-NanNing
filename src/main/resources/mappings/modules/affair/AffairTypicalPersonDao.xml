@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairTypicalPersonDao">
+    
+	<sql id="affairTypicalPersonColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.sex AS "sex",
+		a.nation AS "nation",
+		a.politics_face AS "politicsFace",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.job AS "job",
+		a.ps_time AS "psTime",
+		a.ps_level AS "psLevel",
+		a.won_honor AS "wonHonor",
+		a.ps_target AS "psTarget",
+		a.ps_programme AS "psProgramme",
+		a.ps_department AS "psDepartment",
+		a.ps_department_id AS "psDepartmentId",
+		a.contact_person AS "contactPerson",
+		a.contact_person AS "contactPerson",
+		a.visit_record AS "visitRecord",
+		a.publicity AS "publicity",
+		a.push_organization AS "pushOrganization",
+		a.push_organization_id AS "pushOrganizationId",
+		a.file_path AS "filePath",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.id_number AS "idNumber",
+		a.materials AS "materials"
+	</sql>
+	
+	<sql id="affairTypicalPersonJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairTypicalPerson">
+		SELECT 
+			<include refid="affairTypicalPersonColumns"/>
+		FROM affair_typical_person a
+		<include refid="affairTypicalPersonJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairTypicalPerson">
+		SELECT 
+			<include refid="affairTypicalPersonColumns"/>
+		FROM affair_typical_person a
+		<include refid="affairTypicalPersonJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+			</if>
+			<if test="sex != null and sex != ''">
+				AND a.sex = #{sex}
+			</if>
+			<if test="nation != null and nation != ''">
+				AND a.nation = #{nation}
+			</if>
+			<if test="politicsFace != null and politicsFace != ''">
+				AND a.politics_face = #{politicsFace}
+			</if>
+			<if test="unit != null and unit != ''">
+				AND a.unit = #{unit}
+			</if>
+			<if test="job != null and job != ''">
+				AND a.job LIKE 
+					<if test="dbName == 'oracle'">'%'||#{job}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{job}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{job},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{job}||'%'</if>
+			</if>
+			<choose>
+				<when test="beginPsTime != null and endPsTime != null and beginPsTime != '' and endPsTime != ''">
+					AND a.ps_time BETWEEN #{beginPsTime} AND #{endPsTime}
+				</when>
+				<when test="beginPsTime != null and beginPsTime != ''">
+					AND a.ps_time &gt;= #{beginPsTime}
+				</when>
+				<when test="endPsTime != null and endPsTime != ''">
+					AND a.ps_time &lt;= #{endPsTime}
+				</when>
+				<otherwise></otherwise>
+			</choose>
+			<if test="psLevel != null and psLevel != ''">
+				AND a.ps_level = #{psLevel}
+			</if>
+			<if test="psTarget != null and psTarget != ''">
+				AND a.ps_target LIKE 
+					<if test="dbName == 'oracle'">'%'||#{psTarget}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{psTarget}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{psTarget},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{psTarget}||'%'</if>
+			</if>
+			<if test="psDepartment != null and psDepartment != ''">
+				AND a.ps_department = #{psDepartment}
+			</if>
+			<if test="contactPerson != null and contactPerson != ''">
+				AND a.contact_person LIKE 
+					<if test="dbName == 'oracle'">'%'||#{contactPerson}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{contactPerson}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{contactPerson},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{contactPerson}||'%'</if>
+			</if>
+			/*${sqlMap.dsf}*/
+			<if test="userId != '' and userId != null">
+				AND ( o.ID = #{userId} OR o.parent_ids LIKE'%,'||#{userId}||',%' OR u.ID = #{createBy.id} or a.unit_id = #{userId} or u.office_id = #{userId})
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairTypicalPerson">
+		SELECT 
+			<include refid="affairTypicalPersonColumns"/>
+		FROM affair_typical_person a
+		<include refid="affairTypicalPersonJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_typical_person(
+			id,
+			name,
+			sex,
+			nation,
+			politics_face,
+			unit,
+			unit_id,
+			job,
+			ps_time,
+			ps_level,
+			won_honor,
+			ps_target,
+			ps_programme,
+			ps_department,
+			ps_department_id,
+			contact_person,
+			visit_record,
+			publicity,
+			push_organization,
+			push_organization_id,
+			file_path,
+			create_by,
+			create_org_id,
+			create_date,
+			update_by,
+			update_org_id,
+			update_date,
+			del_flag,
+			id_number,
+			materials
+		) VALUES (
+			#{id},
+			#{name},
+			#{sex},
+			#{nation},
+			#{politicsFace},
+			#{unit},
+			#{unitId},
+			#{job},
+			#{psTime},
+			#{psLevel},
+			#{wonHonor},
+			#{psTarget},
+			#{psProgramme},
+			#{psDepartment},
+			#{psDepartmentId},
+			#{contactPerson},
+			#{visitRecord},
+			#{publicity},
+			#{pushOrganization},
+			#{pushOrganizationId},
+			#{filePath},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateDate},
+			#{delFlag},
+			#{idNumber},
+			#{materials}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_typical_person SET 	
+			name = #{name},
+			sex = #{sex},
+			nation = #{nation},
+			politics_face = #{politicsFace},
+			unit = #{unit},
+			unit_id = #{unitId},
+			job = #{job},
+			ps_time = #{psTime},
+			ps_level = #{psLevel},
+			won_honor = #{wonHonor},
+			ps_target = #{psTarget},
+			ps_programme = #{psProgramme},
+			ps_department = #{psDepartment},
+			ps_department_id = #{psDepartmentId},
+			contact_person = #{contactPerson},
+			visit_record = #{visitRecord},
+			publicity = #{publicity},
+			push_organization = #{pushOrganization},
+			push_organization_id = #{pushOrganizationId},
+			file_path = #{filePath},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateOrgId},
+			update_date = #{updateDate},
+			id_number = #{idNumber},
+			materials = #{materials}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_typical_person SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_typical_person SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<select id="countTypicalPerson" resultType="map">
+		select count(a."id") as num,sd.label as label from  affair_typical_person a
+		left join sys_dict sd on a."ps_level" = sd."value"
+		left join sys_office o on o.id=a.unit_id
+		where  a.del_flag = '0' and sd."type" = 'affair_approval_unitLevel'
+		and ( o."id" = #{officeId} or o."parent_id" =#{officeId} or o.parent_ids like '%${officeId}%')
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.ps_time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.ps_time) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.ps_time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.ps_time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.ps_time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY sd.label;
+	</select>
+
+	<select id="findTypicalList" resultType="AffairTypicalPerson">
+		select <include refid="affairTypicalPersonColumns"/>
+		FROM affair_typical_person a
+		left join sys_dict sd on a."ps_level" = sd."value"
+		left join sys_office o on o.id=a.unit_id
+		where  a.del_flag = '0' and sd."type" = 'affair_approval_unitLevel'
+		and ( o."id" = #{unitId} or o."parent_id" =#{unitId} or o.parent_ids like '%${unitId}%')
+		and sd.label = #{label}
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.ps_time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.ps_time) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.ps_time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.ps_time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.ps_time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+</mapper>

@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairOrganizationBuildSing2Dao">
+    
+	<sql id="affairOrganizationBuildSing2Columns">
+		a.id AS "id",
+		a.ob_id AS "obId",
+		a.review AS "review",
+		a.review_name AS "reviewName",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="affairOrganizationBuildSing2Joins">
+	</sql>
+    
+	<select id="get" resultType="AffairOrganizationBuildSing2">
+		SELECT 
+			<include refid="affairOrganizationBuildSing2Columns"/>
+		FROM affair_organization_build_sing2 a
+		<include refid="affairOrganizationBuildSing2Joins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairOrganizationBuildSing2">
+		SELECT 
+			<include refid="affairOrganizationBuildSing2Columns"/>
+		FROM affair_organization_build_sing2 a
+		<include refid="affairOrganizationBuildSing2Joins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="review != null and review != ''">
+				AND a.review = #{review}
+			</if>
+			<if test="reviewName != null and reviewName != ''">
+				AND a.review_name = #{reviewName}
+			</if>
+			<if test="id != null and id != ''">
+				AND a.ob_id = #{id}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairOrganizationBuildSing2">
+		SELECT 
+			<include refid="affairOrganizationBuildSing2Columns"/>
+		FROM affair_organization_build_sing2 a
+		<include refid="affairOrganizationBuildSing2Joins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_organization_build_sing2(
+			id,
+			ob_id,
+			review,
+			review_name,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{obId},
+			#{review},
+			#{reviewName},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_organization_build_sing2 SET 	
+			ob_id = #{obId},
+			review = #{review},
+			review_name = #{reviewName},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateOrgId},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_organization_build_sing2 SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByMainId">
+		UPDATE affair_organization_build_sing2 SET
+			del_flag = '1'
+		WHERE ob_id = #{obId}
+	</update>
+	<update id="deleteByMainIds">
+		UPDATE affair_organization_build_sing2 SET
+		del_flag = '1'
+		WHERE ob_id in <foreach collection="obIds" item="item" index="index"
+								  open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+</mapper>

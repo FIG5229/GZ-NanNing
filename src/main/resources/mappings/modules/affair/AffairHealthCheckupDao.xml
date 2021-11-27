@@ -1,0 +1,384 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairHealthCheckupDao">
+
+	<sql id="affairHealthCheckupColumns">
+		a.id AS "id",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.name AS "name",
+		a.tj_date AS "tjDate",
+		a.sex AS "sex",
+		a.age AS "age",
+		a.tj_qingkuang AS "tjQingkuang",
+		a.fj_reason AS "fjReason",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.type AS "type",
+		a.id_number AS "idNumber"
+	</sql>
+
+	<sql id="affairHealthCheckupJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+
+	<select id="get" resultType="AffairHealthCheckup">
+		SELECT
+			<include refid="affairHealthCheckupColumns"/>
+		FROM affair_health_checkup a
+		<include refid="affairHealthCheckupJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	<select id="findList" resultType="AffairHealthCheckup">
+		SELECT
+		<include refid="affairHealthCheckupColumns"/>
+		FROM affair_health_checkup a
+		<include refid="affairHealthCheckupJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="unit != null and unit != ''">
+				AND a.unit = #{unit}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE '%'||#{name}||'%'
+			</if>
+			<if test="type != null and type != ''">
+				AND a.type LIKE '%'||#{type}||'%'
+			</if>
+			<if test="beginTjDate != null and endTjDate != null and beginTjDate != '' and endTjDate != ''">
+				AND a.tj_date BETWEEN #{beginTjDate} AND #{endTjDate}
+			</if>
+			<choose>
+				<when test="userOffice != null and userOffice != '' ">
+					AND ( o.ID = #{userOffice} OR o.parent_ids LIKE'%,'||#{userOffice}||',%' OR u.ID = #{createBy.id} or a.unit_id = #{userOffice} or u.office_id = #{userOffice})
+				</when>
+				<otherwise>
+					AND ( o.ID = #{userOffice} OR u.ID = #{createBy.id} or a.unit_id=#{userOffice})
+				</otherwise>
+			</choose>
+			<!-- 数据范围过滤 -->
+			<!-- ${sqlMap.dsf}
+			<if test="userId != null and userId != ''">
+				or (a.unit_id = #{userId} AND a.del_flag = #{DEL_FLAG_NORMAL})
+			</if> -->
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.tj_date DESC
+			</otherwise>
+		</choose>
+
+	</select>
+
+	<select id="findAllList" resultType="AffairHealthCheckup">
+		SELECT
+			<include refid="affairHealthCheckupColumns"/>
+		FROM affair_health_checkup a
+		<include refid="affairHealthCheckupJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+    <insert id="insert">
+		INSERT INTO affair_health_checkup(
+			id,
+			unit,
+			unit_id,
+			name,
+			tj_date,
+			sex,
+			age,
+			tj_qingkuang,
+			fj_reason,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			type,
+			id_number
+		) VALUES (
+			#{id},
+			#{unit},
+			#{unitId},
+			#{name},
+			#{tjDate},
+			#{sex},
+			#{age},
+			#{tjQingkuang},
+			#{fjReason},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{type},
+			#{idNumber}
+		)
+	</insert>
+
+	<update id="update">
+		UPDATE affair_health_checkup SET
+			unit = #{unit},
+			unit_id = #{unitId},
+			name = #{name},
+			tj_date = #{tjDate},
+			sex = #{sex},
+			age = #{age},
+			tj_qingkuang = #{tjQingkuang},
+			fj_reason = #{fjReason},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			type = #{type},
+			id_number = #{idNumber}
+		WHERE id = #{id}
+	</update>
+
+	<update id="delete">
+		UPDATE affair_health_checkup SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_health_checkup SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<select id="findInfoByCreateOrgId" resultType="java.lang.Integer">
+	 	SELECT count(DISTINCT a.name ) AS "count"
+			FROM affair_health_checkup a
+		<include refid="affairHealthCheckupJoins"/>
+		WHERE a.del_flag = '0'
+		<if test="id != null and id != ''">
+			${id}
+		</if>
+		<!--
+		<if test="id != null and id != ''">
+			AND a.unit_id = #{id}
+		</if>
+		-->
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.tj_date, 'yyyy-mm')  = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.tj_date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.tj_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.tj_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.tj_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findInfoByCreateOrgIds" resultType="java.lang.Integer">
+		SELECT count(DISTINCT a.name ) AS "count"
+		FROM affair_health_checkup a
+		WHERE a.del_flag = '0'
+		AND a.unit_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.tj_date, 'yyyy-mm')  = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.tj_date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.tj_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.tj_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.tj_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+    <select id="findTypeInfoByCreateOrgId" resultType="java.util.Map">
+		SELECT sd.label  AS "label",
+		count(DISTINCT a.name) AS "count"
+		FROM affair_health_checkup a left join sys_dict sd on a.type = sd.value
+		WHERE a.del_flag = '0'  AND sd.del_flag = '0' AND sd.type = 'affair_health_checkup_type'
+		<if test="id != null and id != ''">
+			AND a.unit_id = #{id}
+		</if>
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.tj_date, 'yyyy-mm')  = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.tj_date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.tj_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.tj_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.tj_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY sd.label
+	</select>
+
+	<select id="findHealthCheckupList" resultType="AffairHealthCheckup">
+		select <include refid="affairHealthCheckupColumns"/>
+		from affair_health_checkup a
+		LEFT JOIN sys_office o ON o.id = a.unit_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+		where a.del_flag = '0'
+		<if test="label != null and label !=''">
+			and a.type like '%${label}%'
+		</if>
+		${sqlMap.dsf}
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.tj_date, 'yyyy-mm')  = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.tj_date) = #{year}
+			</when>
+			<when test="beginTjDate != null and endTjDate != null">
+				AND a.tj_date between  #{beginTjDate,jdbcType=DATE} and #{endTjDate,jdbcType=DATE}
+			</when>
+			<when test="beginTjDate != null">
+				AND a.tj_date >= #{beginTjDate,jdbcType=DATE}
+			</when>
+			<when test="endTjDate != null">
+				AND  #{endTjDate,jdbcType=DATE} >= a.tj_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.tj_date DESC
+			</otherwise>
+		</choose>
+
+	</select>
+
+	<select id="findTypeInfoByCreateOrgIds" resultType="java.util.Map">
+		SELECT sd.label  AS "label",
+		count(DISTINCT a.name) AS "count"
+		FROM affair_health_checkup a left join sys_dict sd on a.type = sd.value
+		WHERE a.del_flag = '0'  AND sd.del_flag = '0' AND sd.type = 'affair_health_checkup_type'
+		AND a.unit_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.tj_date, 'yyyy-mm')  = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.tj_date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.tj_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.tj_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.tj_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY sd.label
+	</select>
+	<select id="findHealthReferenceList" resultType="AffairHealthCheckup">
+		select <include refid="affairHealthCheckupColumns"/>
+		from affair_health_checkup a
+		LEFT JOIN sys_office o ON o.id = a.unit_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+		where a.del_flag = '0'
+		${sqlMap.dsf}
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.tj_date, 'yyyy-mm')  = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.tj_date) = #{year}
+			</when>
+			<when test="beginTjDate != null and endTjDate != null">
+				AND a.tj_date between  #{beginTjDate,jdbcType=DATE} and #{endTjDate,jdbcType=DATE}
+			</when>
+			<when test="beginTjDate != null">
+				AND a.tj_date >= #{beginTjDate,jdbcType=DATE}
+			</when>
+			<when test="endTjDate != null">
+				AND  #{endTjDate,jdbcType=DATE} >= a.tj_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="selectIsTiJian" resultType="java.lang.Integer">
+		SELECT
+			count(*)
+		FROM
+			affair_health_checkup
+		WHERE
+			del_flag = '0'
+			AND SUBSTRING (cast ( "tj_date" as VARCHAR ),0,4) BETWEEN #{lastYearDate} AND #{nowYearDate}
+			AND unit_id = #{unitId}
+	</select>
+
+</mapper>

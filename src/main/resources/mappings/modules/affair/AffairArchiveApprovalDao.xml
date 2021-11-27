@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairArchiveApprovalDao">
+    
+	<sql id="affairArchiveApprovalColumns">
+		a.id AS "id",
+		a.reason AS "reason",
+		a.content AS "content",
+		a.unit_opinion AS "unitOpinion",
+		a.unit_person AS "unitPerson",
+		a.unit_date AS "unitDate",
+		a.dep_opinion AS "depOpinion",
+		a.dep_person AS "depPerson",
+		a.dep_date AS "depDate",
+		a.leader_instruction AS "leaderInstruction",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="affairArchiveApprovalJoins">
+      	LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairArchiveApproval">
+		SELECT 
+			<include refid="affairArchiveApprovalColumns"/>
+		FROM affair_archive_approval a
+		<include refid="affairArchiveApprovalJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairArchiveApproval">
+		SELECT 
+			<include refid="affairArchiveApprovalColumns"/>
+		FROM affair_archive_approval a
+		<include refid="affairArchiveApprovalJoins"/>
+
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="reason != null and reason != ''">
+				AND a.reason = #{reason}
+			</if>
+			<if test="content != null and content != ''">
+				AND a.content = #{content}
+			</if>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairArchiveApproval">
+		SELECT 
+			<include refid="affairArchiveApprovalColumns"/>
+		FROM affair_archive_approval a
+		<include refid="affairArchiveApprovalJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_archive_approval(
+			id,
+			reason,
+			content,
+			unit_opinion,
+			unit_person,
+			unit_date,
+			dep_opinion,
+			dep_person,
+			dep_date,
+			leader_instruction,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{reason},
+			#{content},
+			#{unitOpinion},
+			#{unitPerson},
+			#{unitDate},
+			#{depOpinion},
+			#{depPerson},
+			#{depDate},
+			#{leaderInstruction},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_archive_approval SET 	
+			reason = #{reason},
+			content = #{content},
+			unit_opinion = #{unitOpinion},
+			unit_person = #{unitPerson},
+			unit_date = #{unitDate},
+			dep_opinion = #{depOpinion},
+			dep_person = #{depPerson},
+			dep_date = #{depDate},
+			leader_instruction = #{leaderInstruction},
+			create_org_id = #{createBy.office.id},
+			create_id_no = #{createIdNo},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_archive_approval SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_archive_approval SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+</mapper>

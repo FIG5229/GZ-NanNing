@@ -1,0 +1,550 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.exam.dao.ExamLdScoreMonthDao">
+    
+	<sql id="examLdScoreMonthColumns">
+		a.id AS "id",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.job AS "job",
+		a.name AS "name",
+		a.score AS "score",
+		a.matter AS "matter",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.belong_to AS "belongTo",
+		a.workflow_id AS "workflowId",
+		a.person_id AS "personId",
+		a.level AS "level",
+		a.dangan AS "dangan",
+		a.ids AS "ids",
+		a.grades AS "grades"
+	</sql>
+	
+	<sql id="examLdScoreMonthJoins">
+	LEFT JOIN exam_workflow e ON e.id = a.workflow_id
+	LEFT JOIN sys_user s ON s.id = a.person_id
+	</sql>
+    
+	<select id="get" resultType="ExamLdScoreMonth">
+		SELECT 
+			<include refid="examLdScoreMonthColumns"/>
+		FROM exam_ld_score_month a
+		<include refid="examLdScoreMonthJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ExamLdScoreMonth">
+		SELECT
+		A.ID AS "id",
+		C.workunit_name AS "unit",
+		A.unit_id AS "unitId",
+		C.job_abbreviation AS "job",
+		A.NAME AS "name",
+		A.score AS "score",
+		A.matter AS "matter",
+		A.create_by AS "createBy.id",
+		A.create_org_id AS "createOrgId",
+		A.create_id_no AS "createIdNo",
+		A.create_date AS "createDate",
+		A.update_by AS "updateBy.id",
+		A.update_org_id AS "updateOrgId",
+		A.update_id_no AS "updateIdNo",
+		A.update_date AS "updateDate",
+		A.del_flag AS "delFlag",
+		A.belong_to AS "belongTo",
+		A.workflow_id AS "workflowId",
+		A.person_id AS "personId",
+		a.level AS "level",
+		a.dangan AS "dangan",
+		a.grades AS "grades"
+		FROM
+		exam_ld_score_month
+		A LEFT JOIN sys_user b ON A.person_id = b.
+		ID LEFT JOIN personnel_base C ON b.NO = C.id_number
+		left join sys_office o on (o.id = C.workunit_id or o.id = C.actual_unit_id)
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="workflowId">
+				AND	a.workflow_id = #{workflowId}
+			</if>
+			<if test="personId">
+				AND	a.person_id = #{personId}
+			</if>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY
+				cast(nullif(split_part(A.score, '-', 1),'') as double precision) DESC,
+				<!--a.update_date DESC-->
+				cast(nullif(split_part(c.sort, '-', 1),'') as integer),
+				cast(nullif(split_part(c.sort, '-', 2),'')as integer) ,
+				cast(nullif(split_part(c.sort, '-', 3),'')as integer) ,
+				cast(nullif(split_part(c.sort, '-', 4),'')as integer)
+			</otherwise>
+		</choose>
+	</select>
+
+	<!--<select id="findAllChildIdById" resultType="java.lang.String">
+		SELECT a.id
+		FROM exam_ld_score_month a
+		WHERE  (a.ids LIKE '%,'||#{id}||',%') and a.del_flag = '0'
+	</select>-->
+
+	<select id="findListInfo" resultType="ExamLdScoreMonth">
+		SELECT
+		a.name AS "name",
+		A.score AS "score",
+		a.level AS "level",
+		a.dangan AS "dangan",
+		a.person_id AS "personId",
+		C.id AS "personnelBaseId",
+		C.id_number AS "idNumber"
+		FROM
+		exam_ld_score_month
+		A LEFT JOIN sys_user b ON A.person_id = b.
+		ID LEFT JOIN personnel_base C ON b.NO = C.id_number
+		LEFT JOIN exam_workflow ew ON A.workflow_id = ew.id
+		left join exam_workflow_define ewd on ew.flow_template_id = ewd.id
+		LEFT JOIN sys_office o ON c.workunit_id = o.id
+		WHERE
+		A.del_flag = '0'
+		<if test="id != null and id != ''">
+			AND (c.workunit_id = #{id} or o.parent_ids like '%,'||#{id}||',%')
+		</if>
+		AND ewd.exam_type = '7'
+		<!--<choose>
+			<when test="month != null and month !=''">
+				AND ew.time = #{month}
+				&lt;!&ndash;
+					AND TO_CHAR(w.create_date, 'yyyy-mm') &lt;= #{month} &lt;= #{month}
+				&ndash;&gt;
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>-->
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findYearMonthScores" resultType="Map">
+		SELECT A.score AS "score",
+			A.person_id AS "personId",
+			A.NAME AS "name",
+			b.TIME AS "time"
+		FROM
+			exam_ld_score_month
+			A LEFT JOIN exam_workflow b ON A.workflow_id = b.
+			ID LEFT JOIN exam_workflow_define C ON b.flow_template_id = C.ID
+		<where>
+			<if test="null != examCycle">
+				AND C.exam_cycle = #{examCycle}
+			</if>
+			<if test="null != examObjectType">
+			AND C.exam_object_type = #{examObjectType}
+			</if>
+			<if test="null != examType">
+				AND C.exam_type = #{examType}
+			</if>
+			<if test="null != examCycle">
+				AND C.exam_cycle = #{examCycle}
+			</if>
+			<if test="null != year">
+				AND SUBSTRING ( b.TIME, 1, 4 ) = #{year}
+			</if>
+			<if test="null != workflowId">
+				AND A.workflow_id = #{workflowId}
+			</if>
+		</where>
+		ORDER BY b.TIME
+	</select>
+
+	<select id="findAllList" resultType="ExamLdScoreMonth">
+		SELECT 
+			<include refid="examLdScoreMonthColumns"/>
+		FROM exam_ld_score_month a
+		<include refid="examLdScoreMonthJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO exam_ld_score_month(
+			id,
+			unit,
+			unit_id,
+			job,
+			name,
+			score,
+			matter,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			belong_to,
+			workflow_id,
+			person_id,
+			level,
+			dangan,
+			ids
+		) VALUES (
+			#{id},
+			#{unit},
+			#{unitId},
+			#{job},
+			#{name},
+			#{score},
+			#{matter},
+			#{createBy.id},
+			#{createOrgId},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateOrgId},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{belongTo},
+			#{workflowId},
+			#{personId},
+			#{level},
+			#{dangan},
+			#{ids}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE exam_ld_score_month SET 	
+			unit = #{unit},
+			unit_id = #{unitId},
+			job = #{job},
+			name = #{name},
+			score = #{score},
+			matter = #{matter},
+			workflow_id = #{workflowId},
+			person_id = #{personId},
+			level = #{level},
+			dangan = #{dangan},
+			ids = #{ids},
+			grades=#{grades}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE exam_ld_score_month SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<!--    普通民警-->
+	<select id="findInfoByUnitId"  resultType="java.util.HashMap">
+		SELECT
+		w.name "name",
+		SUM(CAST ( w.score AS FLOAT )) AS score
+		-- 		SUM(w.hundred) +100 AS sum
+		FROM exam_ld_score_month w
+		LEFT JOIN exam_workflow ew ON w.workflow_id = ew.id
+		left join exam_workflow_define ewd on ew.flow_template_id = ewd.id
+		LEFT JOIN sys_user s ON s.id = w.person_id
+		LEFT JOIN personnel_base p on p.id_number = s.no
+		WHERE w.del_flag = '0'
+		<if test="id != null and id != ''">
+			AND p.workunit_id = #{id}
+		</if>
+		/*AND w.workflow_id = ew.id
+		AND ew.flow_template_id = ewd.id*/
+		AND ewd.exam_type = '7'
+		<choose>
+			<when test="month != null and month !=''">
+				AND ew.time = #{month}
+				<!--
+					AND TO_CHAR(w.create_date, 'yyyy-mm') &lt;= #{month} &lt;= #{month}
+				-->
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY w.name
+	</select>
+
+
+	<select id="findInfoByUnitIds" resultType="java.util.HashMap">
+		SELECT
+		w.name "name",
+		SUM(CAST ( w.score AS FLOAT )) AS score
+		-- 		SUM(w.hundred) +100 AS sum
+		FROM exam_ld_score_month w
+		LEFT JOIN exam_workflow ew ON w.workflow_id = ew.id
+		left join exam_workflow_define ewd on ew.flow_template_id = ewd.id
+		LEFT JOIN sys_user s ON s.id = w.person_id
+		LEFT JOIN personnel_base p on p.id_number = s.no
+		WHERE w.del_flag = '0'  AND  p.workunit_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+		/*AND w.workflow_id = ew.id
+		AND ew.flow_template_id = ewd.id*/
+		AND ewd.exam_type = '7'
+		<choose>
+			<when test="month != null and month !=''">
+				AND ew.time = #{month}
+				<!--
+                    AND TO_CHAR(w.create_date, 'yyyy-mm') &lt;= #{month} &lt;= #{month}
+                    -->
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY w.name
+	</select>
+
+	<update id="judgeGradesById">
+		UPDATE exam_ld_score_month SET
+		grades = #{grades}
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<select id="findPersonnelMonthExamList"
+			resultType="com.thinkgem.jeesite.modules.exam.entity.ExamLdScoreMonth">
+		SELECT
+		a.name AS "name",
+		A.score AS "score",
+		a.level AS "level",
+		a.dangan AS "dangan",
+		a.grades AS "grades",
+		a.person_id AS "personId",
+		C.id AS "personnelBaseId",
+		C.id_number AS "idNumber"
+		FROM
+		exam_ld_score_month
+		A LEFT JOIN sys_user b ON A.person_id = b.
+		ID LEFT JOIN personnel_base C ON b.NO = C.id_number
+		LEFT JOIN exam_workflow ew ON A.workflow_id = ew.id
+		left join exam_workflow_define ewd on ew.flow_template_id = ewd.id
+		LEFT JOIN sys_office o ON c.actual_unit_id = o.id
+		WHERE
+		A.del_flag = '0'
+		<if test="officeId != null and officeId != ''">
+			AND (o.id = #{officeId} or o.parent_ids like '%,'||#{officeId}||',%')
+		</if>
+		<if test="job != null and job != ''">
+			and c.job_abbreviation = #{job}
+		</if>
+		<if test="jz != null and jz != ''">
+			and c.bmhjz = #{jz}
+		</if>
+		<if test="ageStart != null">
+			and (CURRENT_DATE - c.birthday)/365 &gt;= #{ageStart}
+		</if>
+		<if test="ageEnd != null">
+			and (CURRENT_DATE - c.birthday)/365 &lt;= #{ageEnd}
+		</if>
+		<choose>
+			<when test="examType != null and examType !='' ">
+				AND ewd.exam_type = #{examType} <!--考评类别 5 处领导 6 中基层  7 民警-->
+			</when>
+			<otherwise>
+				AND ewd.exam_type = '7'
+			</otherwise>
+		</choose>
+		AND ewd.exam_cycle = '1'
+		<if test="time != null and time != ''">
+			AND ew.time = #{time}
+		</if>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	<!--中基层-局机关及直属支队领导干部考评情况-月度-->
+	<select id="findPersonnelZJCJJGMonthExamList"
+			resultType="com.thinkgem.jeesite.modules.exam.entity.ExamLdScoreMonth">
+		SELECT
+		a.name AS "name",
+		A.score AS "score",
+		a.level AS "level",
+		a.dangan AS "dangan",
+		a.grades AS "grades",
+		a.person_id AS "personId",
+		C.id AS "personnelBaseId",
+		C.id_number AS "idNumber"
+		FROM
+		exam_ld_score_month
+		A LEFT JOIN sys_user b ON A.person_id = b.
+		ID LEFT JOIN personnel_base C ON b.NO = C.id_number
+		LEFT JOIN exam_workflow ew ON A.workflow_id = ew.id
+		left join exam_workflow_define ewd on ew.flow_template_id = ewd.id
+		LEFT JOIN sys_office o ON c.actual_unit_id = o.id
+		WHERE
+		A.del_flag = '0'
+		AND (
+			c.workunit_id = '1'
+			or
+			o.parent_ids like '%,1,%'
+			and  o.parent_ids not like '%,34,%'
+			and  o.parent_ids not like '%,95,%'
+			and  o.parent_ids not like '%,156,%'
+			and  o.id !='34'
+			and  o.id !='95'
+			and  o.id !='156'
+			)
+			<if test="unitId != null and unitId != ''">
+			AND (o.id = #{unitId} or o.parent_ids like '%,'||#{unitId}||',%')
+            </if>
+		AND ewd.exam_type = '6' <!--考评类别 5 处领导 6 中基层  7 民警-->
+		AND ewd.exam_cycle = '1'
+		<if test="time != null and time != ''">
+			AND ew.time = #{time}
+		</if>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	<!-- 统计分析-人员-中基层-处机关及直属支队领导干部考评情况-月度-->
+	<select id="findPersonnelZJCCJGMonthExamList"
+			resultType="com.thinkgem.jeesite.modules.exam.entity.ExamLdScoreMonth">
+		SELECT
+		a.name AS "name",
+		A.score AS "score",
+		a.level AS "level",
+		a.dangan AS "dangan",
+		a.grades AS "grades",
+		a.person_id AS "personId",
+		C.id AS "personnelBaseId",
+		C.id_number AS "idNumber"
+		FROM
+		exam_ld_score_month A
+		LEFT JOIN sys_user b ON A.person_id = b.ID
+		LEFT JOIN personnel_base C ON b.NO = C.id_number
+		LEFT JOIN exam_workflow ew ON A.workflow_id = ew.id
+		left join exam_workflow_define ewd on ew.flow_template_id = ewd.id
+		LEFT JOIN sys_office o ON c.actual_unit_id = o.id
+		LEFT JOIN sys_user_role ur ON b.id = ur.user_id
+		LEFT JOIN sys_role r ON r.id = ur.role_id
+		WHERE
+		A.del_flag = '0'
+		AND r.id in ('b7a52c2e04b546bbb318eaf11c63c6b5','b942ee845e8e4ee5ab9ebb5962743263','79cd3eb9e1ed4fe392185dd6e48e245e')
+		<!--角色   柳州处机关部门领导,北海处机关部门领导,(南宁处)处机关部门领导-->
+		<if test="officeId != null and officeId != ''">
+			AND r.office_id = #{officeId}
+			AND (c.workunit_id = #{officeId} or o.parent_ids like '%,'||#{officeId}||',%')
+		</if>
+		<if test="unitId != null and unitId != ''">
+		and (o.id = #{unitId} or o.parent_ids like '%,'||#{unitId}||',%')
+        </if>
+		AND ewd.exam_type = '6' <!--考评类别 5 处领导 6 中基层  7 民警-->
+		AND ewd.exam_cycle = '1'
+		<if test="time != null and time != ''">
+			AND ew.time = #{time}
+		</if>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+
+	</select>
+	<select id="findPersonnelZJCDSMonthExamList"
+			resultType="com.thinkgem.jeesite.modules.exam.entity.ExamLdScoreMonth">
+		SELECT
+		a.name AS "name",
+		A.score AS "score",
+		a.level AS "level",
+		a.dangan AS "dangan",
+		a.grades AS "grades",
+		a.person_id AS "personId",
+		C.id AS "personnelBaseId",
+		C.id_number AS "idNumber"
+		FROM
+		exam_ld_score_month A
+		LEFT JOIN sys_user b ON A.person_id = b.ID
+		LEFT JOIN personnel_base C ON b.NO = C.id_number
+		LEFT JOIN exam_workflow ew ON A.workflow_id = ew.id
+		left join exam_workflow_define ewd on ew.flow_template_id = ewd.id
+		LEFT JOIN sys_office o ON c.actual_unit_id = o.id
+		LEFT JOIN sys_user_role ur ON b.id = ur.user_id
+		LEFT JOIN sys_role r ON r.id = ur.role_id
+		WHERE
+		A.del_flag = '0'
+		AND r.id in ('aacf267b35a4481da934b8d1f8d5ad60','e76dc9999c6a49de8b35bbd6493e4bdf','ec6d2b69f9e44710a0f5aab47c88a0ef')
+		<!--角色   南宁处所领导,北海处所领导,柳州处所领导-->
+		<if test="officeId != null and officeId != ''">
+			AND r.office_id = #{officeId}
+			AND (c.workunit_id = #{officeId} or o.parent_ids like '%,'||#{officeId}||',%')
+		</if>
+		<if test="unitId != null and unitId != ''">
+		and (o.id = #{unitId} or o.parent_ids like '%,'||#{unitId}||',%')
+        </if>
+		AND ewd.exam_type = '6' <!--考评类别 5 处领导 6 中基层  7 民警-->
+		AND ewd.exam_cycle = '1'
+		<if test="time != null and time != ''">
+			AND ew.time = #{time}
+		</if>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findMonthList" resultType="ExamLdScoreMonth">
+		select <include refid="examLdScoreMonthColumns"/>, substr(b."time",5,2) as month
+		from exam_ld_score_month a
+		left join exam_workflow b on a.workflow_id = b."id"
+		where a.del_flag = '0' and b.del_flag = '0' and substr(b."time", 5,2) &lt;&gt; ''
+	</select>
+
+	<update id="deleteByWorkflowId">
+	    UPDATE exam_ld_score_month SET
+			del_flag = '1'
+		WHERE workflow_id = #{workflowId}
+    </update>
+</mapper>

@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairWorkLeadDao">
+    
+	<sql id="affairWorkLeadColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.sex AS "sex",
+		a.age AS "age",
+		a.nation AS "nation",
+		a.remarks AS "remarks",
+		a.adjunct AS "adjunct",
+		a.description AS "description",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.party_organization AS partyOrganization,
+		a.party_organization_id AS partyOrganizationId,
+		a.job as "job",
+		a.status AS "status",
+		a.opinion AS "opinion"
+	</sql>
+	
+	<sql id="affairWorkLeadJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairWorkLead">
+		SELECT 
+			<include refid="affairWorkLeadColumns"/>
+		FROM affair_work_lead a
+		<include refid="affairWorkLeadJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairWorkLead">
+		SELECT 
+			<include refid="affairWorkLeadColumns"/>
+		FROM affair_work_lead a LEFT JOIN affair_general_situation s
+		ON s.id = a.party_organization_id
+		<include refid="affairWorkLeadJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+			</if>
+			<!--<if test="treeId != null and treeId != ''">
+				AND (a.party_organization_id = #{treeId} OR s.parent_ids LIKE CONCAT('%,', #{treeId}, ',%'))
+			</if>-->
+			<if test="sex != null and sex != ''">
+				AND a.sex = #{sex}
+			</if>
+			${sqlMap.dsf}
+			AND a.party_organization_id = #{pId}
+		<!--	<choose>
+				<when test="userOffice != null and userOffice != '' ">
+					AND ( o.ID = #{userOffice} OR o.parent_ids LIKE'%,'||#{userOffice}||',%' OR u.ID = #{userOffice} or a.party_organization_id=#{userOffice} )
+				</when>
+				<otherwise>
+					AND ( o.ID = #{userOffice} OR u.ID = #{userOffice} or a.unit_id=#{userOffice})
+				</otherwise>
+			</choose>-->
+
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairWorkLead">
+		SELECT 
+			<include refid="affairWorkLeadColumns"/>
+		FROM affair_work_lead a
+		<include refid="affairWorkLeadJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_work_lead(
+			id,
+			name,
+			sex,
+			age,
+			nation,
+			remarks,
+			adjunct,
+			description,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			party_organization,
+			party_organization_id,
+			job,
+			status,
+			opinion
+		) VALUES (
+			#{id},
+			#{name},
+			#{sex},
+			#{age},
+			#{nation},
+			#{remarks},
+			#{adjunct},
+			#{description},
+			#{createBy.id},
+			#{createOrgId},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateOrgId},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{partyOrganization},
+			#{partyOrganizationId},
+			#{job},
+			#{status},
+			#{opinion}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_work_lead SET 	
+			name = #{name},
+			sex = #{sex},
+			age = #{age},
+			nation = #{nation},
+			remarks = #{remarks},
+			adjunct = #{adjunct},
+			description = #{description},
+			create_org_id = #{createOrgId},
+			create_id_no = #{createIdNo},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateOrgId},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			party_organization = #{partyOrganization},
+			party_organization_id = #{partyOrganizationId},
+			job = #{job},
+			status = #{status},
+			opinion = #{opinion}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_work_lead SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_work_lead SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+		open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<update id="shenHeSave">
+		UPDATE affair_work_lead SET
+			status = #{status},
+			opinion = #{opinion},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+</mapper>

@@ -1,0 +1,373 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairYearThreeOneDao">
+    
+	<sql id="affairYearThreeOneColumns">
+		a.id AS "id",
+		a.year AS "year",
+		a.name AS "name",
+		a.party_organization AS "partyOrganization",
+		a.party_organization_id AS "partyOrganizationId",
+		a.type AS "type",
+		a.date AS "date",
+		a.hold AS "hold",
+		a.note_taker AS "noteTaker",
+		a.agenda AS "agenda",
+		a.person1 AS "person1",
+		a.person2 AS "person2",
+		a.person3 AS "person3",
+		a.file_path AS "filePath",
+		a.add_status AS "addStatus",
+		a.status AS "status",
+		a.reason AS "reason",
+		a.sh_person AS "shPerson",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.person1_id AS "person1Id",
+		a.person2_id AS "person2Id",
+		a.person3_id AS "person3Id"
+	</sql>
+	
+	<sql id="affairYearThreeOneJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairYearThreeOne">
+		SELECT 
+			<include refid="affairYearThreeOneColumns"/>
+		FROM affair_year_three_one a
+		<include refid="affairYearThreeOneJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairYearThreeOne">
+		<choose>
+			<when test="hasAuth == true">/*审核人*/
+				SELECT
+				<include refid="affairYearThreeOneColumns"/>
+				FROM affair_year_three_one a
+				<include refid="affairYearThreeOneJoins"/>
+				LEFT JOIN affair_general_situation s
+				ON s.id = a.party_organization_id
+				where a.del_flag = #{DEL_FLAG_NORMAL} and a.add_status = '2'
+			</when>
+			<otherwise>/*非审核人*/
+				SELECT
+				<include refid="affairYearThreeOneColumns"/>
+				FROM affair_year_three_one a
+				<include refid="affairYearThreeOneJoins"/>
+				LEFT JOIN affair_general_situation s
+				ON s.id = a.party_organization_id
+				where a.del_flag = #{DEL_FLAG_NORMAL}
+			</otherwise>
+		</choose>
+
+		<if test="name != null and name != ''">
+			AND a.name LIKE concat('%',#{name},'%')
+		</if>
+		<if test="partyOrganizationId != null and partyOrganizationId != ''">
+			AND a.party_organization_id = #{partyOrganizationId}
+		</if>
+		<choose>
+			<when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+				AND date_trunc('day',  a.date) between  #{startDate} and #{endDate}
+			</when>
+			<otherwise>
+				<if test="startDate != null and startDate != ''">
+					AND a.date >= #{startDate}
+				</if>
+				<if test="endDate != null and endDate != ''">
+					AND  #{endDate} >= date_trunc('day',  a.date)
+				</if>
+			</otherwise>
+		</choose>
+		<if test="hold != null and hold != ''">
+			AND a.hold LIKE concat('%',#{hold},'%')
+		</if>
+		<if test="noteTaker != null and noteTaker != ''">
+			AND a.note_taker LIKE concat('%',#{noteTaker},'%')
+		</if>
+		<if test="treeId != null and treeId != ''">
+			AND (a.party_organization_id = #{treeId} OR s.parent_ids LIKE CONCAT('%,', #{treeId}, ',%'))
+		</if>
+		<!-- 数据范围过滤 -->
+		${sqlMap.dsf}
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairYearThreeOne">
+		SELECT 
+			<include refid="affairYearThreeOneColumns"/>
+		FROM affair_year_three_one a
+		<include refid="affairYearThreeOneJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+    <select id="selectAllYear" resultType="java.lang.String">
+		SELECT DISTINCT
+			( YEAR )
+		FROM
+			affair_year_three_one
+		WHERE
+			del_flag = '0'
+	</select>
+
+    <select id="selectNum" resultType="java.lang.Integer">
+		SELECT COUNT
+			( ID )
+		FROM
+			affair_year_three_one
+		WHERE
+			del_flag = '0'
+			AND party_organization_id = #{id}
+			AND YEAR = #{year}
+			AND to_char ( "date", 'yyyy-mm-dd HH24:mi:ss:ff' ) = #{time}
+		</select>
+
+	<select id="selectAllUnitId" resultType="java.lang.String">
+		select DISTINCT
+		(party_organization_id)
+		from
+		affair_year_three_one
+		where
+		del_flag = '0'
+	</select>
+
+	<select id="selectType" resultType="java.lang.String">
+		select
+			type
+		from
+			affair_year_three_one
+		where
+		del_flag = '0' and
+			party_organization_id = #{id} and
+			year = #{year}
+	</select>
+
+	<select id="selectTime" resultType="java.lang.Integer">
+		SELECT COUNT
+			( ID )
+		FROM
+			affair_year_three_one
+		WHERE
+			del_flag = '0'
+			AND party_organization_id = #{id}
+			AND YEAR = #{year}
+			AND TYPE = #{type}
+	</select>
+	<select id="selectName" resultType="java.lang.String">
+		select distinct (party_organization)
+		from
+			affair_year_three_one
+		WHERE
+			del_flag = '0'
+			AND party_organization_id = #{unitId}
+	</select>
+	<select id="selectNumYear" resultType="java.lang.Integer">
+		SELECT COUNT
+			( ID )
+		FROM
+			affair_year_three_one
+		WHERE
+			del_flag = '0'
+			AND party_organization_id = #{id}
+			AND YEAR = #{year}
+	</select>
+
+	<insert id="insert">
+		INSERT INTO affair_year_three_one(
+			id,
+			name,
+			party_organization,
+			party_organization_id,
+			type,
+			year,
+			date,
+			hold,
+			note_taker,
+			agenda,
+			person1,
+			person2,
+			person3,
+			file_path,
+			sh_person,
+			add_status,
+			status,
+			reason,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			person1_id,
+			person2_id,
+			person3_id
+		) VALUES (
+			#{id},
+			#{name},
+			#{partyOrganization},
+			#{partyOrganizationId},
+			#{type},
+			#{year},
+			#{date},
+			#{hold},
+			#{noteTaker},
+			#{agenda},
+			#{person1},
+			#{person2},
+			#{person3},
+			#{filePath},
+			#{shPerson},
+			#{addStatus},
+			#{status},
+			#{reason},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{person1Id},
+			#{person2Id},
+			#{person3Id}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_year_three_one SET 	
+			name = #{name},
+			party_organization = #{partyOrganization},
+			type = #{type},
+			date = #{date},
+			hold = #{hold},
+			note_taker = #{noteTaker},
+			agenda = #{agenda},
+			person1 = #{person1},
+			person2 = #{person2},
+			person3 = #{person3},
+			file_path = #{filePath},
+			sh_person = #{shPerson},
+			add_status = #{addStatus},
+			status = #{status},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			person1_id = #{person1Id},
+			person2_id = #{person2Id},
+			person3_id = #{person3Id}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_year_three_one SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="shenHeSave">
+		UPDATE affair_year_three_one SET
+			sh_person = #{affairYearThreeOne.shPerson},
+			status = #{affairYearThreeOne.status},
+			reason = #{affairYearThreeOne.reason},
+			update_date = #{affairYearThreeOne.updateDate}
+		WHERE id = #{affairYearThreeOne.id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_year_three_one SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+		 	open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<select id="selectdzzzyThreeOne" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairYearThreeOne">
+		SELECT
+			*
+		FROM
+			affair_year_three_one
+		WHERE
+			party_organization = #{partyOrganization}
+			AND type = #{type}
+		<choose>
+			<when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+				AND to_date(to_char( date, 'yyyy-mm-dd' ), 'yyyy-mm-dd' ) between #{startDate} and #{endDate}
+			</when>
+			<when test="startDate != null and startDate != ''">
+				AND to_date(to_char( date, 'yyyy-mm-dd' ), 'yyyy-mm-dd' ) >= #{startDate}
+			</when>
+			<when test="endDate != null and endDate != ''">
+				AND  #{endDate} >= to_date(to_char( date, 'yyyy-mm-dd' ), 'yyyy-mm-dd' )
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="selectdzbThreeOne" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairYearThreeOne">
+		SELECT
+		*
+		FROM
+		affair_year_three_one
+		WHERE
+		party_organization = #{partyOrganization}
+		<choose>
+			<when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+				AND date between #{startDate} and #{endDate}
+			</when>
+			<when test="startDate != null and startDate != ''">
+				AND date >= #{startDate}
+			</when>
+			<when test="endDate != null and endDate != ''">
+				AND  #{endDate} >= date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+    <select id="selectHuiyiNumber" resultType="java.lang.Integer">
+	SELECT COUNT
+		( * )
+		FROM
+	affair_year_three_one
+		WHERE
+		party_organization_id = #{unitId}
+		AND to_char( "date", 'yyyy-mm-dd' ) BETWEEN #{yearL} AND #{yearT}
+		AND type = #{type}
+		AND del_flag = '0'
+	</select>
+
+</mapper>

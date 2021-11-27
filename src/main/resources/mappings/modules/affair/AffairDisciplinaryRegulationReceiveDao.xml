@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairDisciplinaryRegulationReceiveDao">
+    
+	<sql id="affairDisciplinaryRegulationReceiveColumns">
+		a.id AS "id",
+		a.dis_reg_id AS "disRegId",
+		a.unit_id AS "unitId",
+		a.order_id AS "orderId"
+	</sql>
+	
+	<sql id="affairDisciplinaryRegulationReceiveJoins">
+	</sql>
+
+    <select id="get" resultType="AffairDisciplinaryRegulationReceive">
+		SELECT 
+			<include refid="affairDisciplinaryRegulationReceiveColumns"/>
+		FROM affair_disciplinary_regulation_receive a
+		<include refid="affairDisciplinaryRegulationReceiveJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairDisciplinaryRegulationReceive">
+		SELECT 
+			<include refid="affairDisciplinaryRegulationReceiveColumns"/>
+		FROM affair_disciplinary_regulation_receive a
+		<include refid="affairDisciplinaryRegulationReceiveJoins"/>
+		<where>
+			
+			<if test="disRegId != null and disRegId != ''">
+				AND a.dis_reg_id = #{disRegId}
+			</if>
+			<if test="unitId != null and unitId != ''">
+				AND a.unit_id = #{unitId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairDisciplinaryRegulationReceive">
+		SELECT 
+			<include refid="affairDisciplinaryRegulationReceiveColumns"/>
+		FROM affair_disciplinary_regulation_receive a
+		<include refid="affairDisciplinaryRegulationReceiveJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_disciplinary_regulation_receive(
+			id,
+			dis_reg_id,
+			unit_id,
+			order_id
+		) VALUES (
+			#{id},
+			#{disRegId},
+			#{unitId},
+			'0'
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_disciplinary_regulation_receive SET 	
+			dis_reg_id = #{disRegId},
+			unit_id = #{unitId},
+			order_id = #{orderId}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM affair_disciplinary_regulation_receive
+		WHERE id = #{id}
+	</update>
+
+	<delete id="deleteByDisRegId">
+		DELETE FROM affair_disciplinary_regulation_receive
+		WHERE dis_reg_id = #{disRegId}
+	</delete>
+</mapper>

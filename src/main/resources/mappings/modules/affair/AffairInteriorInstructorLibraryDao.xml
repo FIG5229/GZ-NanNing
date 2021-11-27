@@ -1,0 +1,373 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairInteriorInstructorLibraryDao">
+    
+	<sql id="affairInteriorInstructorLibraryColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.id_number AS "idNumber",
+		a.sex AS "sex",
+		a.nation AS "nation",
+		a.health AS "health",
+		a.perple_state AS "perpleState",
+		a.telephone AS "telephone",
+		a.birthday AS "birthday",
+		a.blood AS "blood",
+		a.native_place AS "nativePlace",
+		a.alarm AS "alarm",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.job_time AS "jobTime",
+		a.police_time AS "policeTime",
+		a.politics_status AS "politicsStatus",
+		a.organization_time AS "organizationTime",
+		a.department AS "department",
+		a.police_rank AS "policeRank",
+		a.police_classification AS "policeClassification",
+		a.management AS "management",
+		a.job AS "job",
+		a.job_classify AS "jobClassify",
+		a.people_classify AS "peopleClassify",
+		a.instructor_level AS "instructorLevel",
+		a.work_units AS "workUnits",
+		a.work_units_id AS "workUnitsId",
+		a.hire_date AS "hireDate",
+		a.is_show AS "isShow",
+		a.termination_date AS "terminationDate",
+		a.inspection_date AS "inspectionDate",
+		a.judge AS "judge",
+		a.speciality AS "speciality",
+		a.review_the_reason AS "reviewTheReason",
+		a.direction AS "direction",
+		a.instructor_profile AS "instructorProfile",
+		a.work_experience AS "workExperience",
+		a.teach_experience AS "teachExperience",
+		a.education_experience AS "educationExperience",
+		a.scenarist AS "scenarist",
+		a.typical_event AS "typicalEvent",
+		a.adjunct AS "adjunct",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.create_org_id AS "createOrgId",
+		a.update_org_id AS "updateOrgId",
+		a.instructor_category AS "instructorCategory",
+		a.department_id AS "departmentId",
+		a.education AS "education",
+		a.scope AS "scope",
+		a.other AS "other"
+	</sql>
+	
+	<sql id="affairInteriorInstructorLibraryJoins">
+		LEFT JOIN sys_office o ON o.id = a.unit_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairInteriorInstructorLibrary">
+		SELECT 
+			<include refid="affairInteriorInstructorLibraryColumns"/>
+		FROM affair_interior_instructor_library a
+		<include refid="affairInteriorInstructorLibraryJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairInteriorInstructorLibrary">
+		SELECT 
+			<include refid="affairInteriorInstructorLibraryColumns"/>
+		FROM affair_interior_instructor_library a
+		<include refid="affairInteriorInstructorLibraryJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+			</if>
+			<if test="idNumber != null and idNumber != ''">
+				AND a.id_number LIKE
+					<if test="dbName == 'oracle'">'%'||#{idNumber}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{idNumber}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{idNumber},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{idNumber}||'%'</if>
+			</if>
+			<if test="instructorLevel != null and instructorLevel != ''">
+				AND a.instructor_level LIKE
+					<if test="dbName == 'oracle'">'%'||#{instructorLevel}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{instructorLevel}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{instructorLevel},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{instructorLevel}||'%'</if>
+			</if>
+			<if test="instructorCategory != null and instructorCategory != ''">
+				AND a.instructor_category LIKE
+					<if test="dbName == 'oracle'">'%'||#{instructorCategory}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{instructorCategory}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{instructorCategory},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{instructorCategory}||'%'</if>
+			</if>
+			${sqlMap.dsf}
+			<!--<if test="userId != '' and userId != null and officeId != '' and officeId != null ">
+			   AND ( o.ID = #{userId} OR o.parent_ids LIKE'%,'||#{userId}||',%' OR u.ID = #{officeId}  or u.office_id = #{userId})
+			   </if>-->
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairInteriorInstructorLibrary">
+		SELECT 
+			<include refid="affairInteriorInstructorLibraryColumns"/>
+		FROM affair_interior_instructor_library a
+		<include refid="affairInteriorInstructorLibraryJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+    <select id="selectBeanById" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairInteriorInstructorLibrary">
+		SELECT
+			<include refid="affairInteriorInstructorLibraryColumns"/>
+		FROM affair_interior_instructor_library a
+		<where>
+			a.id = #{id}
+		</where>
+	</select>
+
+    <insert id="insert">
+		INSERT INTO affair_interior_instructor_library(
+			id,
+			name,
+			id_number,
+			sex,
+			nation,
+			health,
+			perple_state,
+			telephone,
+			birthday,
+			blood,
+			native_place,
+			alarm,
+			unit,
+			unit_id,
+			job_time,
+			police_time,
+			politics_status,
+			organization_time,
+			department,
+			police_rank,
+			police_classification,
+			management,
+			job,
+			job_classify,
+			people_classify,
+			instructor_level,
+			work_units,
+			work_units_id,
+			hire_date,
+			is_show,
+			termination_date,
+			inspection_date,
+			judge,
+			speciality,
+			review_the_reason,
+			direction,
+			instructor_profile,
+			work_experience,
+			teach_experience,
+			education_experience,
+			scenarist,
+			typical_event,
+			adjunct,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag,
+			create_org_id,
+			update_org_id,
+			instructor_category,
+			department_id,
+			education,
+			scope,
+			other
+		) VALUES (
+			#{id},
+			#{name},
+			#{idNumber},
+			#{sex},
+			#{nation},
+			#{health},
+			#{perpleState},
+			#{telephone},
+			#{birthday},
+			#{blood},
+			#{nativePlace},
+			#{alarm},
+			#{unit},
+			#{unitId},
+			#{jobTime},
+			#{policeTime},
+			#{politicsStatus},
+			#{organizationTime},
+			#{department},
+			#{policeRank},
+			#{policeClassification},
+			#{management},
+			#{job},
+			#{jobClassify},
+			#{peopleClassify},
+			#{instructorLevel},
+			#{workUnits},
+			#{workUnitsId},
+			#{hireDate},
+			#{isShow},
+			#{terminationDate},
+			#{inspectionDate},
+			#{judge},
+			#{speciality},
+			#{reviewTheReason},
+			#{direction},
+			#{instructorProfile},
+			#{workExperience},
+			#{teachExperience},
+			#{educationExperience},
+			#{scenarist},
+			#{typicalEvent},
+			#{adjunct},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag},
+			#{createBy.office.id},
+			#{updateBy.office.id},
+			#{instructorCategory},
+			#{departmentId},
+			#{education},
+			#{scope},
+			#{other}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_interior_instructor_library SET 	
+			name = #{name},
+			id_number = #{idNumber},
+			sex = #{sex},
+			nation = #{nation},
+			health = #{health},
+			perple_state = #{perpleState},
+			telephone = #{telephone},
+			birthday = #{birthday},
+			blood = #{blood},
+			native_place = #{nativePlace},
+			alarm = #{alarm},
+			unit = #{unit},
+			unit_id = #{unitId},
+			job_time = #{jobTime},
+			police_time = #{policeTime},
+			politics_status = #{politicsStatus},
+			organization_time = #{organizationTime},
+			department = #{department},
+			police_rank = #{policeRank},
+			police_classification = #{policeClassification},
+			management = #{management},
+			job = #{job},
+			job_classify = #{jobClassify},
+			people_classify = #{peopleClassify},
+			instructor_level = #{instructorLevel},
+			work_units = #{workUnits},
+			work_units_id = #{workUnitsId},
+			hire_date = #{hireDate},
+			is_show = #{isShow},
+			termination_date = #{terminationDate},
+			inspection_date = #{inspectionDate},
+			judge = #{judge},
+			speciality = #{speciality},
+			review_the_reason = #{reviewTheReason},
+			direction = #{direction},
+			instructor_profile = #{instructorProfile},
+			work_experience = #{workExperience},
+			teach_experience = #{teachExperience},
+			education_experience = #{educationExperience},
+			scenarist = #{scenarist},
+			typical_event = #{typicalEvent},
+			adjunct = #{adjunct},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			update_org_id = #{updateBy.office.id},
+			instructor_category = #{instructorCategory},
+			department_id = #{departmentId},
+			education = #{education},
+			scope = #{scope},
+			other = #{other}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_interior_instructor_library SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_interior_instructor_library SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<select id="countInstructor" resultType="map">
+		select count(a.id) as num ,'南宁处' as label from affair_interior_instructor_library a
+		left join sys_office o on o.id=a.unit_id
+		where a.del_flag='0'and (o."id" = '34' or o."parent_id" ='34' or o.parent_ids like '%34%')
+
+		union all
+		select count(a.id) as num ,'柳州处' as label from affair_interior_instructor_library a
+		left join sys_office o on o.id=a.unit_id
+		where a.del_flag='0'and (o."id" = '95' or o."parent_id" ='95' or o.parent_ids like '%95%')
+
+		union all
+		select count(a.id) as num ,'北海处' as label from affair_interior_instructor_library a
+		left join sys_office o on o.id=a.unit_id
+		where a.del_flag='0'and (o."id" = '156' or o."parent_id" ='156' or o.parent_ids like '%156%')
+
+		union all
+		select count(a.id) as num ,'局机关' as label from affair_interior_instructor_library a
+		left join sys_office o on o.id=a.unit_id
+		where a.del_flag='0'and (o.id = '0' or o.id = '1' or o.parent_id in ('1','307','312','316') or parent_id like '0')
+
+	</select>
+
+	<select id="findJiaoGuanList" resultType="AffairInteriorInstructorLibrary">
+		select <include refid="affairInteriorInstructorLibraryColumns"/>
+		from affair_interior_instructor_library a
+		left join sys_office o on o.id=a.unit_id
+		where a.del_flag='0'
+		<choose>
+			<when test="unitId != 'top'">
+				and (o."id" = #{unitId} or o."parent_id" =#{unitId} or o.parent_ids like '%${unitId}%')
+			</when>
+			<otherwise>
+				and (o.id = '0' or o.id = '1' or o.parent_id in ('1','307','312','316') or parent_id like '0')
+			</otherwise>
+		</choose>
+	</select>
+	
+</mapper>

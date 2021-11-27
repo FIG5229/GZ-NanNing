@@ -1,0 +1,345 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.exam.dao.ExamWorkflowSegmentsTaskDao">
+    
+	<sql id="examWorkflowSegmentsTaskColumns">
+		a.id AS "id",
+		a.workflow_id AS "workflowId",
+		a.segment_id AS "segmentId",
+		a.tag_type AS "tagType",
+		a.work_type AS "workType",
+		a.roles AS "roles",
+		a.person_names AS "personNames",
+		a.ids AS "ids",
+		a.status AS "status",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.row_num AS "rowNum",
+		a.stardard_id AS "standardId"
+	</sql>
+	
+	<sql id="examWorkflowSegmentsTaskJoins">
+		LEFT JOIN sys_user u6 ON u6.id = a.ids
+	</sql>
+
+	<select id="get" resultType="ExamWorkflowSegmentsTask">
+		SELECT 
+			<include refid="examWorkflowSegmentsTaskColumns"/>
+		FROM exam_workflow_segments_task a
+		<include refid="examWorkflowSegmentsTaskJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ExamWorkflowSegmentsTask">
+		SELECT 
+			<include refid="examWorkflowSegmentsTaskColumns"/>
+		FROM exam_workflow_segments_task a
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="workflowId != null and workflowId != ''">
+				AND a.workflow_id = #{workflowId}
+			</if>
+			<if test="tagType != null and tagType != ''">
+				AND a.tag_type = #{tagType}
+			</if>
+			<if test="segmentId != null and segmentId != ''">
+				AND a.segment_id = #{segmentId}
+			</if>
+			<if test="standardId != null and standardId != ''">
+				AND a.stardard_id = #{standardId}
+			</if>
+			<if test="ids != null and ids != ''">
+				AND a.ids like '%'||#{ids}||'%'
+			</if>
+			<if test="rowNum != null and rowNum != ''">
+				AND a.row_num = #{rowNum}
+			</if>
+		</where>
+		ORDER BY a.row_num asc
+	</select>
+
+	<select id="findListNumber" resultType="java.lang.String">
+		SELECT
+		count(1) AS "number"
+		FROM exam_workflow_segments_task a
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="workflowId != null and workflowId != ''">
+				AND a.workflow_id = #{workflowId}
+			</if>
+			<if test="tagType != null and tagType != ''">
+				AND a.tag_type = #{tagType}
+			</if>
+			<if test="segmentId != null and segmentId != ''">
+				AND a.segment_id = #{segmentId}
+			</if>
+			<if test="standardId != null and standardId != ''">
+				AND a.stardard_id = #{stardardId}
+			</if>
+			<if test="ids != null and ids != ''">
+				AND a.ids like '%'||#{ids}||'%'
+			</if>
+		</where>
+	</select>
+
+	<select id="findAssignListNumber" resultType="Map">
+		SELECT
+		a.segment_id AS "segmentId",
+		COUNT( 1 ) AS "number"
+		FROM exam_workflow_segments_task a
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			AND a.ids IS NOT NULL
+			<if test="workflowId != null and workflowId != ''">
+				AND a.workflow_id = #{workflowId}
+			</if>
+			<if test="tagType != null and tagType != ''">
+				AND a.tag_type = #{tagType}
+			</if>
+			<if test="segmentId != null and segmentId != ''">
+				AND a.segment_id = #{segmentId}
+			</if>
+			<if test="standardId != null and standardId != ''">
+				AND a.stardard_id = #{stardardId}
+			</if>
+			<if test="templatesIds != null and templatesIds != ''">
+				and a.stardard_id in <foreach collection="templatesIds" item="item" index="index" open="(" close=")" separator=",">
+					#{item}
+				</foreach>
+			</if>
+			<if test="ids != null and ids != ''">
+				AND a.ids like '%'||#{ids}||'%'
+			</if>
+		</where>
+		GROUP BY a.segment_id
+	</select>
+	
+	<select id="findAllList" resultType="ExamWorkflowSegmentsTask">
+		SELECT 
+			<include refid="examWorkflowSegmentsTaskColumns"/>
+		FROM exam_workflow_segments_task a
+		<include refid="examWorkflowSegmentsTaskJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+    <insert id="insert">
+		INSERT INTO exam_workflow_segments_task(
+			id,
+			workflow_id,
+			segment_id,
+			tag_type,
+			work_type,
+			roles,
+			person_names,
+			ids,
+			status,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			row_num,
+			stardard_id
+		) VALUES (
+			#{id},
+			#{workflowId},
+			#{segmentId},
+			#{tagType},
+			#{workType},
+			#{roles},
+			#{personNames},
+			#{ids},
+			#{status},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{rowNum},
+			#{standardId}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE exam_workflow_segments_task SET
+			workflow_id = #{workflowId},
+			segment_id = #{segmentId},
+			tag_type = #{tagType},
+			work_type = #{workType},
+			roles = #{roles},
+			person_names = #{personNames},
+			ids = #{ids},
+			status = #{status},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			row_num = #{rowNum},
+			stardard_id = #{standardId}
+		WHERE id = #{id}
+	</update>
+
+	<update id="updateAssignData"  parameterType="java.util.List">
+		<foreach collection="list" item="item" index="index" open="" close="" separator=";">
+		UPDATE exam_workflow_segments_task
+		<set>
+			<if test="null != item.tagType">
+				tag_type = #{item.tagType},
+			</if>
+			<if test="null != item.workType">
+				work_type = #{item.workType},
+			</if>
+			<if test="null != item.roles">
+				roles = #{item.roles},
+			</if>
+			<if test="null != item.personNames">
+				person_names = #{item.personNames},
+			</if>
+			<if test="null != item.ids">
+				ids = #{item.ids},
+			</if>
+		</set>
+		<where>
+			<if test="null != item.workflowId">
+				AND workflow_id = #{item.workflowId}
+			</if>
+			<if test="null != item.segmentId">
+				AND segment_id = #{item.segmentId}
+			</if>
+			<if test="null != item.standardId">
+				AND stardard_id = #{item.standardId}
+			</if>
+			<if test="null != item.rowNum">
+				AND row_num = #{item.rowNum}
+			</if>
+		</where>
+		</foreach>
+	</update>
+	
+	<update id="delete">
+		UPDATE exam_workflow_segments_task SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+    <select id="findSumByWdIdAndSegId" resultType="java.lang.Integer">
+        select count(id) from exam_workflow_segments_task t where  t.workflow_id = #{wdId} and t.segment_id = #{segId}
+    </select>
+
+    <select id="findNumByWdIdAndSegIdAndIds" resultType="java.lang.Integer">
+        select count(id) from exam_workflow_segments_task t where t.workflow_id = #{wdId} and t.workflow_id = #{wdId} and t.segment_id = #{segId} and t.ids NOTNULL
+    </select>
+
+	<select id="findAllByStardardId" resultType="java.util.HashMap">
+		select d.item_value ,d.item_id,t.column_name from ( SELECT
+				id,column_name
+				FROM
+					exam_standard_template_item_define estid
+				WHERE
+			estid.template_id = ( SELECT td.id FROM exam_standard_template_define td WHERE td.exam_stardard_id = #{stardardId} ) )T
+			LEFT join exam_standard_template_data d on t.id = d.item_id
+	</select>
+
+	<select id="findWorkflowId" resultType="java.lang.String">
+		SELECT
+		a.workflow_id
+		FROM exam_workflow_segments_task a
+		<where>
+			a.del_flag = '0'
+			<if test="tagType != null and tagType != ''">
+				AND a.tag_type = #{tagType}
+			</if>
+			<if test="segmentId != null and segmentId != ''">
+				AND a.segment_id = #{segmentId}
+			</if>
+		</where>
+	</select>
+
+	<delete id="deleteTask">
+		delete from  exam_workflow_segments_task t
+		WHERE t.workflow_id =#{workflowId} AND t.tag_type not in (
+		<foreach collection="tagTypeList" item="tagType" index="index" separator=",">
+			#{tagType}
+		</foreach>
+		)
+	</delete>
+	<delete id="deleteAllByWorkflowId">
+		delete from  exam_workflow_segments_task t
+		WHERE t.workflow_id =#{workflowId}
+	</delete>
+
+	<select id="getAllTaskSegmentList" parameterType="Map" resultType="Map">
+		SELECT
+		A.*
+		,B.sort
+		FROM
+		exam_workflow_segments_task A,
+		exam_workflow_segments_define B,
+		exam_workflow_define C
+		WHERE
+		A.segment_id = B.ID
+		AND A.workflow_id = C.ID
+		AND A.del_flag = '0'
+		AND B.del_flag = '0'
+		AND C.del_flag = '0'
+		<if test="null != workflowId">
+			A.workflow_id = ${workflowId}
+		</if>
+	</select>
+
+	<update id="deleteByStandardId">
+		update exam_workflow_segments_task
+		set del_flag = '1'
+		where stardard_id = #{standardId}
+	</update>
+
+	<update id="deleteByStandardIdAndNum">
+		update exam_workflow_segments_task
+		set del_flag = '1'
+		where stardard_id = #{standardId} and row_num = #{rowNum}
+	</update>
+
+	<update id="updateTaskByWorkflowId">
+		update exam_workflow_segments_task
+		set del_flag = '1'
+		where workflow_id = #{workflowId}
+		and  stardard_id not in (
+			<foreach collection="templateIds" item="templateId" index="index" separator=",">
+				#{templateId}
+			</foreach>
+		)
+	</update>
+
+    <delete id="deleteByIds">
+		delete from exam_workflow_segments_task
+		where id in <foreach collection="ids" open="(" separator=","  close=")" item="id" >
+		#{id}
+        </foreach>
+	</delete>
+
+</mapper>

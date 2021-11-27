@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairThemeActivityDao">
+    
+	<sql id="affairThemeActivityColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.start_time AS "startTime",
+		a.end_time AS "endTime",
+		a.type AS "type",
+		a.place AS "place",
+		a.join_person AS "joinPerson",
+		a.workflow AS "workflow",
+		a.material_path AS "materialPath",
+		a.party_organization_name AS "partyOrganizationName",
+		a.party_organization_id AS "partyOrganizationId",
+		a.hold_unit_name AS "holdUnitName",
+		a.hold_unit_id AS "holdUnitId",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="affairThemeActivityJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairThemeActivity">
+		SELECT 
+			<include refid="affairThemeActivityColumns"/>
+		FROM affair_theme_activity a
+		<include refid="affairThemeActivityJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairThemeActivity">
+		SELECT 
+			<include refid="affairThemeActivityColumns"/>
+		FROM affair_theme_activity a
+		<include refid="affairThemeActivityJoins"/>
+		LEFT JOIN affair_general_situation s
+		ON s.id = a.party_organization_id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE concat('%',#{name},'%')
+			</if>
+			<choose>
+				<when test="startTime != null and startTime != '' and endTime != null and endTime != ''">
+					AND ( #{startTime} between date_trunc('day',  a.start_time)  and date_trunc('day',  a.end_time) or #{endTime} between  date_trunc('day',  a.start_time)  and date_trunc('day',  a.end_time) )
+				</when>
+				<when test="startTime != null and startTime != ''">
+					AND #{startTime} between date_trunc('day',  a.start_time) and date_trunc('day',  a.end_time)
+				</when>
+				<when test="endTime != null and endTime != ''">
+					AND #{endTime} between date_trunc('day',  a.start_time) and date_trunc('day',  a.end_time)
+				</when>
+				<otherwise>
+
+				</otherwise>
+			</choose>
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+			<if test="place != null and place != ''">
+				AND a.place LIKE concat('%',#{place},'%')
+			</if>
+			<if test="joinPerson != null and joinPerson != ''">
+				AND a.join_person LIKE concat('%',#{joinPerson},'%')
+			</if>
+			<if test="partyOrganizationId != null and partyOrganizationId != ''">
+				AND a.party_organization_id = #{partyOrganizationId}
+			</if>
+			<if test="holdUnitId != null and holdUnitId != ''">
+				AND a.hold_unit_id = #{holdUnitId}
+			</if>
+			<if test="treeId != null and treeId != ''">
+				AND (a.party_organization_id = #{treeId} OR s.parent_ids LIKE CONCAT('%,', #{treeId}, ',%'))
+			</if>
+			<!-- 数据范围过滤 -->
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairThemeActivity">
+		SELECT 
+			<include refid="affairThemeActivityColumns"/>
+		FROM affair_theme_activity a
+		<include refid="affairThemeActivityJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_theme_activity(
+			id,
+			name,
+			start_time,
+			end_time,
+			type,
+			place,
+			join_person,
+			workflow,
+			material_path,
+			party_organization_name,
+			party_organization_id,
+			hold_unit_name,
+			hold_unit_id,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{name},
+			#{startTime},
+			#{endTime},
+			#{type},
+			#{place},
+			#{joinPerson},
+			#{workflow},
+			#{materialPath},
+			#{partyOrganizationName},
+			#{partyOrganizationId},
+			#{holdUnitName},
+			#{holdUnitId},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_theme_activity SET 	
+			name = #{name},
+			start_time = #{startTime},
+			end_time = #{endTime},
+			type = #{type},
+			place = #{place},
+			join_person = #{joinPerson},
+			workflow = #{workflow},
+			material_path = #{materialPath},
+			party_organization_name = #{partyOrganizationName},
+			party_organization_id = #{partyOrganizationId},
+			hold_unit_name = #{holdUnitName},
+			hold_unit_id = #{holdUnitId},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_theme_activity SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_theme_activity SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+			 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+</mapper>

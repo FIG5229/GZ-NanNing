@@ -1,0 +1,705 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairTjRegisterDao">
+    
+	<sql id="affairTjRegisterColumns">
+		a.id AS "id",
+		a.police_no AS "policeNo",
+		a.party_branch AS "partyBranch",
+		a.party_branch_id AS "partyBranchId",
+		a.name AS "name",
+		a.id_number AS "idNumber",
+		a.birthday AS "birthday",
+		a.date AS "date",
+		a.job AS "job",
+		a.sex AS "sex",
+		a.remark AS "remark",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.sort AS "sort"
+	</sql>
+	
+	<sql id="affairTjRegisterJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+
+	<select id="get" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairTjRegister">
+		SELECT 
+			<include refid="affairTjRegisterColumns"/>
+		FROM affair_tj_register a
+		<include refid="affairTjRegisterJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairTjRegister">
+		SELECT 
+			<include refid="affairTjRegisterColumns"/>
+		FROM affair_tj_register a
+		<include refid="affairTjRegisterJoins"/>
+		LEFT JOIN affair_tw_base b ON b.id = a.party_branch_id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="policeNo != null and policeNo != ''">
+				AND a.police_no LIKE '%'||#{policeNo}||'%'
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE '%'||#{name}||'%'
+			</if>
+			<choose>
+				<when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+					AND a.date between #{startDate} and #{endDate}
+				</when>
+				<when test="startDate != null and startDate != ''">
+					AND a.date >= #{startDate}
+				</when>
+				<when test="endDate != null and endDate != ''">
+					AND  #{endDate} >= a.date
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			<if test="job != null and job != ''">
+				AND a.job = #{job}
+			</if>
+			<if test="partyBranchId != null and partyBranchId != ''">
+				AND (a.party_branch_id = #{partyBranchId} OR b.parent_ids LIKE CONCAT('%,', #{partyBranchId}, ',%'))
+			</if>
+			<if test="idNumber != null and idNumber != ''">
+				AND a.id_number LIKE concat('%',#{idNumber},'%')
+			</if>
+			<!--${sqlMap.dsf}-->
+		</where>
+	<!--	<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.sort ASC
+			</otherwise>
+		</choose>-->
+	</select>
+
+		<!--统计分析查询明细-->
+		<select id="findEducationPage" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairTjRegister">
+			SELECT
+			<include refid="affairTjRegisterColumns"/> ,x."name" as education
+			FROM affair_tj_register a
+
+			LEFT JOIN personnel_xueli x
+			ON A.id_number = x.id_number and x.start_date = (select max(start_date) from personnel_xueli where id_number =a.id_number )
+			<!--LEFT JOIN sys_office o ON o.id = a.create_org_id-->
+			LEFT JOIN affair_tw_base tb ON tb.id = A.party_branch_id
+			LEFT JOIN sys_user u ON u.id = a.create_by
+			<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+
+
+			<if test="education != null and education != ''">
+				and (x.name like '%${education}%')
+			</if>
+
+			<if test="partyBranchId != null and partyBranchId != ''">
+				AND (a.party_branch_id = #{partyBranchId} OR u.parent_ids LIKE CONCAT('%,', #{partyBranchId}, ',%'))
+			</if>
+			<choose>
+				<when test="month != null and month !=''">
+					AND TO_CHAR(a.create_date, 'yyyy-mm') = #{month}
+				</when>
+				<when test="year != null and year !=''">
+					AND extract(year from a.create_date) = #{year}
+				</when>
+				<when test="startDate != null and endDate != null">
+					AND a.create_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+				</when>
+				<when test="startDate != null">
+					AND a.create_date >= #{startDate,jdbcType=DATE}
+				</when>
+				<when test="endDate != null">
+					AND  #{endDate,jdbcType=DATE} >= a.create_date
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+				AND (tb.parent_ids LIKE'%,' || #{officeId} || ',%' OR tb.parent_id = #{officeId} )
+			<!--${sqlMap.dsf}-->
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	<!--统计分析政治面貌查询明细-->
+		<select id="findPoliticalPage" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairTjRegister">
+		SELECT
+			<include refid="affairTjRegisterColumns"/>
+		FROM affair_tj_register a
+		<include refid="affairTjRegisterJoins"/>
+
+		left join personnel_base b on b.id_number = a.id_number
+		LEFT JOIN affair_tw_base tb ON tb.id = A.party_branch_id
+		left join sys_dict d on d."value" = b.politics_face
+
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			and d.TYPE = 'political_status'
+
+			<if test="label != null and label != ''">
+				and d.label like '%${label}%'
+			</if>
+			AND (tb.parent_ids LIKE'%,' || #{officeId} || ',%' OR tb.parent_id = #{officeId} )
+			<if test="partyBranchId != null and partyBranchId != ''">
+				AND (a.party_branch_id = #{partyBranchId} OR t.parent_ids LIKE CONCAT('%,', #{partyBranchId}, ',%'))
+			</if>
+
+			<!--${sqlMap.dsf}-->
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findAllList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairTjRegister">
+		SELECT 
+			<include refid="affairTjRegisterColumns"/>
+		FROM affair_tj_register a
+		<include refid="affairTjRegisterJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findInfoByIdNumber" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairTjRegister">
+		SELECT
+			<include refid="affairTjRegisterColumns"/>
+		FROM affair_tj_register a
+		where a.del_flag = '0' and a.id_number = #{idNumber} order by a.update_date desc limit 1
+	</select>
+
+	<insert id="insert">
+		INSERT INTO affair_tj_register(
+			id,
+			police_no,
+			party_branch,
+			party_branch_id,
+			name,
+			id_number,
+			birthday,
+			date,
+			job,
+			sex,
+			remark,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			sort
+		) VALUES (
+			#{id},
+			#{policeNo},
+			#{partyBranch},
+			#{partyBranchId},
+			#{name},
+			#{idNumber},
+			#{birthday},
+			#{date},
+			#{job},
+			#{sex},
+			#{remark},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{sort}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_tj_register SET 	
+			police_no = #{policeNo},
+			party_branch = #{partyBranch},
+			party_branch_id = #{partyBranchId},
+			name = #{name},
+			id_number = #{idNumber},
+			birthday = #{birthday},
+			date = #{date},
+			job = #{job},
+			sex = #{sex},
+			remark = #{remark},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			sort = #{sort}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_tj_register SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	<update id="deleteByIds">
+		UPDATE affair_tj_register SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+			 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<select id="getGroup" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairTjRegister">
+		SELECT
+		a.party_branch
+		FROM affair_tj_register a
+		<include refid="affairTjRegisterJoins"/>
+		WHERE a.id_number = #{idNumber}
+		AND a.del_flag = '0'
+	</select>
+
+    <select id="findListByIdNo" resultType="java.lang.String">
+		select a.id from affair_tj_register a where a.id_number = #{idNumber} and a.del_flag = '0'
+	</select>
+
+    <delete id="deleteById">
+		delete from affair_tj_register a where a.id_number = #{idNumber}
+	</delete>
+
+	<select id="findListByPartyBranchId"
+			resultType="com.thinkgem.jeesite.modules.affair.entity.AffairTjRegister">
+		SELECT
+			a.id AS "id", a.id_number AS "idNumber", a.name AS "name"
+		FROM affair_tj_register a
+		WHERE a.del_flag = '0'
+			AND a.party_branch_id = #{partyBranchId}
+		ORDER BY a.name
+	</select>
+
+	<select id="findByIds" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairTjRegister">
+		select <include refid="affairTjRegisterColumns"/>
+		from affair_tj_register a where id in <foreach collection="ids" item="item" index="index"
+															 open="(" separator="," close=")">#{item}</foreach>
+	</select>
+
+    <select id="getPartyBranchIdByIdNo" resultType="java.lang.String">
+		SELECT
+		a.party_branch_id
+		FROM affair_tj_register a
+		WHERE a.id_number = #{idNumber}
+		AND a.del_flag = '0'
+	</select>
+
+    <select id="getPartyBranchIdByIds" resultType="java.lang.String">
+		SELECT
+		a.party_branch_id AS "partyBranchId"
+		FROM affair_tj_register a
+		WHERE a.id IN (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+		AND a.del_flag = '0'
+	</select>
+
+	<select id="findTuanQingAge" resultType="map">
+
+		select count(1) as sum,
+		(
+		select count(1)
+		from affair_tj_register a
+		LEFT JOIN affair_tw_base T ON T.ID = A.party_branch_id
+		WHERE a.del_flag = '0'and (CURRENT_DATE - a.birthday)/365 &lt; #{smailAge}
+		AND (T.parent_ids LIKE'%,' || #{officeId} || ',%' OR T.parent_id = #{officeId})
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.create_date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.create_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.create_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.create_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		) as smail,
+		(
+		select count(1)
+		from affair_tj_register a
+		LEFT JOIN affair_tw_base T ON T.ID = A.party_branch_id
+		WHERE a.del_flag = '0' and (CURRENT_DATE - a.birthday)/365 &lt; #{bigAge} and (CURRENT_DATE - a.birthday)/365 > #{smailAge}
+		AND (T.parent_ids LIKE'%,' || #{officeId} || ',%' OR T.parent_id = #{officeId})
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.create_date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.create_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.create_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.create_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>) as big
+
+		from affair_tj_register a
+		where a.del_flag = '0'
+
+	</select>
+
+	<select id="findAgeList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairTjRegister">
+		select <include refid="affairTjRegisterColumns"/>
+		from affair_tj_register a
+		LEFT JOIN affair_tw_base T ON T.ID = A.party_branch_id
+		where a.del_flag = '0'
+		AND (T.parent_ids LIKE'%,' || #{partyBranchId} || ',%' OR T.parent_id = #{partyBranchId})
+		<choose>
+			<when test="label == '35'">
+				and (CURRENT_DATE - a.birthday)/365 &lt; ${label} and (CURRENT_DATE - a.birthday)/365 > 28
+			</when>
+			<when test="label == '28'">
+				and (CURRENT_DATE - a.birthday)/365 &lt; ${label}
+			</when>
+		</choose>
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.create_date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.create_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.create_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.create_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findEducation" resultType="map">
+		--统计学历
+		SELECT COUNT( A.ID ) AS num,
+		'研究生及以上' AS label
+		FROM
+			affair_tj_register A
+		LEFT JOIN personnel_xueli P
+		ON A.id_number = P.id_number and p.start_date = (select max(start_date) from personnel_xueli where id_number =a.id_number )
+			<!--LEFT JOIN sys_office o ON o.id = a.create_org_id-->
+			LEFT JOIN affair_tw_base tb ON tb.id = A.party_branch_id
+			LEFT JOIN sys_user t ON t.id = a.create_by
+		WHERE
+			A.del_flag = '0'
+			AND ( P."name" LIKE'%研究生%' OR P."name" LIKE'%博士%'  OR P."name" LIKE'%硕士%' )
+			AND (tb.parent_ids LIKE'%,' || #{officeId} || ',%' OR tb.parent_id = #{officeId})
+			<!--${officeId}-->
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.create_date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.create_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.create_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.create_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		label
+		UNION ALL
+		SELECT COUNT( A.ID ) AS num,
+			'本科' AS label
+		FROM
+			affair_tj_register A
+		LEFT JOIN personnel_xueli P
+		ON A.id_number = P.id_number and p.start_date = (select max(start_date) from personnel_xueli where id_number =a.id_number )
+		<!--LEFT JOIN sys_office o ON o.id = a.create_org_id-->
+		LEFT JOIN affair_tw_base tb ON tb.id = A.party_branch_id
+		LEFT JOIN sys_user t ON t.id = a.create_by
+		WHERE
+			A.del_flag = '0'
+			and (P."name" LIKE'%本科%'or P."name" LIKE'%大学%')
+ 			AND(tb.parent_ids LIKE'%,' || #{officeId} || ',%' OR tb.parent_id = #{officeId})
+		<!--${officeId}-->
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.create_date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.create_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.create_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.create_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		label
+		UNION ALL
+		SELECT COUNT( A.ID ) AS num,
+			'专科' AS label
+		FROM
+			affair_tj_register A
+		LEFT JOIN personnel_xueli P
+		ON A.id_number = P.id_number and p.start_date = (select max(start_date) from personnel_xueli where id_number =a.id_number )
+		<!--LEFT JOIN sys_office o ON o.id = a.create_org_id-->
+		LEFT JOIN affair_tw_base tb ON tb.id = A.party_branch_id
+		LEFT JOIN sys_user t ON t.id = a.create_by
+		WHERE
+			A.del_flag = '0'
+			and (P."name" LIKE'%专科%' or P."name" LIKE'%大专%')
+			AND (tb.parent_ids LIKE'%,' || #{officeId} || ',%'OR tb.parent_id = #{officeId})
+			<!--${officeId}-->
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.create_date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.create_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.create_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.create_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		label
+		<!--
+		使用这种注释 下边的 #{}不会有影响
+		UNION ALL
+		select count(1), '总数' as lable
+		from affair_tj_register a
+		LEFT JOIN affair_tw_base T ON T.ID = A.party_branch_id
+		WHERE
+			A.del_flag = '0'
+			AND (T.parent_ids LIKE'%,' || #{officeId} || ',%'OR T.parent_id = #{officeId})
+-->
+	</select>
+	<select id="countPolitical" resultType="map">
+		select count(a.id) as num ,d.label from affair_tj_register a
+		left join personnel_base b on a.id_number=b.id_number
+		left join sys_dict d on d."value" = b.politics_face
+		left join affair_tw_base tb on a.party_branch_id = tb.id
+		<!--LEFT JOIN sys_office o ON o.id = a.create_org_id-->
+		LEFT JOIN sys_user u ON u.id = a.create_by
+		where a.del_flag = '0'
+		and d.TYPE = 'political_status'
+		AND (tb.parent_ids LIKE'%,' || #{officeId} || ',%' OR tb.parent_id = #{officeId} )
+		<!--${officeId}-->
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.create_date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.create_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.create_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.create_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY d.label;
+	</select>
+
+	<select id="findTourFee" resultType="map">
+		select
+		count(a.id),
+		sum(a.amount)
+		from affair_group_management a
+		left join affair_tw_base t on t.id=a.group_id
+		where a.del_flag = '0'
+		<!--select count(a."id"),sum(b.amount)  from affair_tj_register a
+		left join affair_group_management b on a.id_number=b.payer_num
+		left join affair_tw_base t on t.id=b.group_id
+		WHERE
+		a.del_flag = '0' and b.del_flag = '0'-->
+
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.payment_time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.payment_time) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.payment_time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.payment_time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.payment_time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		and (t.parent_ids like '%,' || #{officeId} || ',%' or t.parent_id=#{officeId})
+	</select>
+
+	<select id="countCadres" resultType="map">
+		select count(1) as num ,sd.label as label
+		from affair_tj_register a
+		left join sys_dict sd on sd."value" = a.job
+		left join affair_tw_base t on t.id=a.party_branch_id
+		WHERE
+		a.del_flag = '0' and sd."type" = 'affair_tnjob' and a.job &lt;&gt; '1'
+		and (t.parent_ids like '%,' || #{officeId} || ',%' or t.parent_id=#{officeId})
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.create_date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.create_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.create_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.create_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY sd.label
+	</select>
+
+	<select id="findCadresList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairTjRegister">
+		select <include refid="affairTjRegisterColumns"/>
+		from affair_tj_register a
+		left join sys_dict sd on sd."value" = a.job
+		left join affair_tw_base t on t.id=a.party_branch_id
+		WHERE
+		a.del_flag = '0' and sd."type" = 'affair_tnjob'
+		and (t.parent_ids like '%,' || #{partyBranchId} || ',%' or t.parent_id=#{partyBranchId})
+		and sd.label = #{label}
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.create_date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.create_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.create_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.create_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findPersonNotInList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairTjRegister">
+		select <include refid="affairTjRegisterColumns"/>
+		from affair_tj_register a
+		where a.del_flag = '0' and a.party_branch_id in (select party_branch_id from affair_tj_register where id_number in
+			(
+				<foreach collection="idNumbers" item="id" index="index" separator=",">
+					#{id}
+				</foreach>
+			)
+		)
+		and a.id_number not in
+		(
+			<foreach collection="idNumbers" item="id" index="index" separator=",">
+				#{id}
+			</foreach>
+		)
+	</select>
+
+</mapper>

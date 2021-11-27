@@ -1,0 +1,1284 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairDisciplinaryActionDao">
+
+	<sql id="affairDisciplinaryActionColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.sex AS "sex",
+		a.id_number AS "idNumber",
+		a.disciplinary_type AS "disciplinaryType",
+		a.sub_option AS "subOption",
+		a.zz_sub_option AS "zzSubOption",
+		a.nature AS "nature",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.siren AS "siren",
+		a.violations AS "violations",
+		a.annex AS "annex",
+		a.reviewer AS "reviewer",
+		a.audir_opinion AS "audirOpinion",
+		a.approval_status AS "approvalStatus",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.personal_num AS "personalNum",
+		a.chuli AS "chuli",
+		a.zhengzhi_face AS  "zhengzhiFace",
+		a.xz_sub_option AS "xzSubOption",
+		a.dj_sub_option	AS "djSubOption",
+		a.ry_sub_option	AS "rySubOption",
+		a.push_type AS "pushType",
+		a.file_num AS "fileNum",
+		a.approval_date AS "approvalDate",
+		a.influence_period AS "influencePeriod",
+		a.lr_date AS "lrDate",
+		a.chf_date AS "chfDate",
+		a.qx_unit_id AS "qxUnitId",
+		a.job AS "job",
+		a.job_level AS "jobLevel",
+		a.cf_unit AS "cfUnit",
+		a.is_lian AS "isLian",
+		a.sifa AS "sifa",
+		a.zuzhi AS "zuzhi",
+		a.other AS  "other",
+		a.date AS "date",
+		a.org AS "org",
+		a.org_id AS "orgId"
+	</sql>
+
+	<sql id="affairDisciplinaryActionJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+
+	<select id="get" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairDisciplinaryAction">
+		SELECT
+		<include refid="affairDisciplinaryActionColumns"/>
+		FROM affair_disciplinary_action a
+		<include refid="affairDisciplinaryActionJoins"/>
+		WHERE a.id = #{id}
+	</select>
+
+	<select id="findList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairDisciplinaryAction">
+		SELECT
+		<include refid="affairDisciplinaryActionColumns"/>
+		FROM affair_disciplinary_action a
+		<include refid="affairDisciplinaryActionJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE '%'||#{name}||'%'
+			</if>
+			<if test="zhengzhiFace != null and zhengzhiFace != ''">
+				AND a.zhengzhi_face = #{zhengzhiFace}
+			</if>
+			<!--<if test="disciplinaryType != null and disciplinaryType != '' and subOption != null and subOption != '' and zzSubOption != null and zzSubOption != ''">
+				AND a.disciplinary_type = #{disciplinaryType} AND a.sub_option = #{subOption} AND a.zz_sub_option = #{zzSubOption}
+			</if>-->
+			<if test="disciplinaryType != null and disciplinaryType != ''">
+				AND a.disciplinary_type = #{disciplinaryType}
+			</if>
+			<if test="subOption != null and subOption != ''">
+				AND a.sub_option = #{subOption}
+			</if>
+			<if test="zzSubOption != null and zzSubOption != ''">
+				AND a.zz_sub_option = #{zzSubOption}
+			</if>
+			<if test="xzSubOption != null and xzSubOption != ''">
+				AND a.xz_sub_option = #{xzSubOption}
+			</if>
+			<if test="startYear != null and  startYear != ''">
+				AND a.approval_date >= #{startYear}
+			</if>
+			<if test="otherYear != null and  otherYear != ''">
+				AND TO_CHAR(a.approval_date, 'yyyy') = #{otherYear}
+			</if>
+			<choose>
+				<when test="startApprovalDate != null and startApprovalDate != '' and endApprovalDate != null and endApprovalDate != ''">
+					AND a.approval_date between #{startApprovalDate} and #{endApprovalDate}
+				</when>
+				<when test="startApprovalDate != null and startApprovalDate != ''">
+					AND a.approval_date >= #{startApprovalDate}
+				</when>
+				<when test="endApprovalDate != null and endApprovalDate != ''">
+					AND  #{endApprovalDate} >=a.approval_date
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			<choose>
+				<when test="startInfluencePeriod != null and startInfluencePeriod != '' and endInfluencePeriod != null and endInfluencePeriod != ''">
+					AND a.influence_period between #{startInfluencePeriod} and #{endInfluencePeriod}
+				</when>
+				<when test="startInfluencePeriod != null and startInfluencePeriod != ''">
+					AND a.influence_period >= #{startInfluencePeriod}
+				</when>
+				<when test="endInfluencePeriod != null and endInfluencePeriod != ''">
+					AND  #{endInfluencePeriod} >=a.influence_period
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			<if test="nature != null and nature != ''">
+				AND a.nature = #{nature}
+			</if>
+			<if test="unitId != null and unitId != ''">
+				AND a.unit_id LIKE #{unitId}
+			</if>
+			<if test="cfUnit != null and cfUnit != ''">
+				AND a.cf_unit = #{cfUnit}
+			</if>
+			<choose>
+				<when test="qxUnitId != null and qxUnitId != ''">
+					AND ( o.ID = #{qxUnitId} OR o.parent_ids LIKE'%,'||#{qxUnitId}||',%' OR u.ID = #{createBy.id} or a.qx_unit_id=#{qxUnitId})
+				</when>
+				<otherwise>
+					AND ( o.ID = #{qxUnitId} OR u.ID = #{createBy.id} or a.qx_unit_id=#{qxUnitId})
+				</otherwise>
+			</choose>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.approval_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findAllList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairDisciplinaryAction">
+		SELECT
+		<include refid="affairDisciplinaryActionColumns"/>
+		FROM affair_disciplinary_action a
+		<include refid="affairDisciplinaryActionJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<insert id="insert">
+		INSERT INTO affair_disciplinary_action(
+			id,
+			name,
+			sex,
+			id_number,
+			disciplinary_type,
+			sub_option,
+			zz_sub_option,
+			nature,
+			unit,
+			unit_id,
+			siren,
+			violations,
+			annex,
+			reviewer,
+			audir_opinion,
+			approval_status,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			personal_num,
+			chuli,
+			zhengzhi_face,
+			xz_sub_option,
+			dj_sub_option,
+			ry_sub_option,
+			push_type,
+			file_num,
+			approval_date,
+			influence_period,
+			lr_date,
+			chf_date,
+			qx_unit_id,
+			job,
+			job_level,
+			cf_unit,
+			is_lian,
+			sifa,
+			zuzhi,
+			other,
+			date,
+			org,
+			org_id
+		) VALUES (
+			#{id},
+			#{name},
+			#{sex},
+			#{idNumber},
+			#{disciplinaryType},
+			#{subOption},
+			#{zzSubOption},
+			#{nature},
+			#{unit},
+			#{unitId},
+			#{siren},
+			#{violations},
+			#{annex},
+			#{reviewer},
+			#{audirOpinion},
+			#{approvalStatus},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{personalNum},
+			#{chuli},
+			#{zhengzhiFace},
+			#{xzSubOption},
+			#{djSubOption},
+			#{rySubOption},
+			#{pushType},
+			#{fileNum},
+			#{approvalDate},
+			#{influencePeriod},
+			#{lrDate},
+			#{chfDate},
+			#{qxUnitId},
+			#{job},
+			#{jobLevel},
+			#{cfUnit},
+			#{isLian},
+			#{sifa},
+			#{zuzhi},
+			#{other},
+			#{date},
+			#{org},
+			#{orgId}
+		)
+	</insert>
+
+	<update id="update">
+		UPDATE affair_disciplinary_action SET 	
+			name = #{name},
+			sex = #{sex},
+			id_number = #{idNumber},
+			disciplinary_type = #{disciplinaryType},
+			sub_option = #{subOption},
+			zz_sub_option = #{zzSubOption},
+			nature = #{nature},
+			unit = #{unit},
+			unit_id = #{unitId},
+			siren = #{siren},
+			violations = #{violations},
+			annex = #{annex},
+			reviewer = #{reviewer},
+			audir_opinion = #{audirOpinion},
+			approval_status = #{approvalStatus},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			personal_num = #{personalNum},
+			chuli = #{chuli},
+			zhengzhi_face = #{zhengzhiFace},
+			xz_sub_option = #{xzSubOption},
+			dj_sub_option = #{djSubOption},
+			ry_sub_option = #{rySubOption},
+			push_type = #{pushType},
+			file_num = #{fileNum},
+			approval_date = #{approvalDate},
+			influence_period = #{influencePeriod},
+			lr_date = #{lrDate},
+			chf_date = #{chfDate},
+			qx_unit_id = #{qxUnitId},
+			job = #{job},
+			job_level = #{jobLevel},
+			cf_unit = #{cfUnit},
+			is_lian = #{isLian},
+			sifa = #{sifa},
+			zuzhi = #{zuzhi},
+			other =  #{other},
+			date = #{date},
+			org = #{org},
+			org_id = #{orgId}
+		WHERE id = #{id}
+	</update>
+
+	<update id="delete">
+		UPDATE affair_disciplinary_action SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_disciplinary_action SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<select id="findInfoByUnitId" resultType="java.util.HashMap">
+		SELECT
+		sd.label,
+		count( ad.nature)
+		FROM
+		affair_disciplinary_action ad
+		LEFT JOIN sys_dict sd ON ad.nature = sd.
+		VALUE
+
+		WHERE
+		ad.del_flag = '0'
+		AND	sd.type = 'affair_wenti' AND sd.del_flag = '0'
+		<if test="id != null and id != ''">
+			AND ad.unit_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from ad.create_date) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(ad.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND date_trunc('day', ad.create_date) between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND ad.create_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= date_trunc('day', ad.create_date)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		ad.nature,
+		sd.label
+	</select>
+
+	<select id="findInfoByUnitIds" resultType="java.util.HashMap">
+		SELECT
+		sd.label,
+		count( ad.nature)
+		FROM
+		affair_disciplinary_action ad
+		LEFT JOIN sys_dict sd ON ad.nature = sd.
+		VALUE
+
+		WHERE
+		ad.del_flag != '1'
+		AND	sd.type = 'affair_wenti' AND sd.del_flag = '0'
+		AND ad.unit_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from ad.create_date) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(ad.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND date_trunc('day', ad.create_date) between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND ad.create_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= date_trunc('day', ad.create_date)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		ad.nature,
+		sd.label
+	</select>
+
+	<select id="selectPunishmentApprovalDocumentById" resultType="string">
+		SELECT
+			file_num
+		FROM
+			affair_disciplinary_action
+		WHERE
+			id_number = #{userId}
+	</select>
+
+	<select id="selectProblemTypesById" resultType="string">
+		SELECT
+			nature
+		FROM
+			affair_disciplinary_action
+		WHERE
+			id_number =  #{userId}
+	</select>
+
+	<select id="selectPunishmentClassiryById" resultType="string">
+		SELECT
+		 disciplinary_type
+		FROM
+			affair_disciplinary_action
+		WHERE
+			id_number = #{userId}
+	</select>
+
+	<select id="selectDisciplinaryActionsById" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairDisciplinaryAction">
+		SELECT
+			disciplinary_type,
+			file_num,
+			nature
+		FROM
+			affair_disciplinary_action
+		WHERE
+			id_number = #{userId}
+	</select>
+
+	<select id="findPeopleCount" resultType="java.util.HashMap">
+		SELECT COUNT ( 1 ) num, '南宁铁路公安局' unit
+		FROM
+		"affair_disciplinary_action" T
+		LEFT JOIN sys_office syso ON syso.id = T.create_org_id
+		LEFT JOIN sys_user sysu ON sysu.id = T.create_by
+		WHERE
+		(
+		SELECT COUNT ( 1 )
+		FROM
+		sys_office o
+		WHERE
+		o.ID = T.unit_id
+		AND o.parent_id IN ( '1','307', '312', '316')
+		AND t.del_flag = '0'
+		<!--<if test="id != null and id != ''">
+			AND t.unit_id = #{id}
+		</if>-->
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from t.create_date) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(t.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND date_trunc('day', t.create_date) between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND t.create_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= date_trunc('day', t.create_date)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		) > 0
+		${id}
+		UNION ALL--处
+		SELECT COUNT
+		( 1 ) num,
+		'南宁公安处' unit
+		FROM
+		"affair_disciplinary_action" T
+		LEFT JOIN sys_office syso ON syso.id = T.create_org_id
+		LEFT JOIN sys_user sysu ON sysu.id = T.create_by
+		WHERE
+		( SELECT COUNT ( 1 ) FROM sys_office o WHERE o.ID =  T.unit_id  AND o.parent_ids LIKE'%'||'0,1,34,'||'%'
+		AND t.del_flag = '0'
+		<!--<if test="id != null and id != ''">
+			AND t.unit_id = #{id}
+		</if>-->
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from t.create_date) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(t.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND date_trunc('day', t.create_date) between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND t.create_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= date_trunc('day', t.create_date)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		) > 0 ${id} UNION ALL--处
+		SELECT COUNT
+		( 1 ) num,
+		'柳州公安处' unit
+		FROM
+		"affair_disciplinary_action" T
+		LEFT JOIN sys_office syso ON syso.id = T.create_org_id
+		LEFT JOIN sys_user sysu ON sysu.id = T.create_by
+		WHERE
+		( SELECT COUNT ( 1 ) FROM sys_office o WHERE o.ID = T.unit_id AND o.parent_ids LIKE'%'||'0,1,95,'||'%'
+		AND t.del_flag = '0'
+		<!--<if test="id != null and id != ''">
+			AND t.unit_id = #{id}
+		</if>-->
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from t.create_date) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(t.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND date_trunc('day', t.create_date) between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND t.create_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= date_trunc('day', t.create_date)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		) > 0 ${id} UNION ALL--处
+		SELECT COUNT
+		( 1 ) num,
+		'北海公安处' unit
+		FROM
+		"affair_disciplinary_action" T
+		LEFT JOIN sys_office syso ON syso.id = T.create_org_id
+		LEFT JOIN sys_user sysu ON sysu.id = T.create_by
+		WHERE
+		( SELECT COUNT ( 1 ) FROM sys_office o WHERE o.ID = T.unit_id AND o.parent_ids LIKE'%'||'0,1,156,'||'%'
+		AND t.del_flag = '0'
+		<!--<if test="id != null and id != ''">
+			AND t.unit_id = #{id}
+		</if>-->
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from t.create_date) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(t.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND date_trunc('day', t.create_date) between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND t.create_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= date_trunc('day', t.create_date)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		) > 0
+		${id}
+	</select>
+
+	<select id="findJuInfoDetail" resultType="AffairDisciplinaryAction">
+		SELECT
+		<include refid="affairDisciplinaryActionColumns"/>
+		FROM affair_disciplinary_action a
+		LEFT JOIN sys_office syso ON syso.id = a.create_org_id
+		LEFT JOIN sys_user sysu ON sysu.id = a.create_by
+		LEFT JOIN sys_office o on  o.ID =a.unit_id
+		WHERE
+		o.parent_id IN ( '1','307', '312', '316')
+		AND a.del_flag = '0'
+		<if test="id != null and id != ''">
+			AND t.unit_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.create_date) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND date_trunc('day', a.create_date) between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.create_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= date_trunc('day', a.create_date)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		${sqlMap.dsf}
+		ORDER BY a.create_date
+	</select>
+
+	<select id="findNncInfoDetail" resultType="AffairDisciplinaryAction">
+		SELECT
+		<include refid="affairDisciplinaryActionColumns"/>
+		FROM affair_disciplinary_action a
+		LEFT JOIN sys_office syso ON syso.id = a.create_org_id
+		LEFT JOIN sys_user sysu ON sysu.id = a.create_by
+		LEFT JOIN sys_office o on  o.ID =a.unit_id
+		WHERE
+		o.parent_id = '34'
+		AND a.del_flag = '0'
+		<if test="id != null and id != ''">
+			AND t.unit_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.create_date) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND date_trunc('day', a.create_date) between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.create_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= date_trunc('day', a.create_date)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		${sqlMap.dsf}
+		ORDER BY a.create_date
+	</select>
+
+	<select id="findLzcInfoDetail" resultType="AffairDisciplinaryAction">
+		SELECT
+		<include refid="affairDisciplinaryActionColumns"/>
+		FROM affair_disciplinary_action a
+		LEFT JOIN sys_office syso ON syso.id = a.create_org_id
+		LEFT JOIN sys_user sysu ON sysu.id = a.create_by
+		LEFT JOIN sys_office o on  o.ID =a.unit_id
+		WHERE
+		o.parent_id = '95'
+		AND a.del_flag = '0'
+		<if test="id != null and id != ''">
+			AND t.unit_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.create_date) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND date_trunc('day', a.create_date) between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.create_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= date_trunc('day', a.create_date)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		${sqlMap.dsf}
+		ORDER BY a.create_date
+	</select>
+
+	<select id="findBhcInfoDetail" resultType="AffairDisciplinaryAction">
+		SELECT
+		<include refid="affairDisciplinaryActionColumns"/>
+		FROM affair_disciplinary_action a
+		LEFT JOIN sys_office syso ON syso.id = a.create_org_id
+		LEFT JOIN sys_user sysu ON sysu.id = a.create_by
+		LEFT JOIN sys_office o on  o.ID =a.unit_id
+		WHERE
+		o.parent_id = '156'
+		AND a.del_flag = '0'
+		<if test="id != null and id != ''">
+			AND t.unit_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.create_date) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND date_trunc('day', a.create_date) between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.create_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= date_trunc('day', a.create_date)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		${sqlMap.dsf}
+		ORDER BY a.create_date
+	</select>
+
+	<select id="findPieInfoByNature" resultType="java.util.HashMap">
+		SELECT
+		sd.label,
+		COUNT(a.nature)
+		FROM affair_disciplinary_action a
+		<include refid="affairDisciplinaryActionJoins"/>
+		LEFT JOIN sys_dict sd ON a.nature = sd.VALUE
+		WHERE
+		a.del_flag = '0'
+		AND	sd.type = 'affair_wenti' AND sd.del_flag = '0'
+		<!--<if test="id != null and id != ''">
+			AND a.unit_id = #{id}
+		</if>-->
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.create_date) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND date_trunc('day', a.create_date) between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.create_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= date_trunc('day', a.create_date)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		${id}
+		GROUP BY
+		a.nature,
+		sd.label
+	</select>
+
+	<select id="findInfoByNatureDetail" resultType="AffairDisciplinaryAction">
+		SELECT
+		<include refid="affairDisciplinaryActionColumns"/>
+		FROM affair_disciplinary_action a
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+		LEFT JOIN sys_dict sd ON a.nature = sd.value
+		WHERE
+		a.del_flag = '0'
+		AND sd.del_flag = '0'
+		AND sd.type = 'affair_wenti'
+		<if test="natureType != null and natureType != ''">
+			AND a.nature = #{natureType}
+		</if>
+		<if test="id != null and id != ''">
+			AND a.unit_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.create_date) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND date_trunc('day', a.create_date) between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.create_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= date_trunc('day', a.create_date)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		${sqlMap.dsf}
+		ORDER BY a.create_date
+	</select>
+
+	<select id="findCountByCfUnit" resultType="java.util.HashMap">
+		SELECT COUNT ( 1 ) num, '南宁铁路公安局' unit
+		FROM
+		"affair_disciplinary_action" T
+		LEFT JOIN sys_office o ON o.id = T.create_org_id
+		LEFT JOIN sys_user u  ON u.id = T.create_by
+		WHERE
+		(
+		SELECT COUNT ( 1 )
+		FROM
+		sys_dict sd
+		WHERE
+		T.cf_unit = sd.value
+		AND sd.value IN ( '1','5', '9')
+		AND t.del_flag = '0'
+		<!--<if test="id != null and id != ''">
+			AND t.unit_id = #{id}
+		</if>-->
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from t.create_date) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(t.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND date_trunc('day', t.create_date) between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND t.create_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= date_trunc('day', t.create_date)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		) > 0
+		${id}
+		UNION ALL--处
+		SELECT COUNT
+		( 1 ) num,
+		'南宁公安处' unit
+		FROM
+		"affair_disciplinary_action" T
+		LEFT JOIN sys_office o ON o.id = T.create_org_id
+		LEFT JOIN sys_user u  ON u.id = T.create_by
+		WHERE
+		( SELECT COUNT ( 1 ) FROM sys_dict sd
+		WHERE
+		T.cf_unit = sd.value
+		AND sd.value IN ( '2','6','10')
+		AND t.del_flag = '0'
+		<!--<if test="id != null and id != ''">
+			AND t.unit_id = #{id}
+		</if>-->
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from t.create_date) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(t.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND date_trunc('day', t.create_date) between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND t.create_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= date_trunc('day', t.create_date)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		) > 0 ${id} UNION ALL--处
+		SELECT COUNT
+		( 1 ) num,
+		'柳州公安处' unit
+		FROM
+		"affair_disciplinary_action" T
+		LEFT JOIN sys_office o ON o.id = T.create_org_id
+		LEFT JOIN sys_user u ON u.id = T.create_by
+		WHERE
+		( SELECT COUNT ( 1 ) FROM sys_dict sd
+		WHERE
+		T.cf_unit = sd.value
+		AND sd.value IN ( '3','7','11')
+		AND t.del_flag = '0'
+		<!--<if test="id != null and id != ''">
+			AND t.unit_id = #{id}
+		</if>-->
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from t.create_date) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(t.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND date_trunc('day', t.create_date) between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND t.create_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= date_trunc('day', t.create_date)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		) > 0 ${id} UNION ALL--处
+		SELECT COUNT
+		( 1 ) num,
+		'北海公安处' unit
+		FROM
+		"affair_disciplinary_action" T
+		LEFT JOIN sys_office o ON o.id = T.create_org_id
+		LEFT JOIN sys_user u  ON u.id = T.create_by
+		WHERE
+		( SELECT COUNT ( 1 ) FROM sys_dict sd
+		WHERE
+		T.cf_unit = sd.value
+		AND sd.value IN ( '4','8','12')
+		AND t.del_flag = '0'
+		<!--<if test="id != null and id != ''">
+			AND t.unit_id = #{id}
+		</if>-->
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from t.create_date) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(t.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND date_trunc('day', t.create_date) between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND t.create_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= date_trunc('day', t.create_date)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		) > 0
+		${id}
+	</select>
+
+	<select id="findDetailByCfUnit"  resultType="com.thinkgem.jeesite.modules.affair.entity.AffairDisciplinaryAction">
+		SELECT
+		<include refid="affairDisciplinaryActionColumns"/>
+		FROM affair_disciplinary_action a
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+		LEFT JOIN sys_dict sd ON a.cf_unit = sd.VALUE
+		WHERE
+		a.del_flag = '0'
+		AND	sd.type = 'affair_cf_unit' AND sd.del_flag = '0'
+		<choose>
+			<when test="unitType == '1'.toString()">
+				AND a.cf_unit IN ('1','5','9')
+			</when>
+			<when test="unitType == '2'.toString()">
+				AND a.cf_unit IN ('2','6','10')
+			</when>
+			<when test="unitType == '3'.toString()">
+				AND a.cf_unit IN ('3','7','11')
+			</when>
+			<otherwise>
+				AND a.cf_unit IN ('4','8','12')
+			</otherwise>
+		</choose>
+		<!--<if test="unitType != null and unitType != '' and unitType == '1'">
+			AND a.cf_unit IN ('1','5','9')
+		</if>
+		<if test="unitType != null and unitType != '' and unitType == '2'">
+			AND a.cf_unit IN ('2','6','10')
+		</if>
+		<if test="unitType != null and unitType != '' and unitType == '3'">
+			AND a.cf_unit IN ('3','7','11')
+		</if>
+		<if test="unitType != null and unitType != '' and unitType == '4'">
+			AND a.cf_unit IN ('4','8','12')
+		</if>-->
+		<if test="id != null and id != ''">
+			AND a.unit_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.create_date) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND date_trunc('day', a.create_date) between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.create_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= date_trunc('day', a.create_date)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		${sqlMap.dsf}
+		ORDER BY a.create_date
+	</select>
+
+	<select id="findPeopleCountByChuFen" resultType="java.util.HashMap">
+		SELECT
+		sd.label,
+		COUNT(a.disciplinary_type)
+		FROM affair_disciplinary_action a
+		<include refid="affairDisciplinaryActionJoins"/>
+		LEFT JOIN sys_dict sd ON a.disciplinary_type = sd.VALUE
+		WHERE
+		a.del_flag = '0'
+		AND	sd.type = 'affair_xzchufen' AND sd.del_flag = '0'
+		<!--<if test="id != null and id != ''">
+			AND a.unit_id = #{id}
+		</if>-->
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.create_date) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND date_trunc('day', a.create_date) between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.create_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= date_trunc('day', a.create_date)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		${id}
+		GROUP BY
+		a.disciplinary_type,
+		sd.label
+	</select>
+
+	<select id="findDetailInfoByChuFen" resultType="AffairDisciplinaryAction">
+		SELECT
+		<include refid="affairDisciplinaryActionColumns"/>
+		FROM affair_disciplinary_action a
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+		LEFT JOIN sys_dict sd ON a.disciplinary_type = sd.VALUE
+		WHERE
+		a.del_flag = '0'
+		AND	sd.type = 'affair_xzchufen' AND sd.del_flag = '0'
+		<if test="chuFenType != null and chuFenType != ''">
+			AND a.disciplinary_type = #{chuFenType}
+		</if>
+		<if test="id != null and id != ''">
+			AND a.unit_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.create_date) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND date_trunc('day', a.create_date) between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.create_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= date_trunc('day', a.create_date)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		${sqlMap.dsf}
+		ORDER BY a.create_date
+	</select>
+
+	<select id="findPieInfoByDjChuFen" resultType="java.util.HashMap">
+		SELECT
+		sd.label,
+		COUNT(a.ry_sub_option)
+		FROM affair_disciplinary_action a
+		<include refid="affairDisciplinaryActionJoins"/>
+		LEFT JOIN sys_dict sd ON a.ry_sub_option = sd.VALUE
+		WHERE
+		a.del_flag = '0'
+		AND a.disciplinary_type = '2'
+		AND a.dj_sub_option = '1'
+		AND	sd.type = 'affair_dj_sub_option' AND sd.del_flag = '0'
+		<if test="id != null and id != ''">
+			AND a.unit_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.create_date) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND date_trunc('day', a.create_date) between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.create_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= date_trunc('day', a.create_date)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		${id}
+		GROUP BY
+		a.ry_sub_option,
+		sd.label
+	</select>
+
+	<select id="findDetailInfoByDjChuFen" resultType="AffairDisciplinaryAction">
+		SELECT
+		<include refid="affairDisciplinaryActionColumns"/>
+		FROM affair_disciplinary_action a
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+		LEFT JOIN sys_dict sd ON a.ry_sub_option = sd.VALUE
+		WHERE
+		a.del_flag = '0'
+		AND a.disciplinary_type = '2'
+		AND a.dj_sub_option = '1'
+		AND	sd.type = 'affair_dj_sub_option' AND sd.del_flag = '0'
+		<if test="djChuFen != null and djChuFen != ''">
+			AND a.ry_sub_option = #{djChuFen}
+		</if>
+		<if test="id != null and id != ''">
+			AND a.unit_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.create_date) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND date_trunc('day', a.create_date) between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.create_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= date_trunc('day', a.create_date)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		${sqlMap.dsf}
+		ORDER BY a.create_date
+	</select>
+
+	<select id="findPieInfoByXzChuFen" resultType="java.util.HashMap">
+		SELECT
+		sd.label,
+		COUNT(a.xz_sub_option)
+		FROM affair_disciplinary_action a
+		<include refid="affairDisciplinaryActionJoins"/>
+		LEFT JOIN sys_dict sd ON a.xz_sub_option = sd.VALUE
+		WHERE
+		a.del_flag = '0'
+		AND a.disciplinary_type = '1'
+		AND	sd.type = 'affair_xz_sub_option' AND sd.del_flag = '0'
+		<if test="id != null and id != ''">
+			AND a.unit_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.create_date) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND date_trunc('day', a.create_date) between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.create_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= date_trunc('day', a.create_date)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		${id}
+		GROUP BY
+		a.xz_sub_option,
+		sd.label
+	</select>
+
+	<select id="findDetailInfoByXzChuFen" resultType="AffairDisciplinaryAction">
+		SELECT
+		<include refid="affairDisciplinaryActionColumns"/>
+		FROM affair_disciplinary_action a
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+		LEFT JOIN sys_dict sd ON a.xz_sub_option = sd.VALUE
+		WHERE
+		a.del_flag = '0'
+		AND a.disciplinary_type = '1'
+		AND	sd.type = 'affair_xz_sub_option' AND sd.del_flag = '0'
+		<if test="xzChuFen != null and xzChuFen != ''">
+			AND a.xz_sub_option = #{xzChuFen}
+		</if>
+		<if test="id != null and id != ''">
+			AND a.unit_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.create_date) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND date_trunc('day', a.create_date) between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.create_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= date_trunc('day', a.create_date)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		${sqlMap.dsf}
+		ORDER BY a.create_date
+	</select>
+
+	<select id="allInfo" resultType="AffairDisciplinaryAction">
+		select
+		<include refid="affairDisciplinaryActionColumns"/>
+		FROM affair_disciplinary_action a
+		where
+		a.del_flag = '0'
+		<!--AND CAST ( SUBSTRING ( TO_CHAR( A.lr_date, 'yyyy-mm-dd' ), 1, 4 ) as varchar ) = #{year}
+		<if test="month != null and month != ''">
+			AND CAST ( SUBSTRING ( TO_CHAR( A.lr_date, 'yyyy-mm-dd' ), 6, 2 ) as varchar ) = #{month}
+		</if>-->
+		<if test="startTime != null and startTime != '' and endTime != null and endTime != '' ">
+			AND to_char ( A.lr_date, 'yyyy-mm-dd' ) BETWEEN #{startTime} AND #{endTime}
+		</if>
+	</select>
+
+</mapper>

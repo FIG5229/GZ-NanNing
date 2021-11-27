@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairDeathMoneyDao">
+    
+	<sql id="affairDeathMoneyColumns">
+		a.id AS "id",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.name AS "name",
+		a.id_number AS "idNumber",
+		a.sex AS "sex",
+		a.birth AS "birth",
+		a.level AS "level",
+		a.work_date AS "workDate",
+		a.casualties AS "casualties",
+		a.assess_date AS "assessDate",
+		a.assess_main AS "assessMain",
+		a.approval AS "approval",
+		a.remark AS "remark",
+		a.annex AS "annex",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="affairDeathMoneyJoins">
+		 LEFT JOIN affair_labor_office o ON o.id = a.create_org_id
+		LEFT JOIN affair_labor_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairDeathMoney">
+		SELECT 
+			<include refid="affairDeathMoneyColumns"/>
+		FROM affair_death_money a
+		<include refid="affairDeathMoneyJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairDeathMoney">
+		SELECT 
+			<include refid="affairDeathMoneyColumns"/>
+		FROM affair_death_money a
+		<include refid="affairDeathMoneyJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="unitId != null and unitId != ''">
+				AND a.unit_id = #{unitId}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+			</if>
+			<choose>
+				<when test="beginAssessDate != null and endAssessDate != null and beginAssessDate != '' and endAssessDate != ''">
+					AND a.assess_date BETWEEN #{beginAssessDate} AND #{endAssessDate}
+				</when>
+				<when test="beginAssessDate != null and beginAssessDate != ''">
+					AND a.assess_date &gt;= #{beginAssessDate}
+				</when>
+				<when test="endAssessDate != null and endAssessDate != ''">
+					AND a.assess_date &lt;= #{endAssessDate}
+				</when>
+				<otherwise></otherwise>
+			</choose>
+			<if test="userId != null and userId != ''">
+				AND ( o.ID = #{userId} OR o.parent_ids LIKE'%,'||#{userId}||',%' OR u.ID = #{userId} or a.unit_id=#{userId})
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairDeathMoney">
+		SELECT 
+			<include refid="affairDeathMoneyColumns"/>
+		FROM affair_death_money a
+		<include refid="affairDeathMoneyJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_death_money(
+			id,
+			unit,
+			unit_id,
+			name,
+			id_number,
+			sex,
+			birth,
+			level,
+			work_date,
+			casualties,
+			assess_date,
+			assess_main,
+			approval,
+			remark,
+			annex,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{unit},
+			#{unitId},
+			#{name},
+			#{idNumber},
+			#{sex},
+			#{birth},
+			#{level},
+			#{workDate},
+			#{casualties},
+			#{assessDate},
+			#{assessMain},
+			#{approval},
+			#{remark},
+			#{annex},
+			#{createBy.id},
+			 #{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_death_money SET 	
+			unit = #{unit},
+			unit_id = #{unitId},
+			name = #{name},
+			id_number = #{idNumber},
+			sex = #{sex},
+			birth = #{birth},
+			level = #{level},
+			work_date = #{workDate},
+			casualties = #{casualties},
+			assess_date = #{assessDate},
+			assess_main = #{assessMain},
+			approval = #{approval},
+			remark = #{remark},
+			annex = #{annex},
+			create_org_id = #{createOrgId},
+			create_id_no = #{createIdNo},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateOrgId},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_death_money SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_death_money SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+	
+</mapper>

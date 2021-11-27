@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairGzDao">
+    
+	<sql id="affairGzColumns">
+		a.id AS "id",
+		a.date AS "date",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.name AS "name",
+		a.specification AS "specification",
+		a.model AS "model",
+		a.num AS "num",
+		a.price AS "price",
+		a.total_price AS "totalPrice",
+		a.user_year AS "userYear",
+		a.bg_person AS "bgPerson",
+		a.ys_person AS "ysPerson",
+		a.ys_opinion AS "ysOpinion",
+		a.sh_opinion AS "shOpinion",
+		a.remark AS "remark",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.sh_type AS "shType",
+		a.sh_person AS "shPerson",
+		a.serial_number AS "serialNumber",
+		a.bar_code AS "barCode",
+		a.file_path AS "filePath"
+	</sql>
+	
+	<sql id="affairGzJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairGz">
+		SELECT 
+			<include refid="affairGzColumns"/>
+		FROM affair_gz a
+		<include refid="affairGzJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairGz">
+		SELECT 
+			<include refid="affairGzColumns"/>
+		FROM affair_gz a
+		<include refid="affairGzJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<choose>
+				<when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+					AND a.date between #{startDate} and #{endDate}
+				</when>
+				<when test="startDate != null and startDate != ''">
+					AND a.date >= #{startDate}
+				</when>
+				<when test="endDate != null and endDate != ''">
+					AND  #{endDate} >= a.date
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			<if test="unitId != null and unitId != ''">
+				AND a.unit_id = #{unitId}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE '%'||#{name}||'%'
+			</if>
+			<choose>
+				<when test="minPrice != null and minPrice != '' and maxPrice != null and maxPrice != ''">
+					AND a.total_price between #{minPrice} and #{maxPrice}
+				</when>
+				<when test="minPrice != null and minPrice != ''">
+					AND a.total_price >= #{minPrice}
+				</when>
+				<when test="maxPrice != null and maxPrice != ''">
+					AND  #{maxPrice} >= a.total_price
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			<if test="bgPerson != null and bgPerson != ''">
+				AND a.bg_person LIKE '%'||#{bgPerson}||'%'
+			</if>
+			<if test="ysPerson != null and ysPerson != ''">
+				AND a.ys_person LIKE '%'||#{ysPerson}||'%'
+			</if>
+			<if test="officeIds != null and officeIds.size() > 0">
+				AND a.unit_id  in <foreach collection="officeIds" item="item" index="index"
+										   open="(" separator="," close=")">#{item}</foreach>
+			</if>
+
+			<!--${sqlMap.dsf}
+			<if test="userId != null and userId != ''">
+				or (a.unit_id = #{userId} AND a.del_flag = #{DEL_FLAG_NORMAL})
+			</if>-->
+			<choose>
+				<when test="userId != null and userId != '' ">
+					AND ( o.ID = #{userId} OR o.parent_ids LIKE'%,'||#{userId}||',%' OR u.ID = #{createBy.id} or a.unit_id LIKE'%,'||#{userId}||'%' or a.unit_id LIKE'%'||#{userId}||',%' or a.unit_id = #{userId} )
+				</when>
+				<otherwise>
+					AND ( o.ID = #{userId} OR u.ID = #{createBy.id} or a.unit_id=#{userId})
+				</otherwise>
+			</choose>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairGz">
+		SELECT 
+			<include refid="affairGzColumns"/>
+		FROM affair_gz a
+		<include refid="affairGzJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_gz(
+			id,
+			date,
+			unit,
+			unit_id,
+			name,
+			specification,
+			model,
+			num,
+			price,
+			total_price,
+			user_year,
+			bg_person,
+			ys_person,
+			ys_opinion,
+			sh_opinion,
+			remark,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			sh_type,
+			sh_person,
+			serial_number,
+			bar_code,
+			file_path
+		) VALUES (
+			#{id},
+			#{date},
+			#{unit},
+			#{unitId},
+			#{name},
+			#{specification},
+			#{model},
+			#{num},
+			#{price},
+			#{num}*#{price},
+			#{userYear},
+			#{bgPerson},
+			#{ysPerson},
+			#{ysOpinion},
+			#{shOpinion},
+			#{remark},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{shType},
+			#{shPerson},
+			#{serialNumber},
+			#{barCode},
+			#{filePath}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_gz SET 	
+			date = #{date},
+			unit = #{unit},
+			unit_id = #{unitId},
+			name = #{name},
+			specification = #{specification},
+			model = #{model},
+			num = #{num},
+			price = #{price},
+			total_price = #{num}*#{price},
+			user_year = #{userYear},
+			bg_person = #{bgPerson},
+			ys_person = #{ysPerson},
+			ys_opinion = #{ysOpinion},
+			sh_opinion = #{shOpinion},
+			remark = #{remark},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			sh_type = #{shType},
+			sh_person = #{shPerson},
+			serial_number = #{serialNumber},
+			bar_code = #{barCode},
+			file_path = #{filePath}
+		WHERE id = #{id}
+	</update>
+
+
+	<update id="delete">
+		UPDATE affair_gz SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_gz SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<update id="shenHe">
+		UPDATE affair_gz SET
+		    sh_type = #{affairGz.shType},
+			sh_person = #{affairGz.shPerson}, sh_opinion = #{affairGz.shOpinion},
+			update_date = #{affairGz.updateDate}
+			where id = #{affairGz.id}
+	</update>
+
+	<select id="findInfoByCreateOrgId" resultType="java.util.HashMap">
+		SELECT
+		ag.unit "label",
+		SUM(ag.total_price),
+		count( ag.unit )
+		FROM
+		affair_gz ag
+		WHERE
+		ag.del_flag = '0'
+		<if test="id != null and id != ''">
+			AND ag.create_org_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from ag.date) = #{year}
+			</when>
+			<when test="mStartDate != null and mEndDate != null">
+				AND ag.date between  #{mStartDate,jdbcType=DATE} and #{mEndDate,jdbcType=DATE}
+			</when>
+			<when test="mStartDate != null">
+				AND ag.date >= #{mStartDate,jdbcType=DATE}
+			</when>
+			<when test="mEndDate != null">
+				AND  #{mEndDate,jdbcType=DATE} >= ag.date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		ag.unit
+	</select>
+
+	<select id="findInfoByCreateOrgIds" resultType="java.util.HashMap">
+
+		SELECT
+		ag.unit "label",
+		SUM(ag.total_price),
+		count( ag.unit )
+		FROM
+		affair_gz ag
+		WHERE
+		ag.del_flag = '0'
+		AND ag.create_org_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from ag.date) = #{year}
+			</when>
+			<when test="mStartDate != null and mEndDate != null">
+				AND ag.date between  #{mStartDate,jdbcType=DATE} and #{mEndDate,jdbcType=DATE}
+			</when>
+			<when test="mStartDate != null">
+				AND ag.date >= #{mStartDate,jdbcType=DATE}
+			</when>
+			<when test="mEndDate != null">
+				AND  #{mEndDate,jdbcType=DATE} >= ag.date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		ag.unit
+	</select>
+
+</mapper>

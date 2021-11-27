@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+	<html lang="zh-CN">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="keywords" content="">
+		<meta name="description" content="">
+		<title>政工一键秒搜系统</title>
+		<link href="css/reset.css" rel="stylesheet">
+		<link href="css/main.css" rel="stylesheet">
+		<link rel="shortcut icon" type="image/x-icon" href="./favicon.ico" />
+		<!--[if lt IE 9]>
+		<script src="js/common/html5shiv.min.js"></script>
+		<script src="js/common/respond.min.js"></script>
+		<script src="js/common/css3-mediaqueries.js"></script>
+		<![endif]-->
+		<!--[if IE 8]>
+		<script src="./plugin/artTemplate/es5-shim.min.js"></script>
+		<script src="./plugin/artTemplate/es5-sham.min.js"></script>
+		<script src="./plugin/artTemplate/json3.min.js"></script>
+		<![endif]-->
+		<script src="./plugin/artTemplate/template-web.js"></script>
+	</head>
+<body>
+
+<div class="real-name">
+	<div class="search-form">
+		<div class="mix-container clearfix">
+            <!--
+			<div class="search-logo">智能搜索
+				<img src="./images/search-logo.png">
+			</div>
+			-->
+			<div class="search-input">
+				<input type="text" autocomplete="off" placeholder="请输入关键字" id="queryString">
+			</div>
+			<button class="search-btn" type="button" id="queryBtn" title="语法信息说明提示：
+1. 默认检索：直接在检索框输入内容（可通过模糊和精确按钮调整准确性）；
+2. 检索内容追加1位：点击模糊按钮后，检索内容后增加英文?，例如：14272919930228187?
+3. 检索内容追加多位：点击模糊按钮后，检索内容后增加英文*，例如：142729*
+4. 精确检索：点击模糊按钮后，检索内容增加英文双引号，例如：”张三”
+5. 组合检索：点击模糊按钮后，关键词加空格加AND，例如：”张三” AND “南宁东”">搜索</button>
+			<div class="switcher">
+				<input id="switcher-check" value="1" type="checkbox" checked />
+				<span class="switcher-label switcher-label-left">模糊</span>
+				<label for="switcher-check" class="switcher-layer">
+					<span class="switcher-point"></span>
+				</label>
+				<span class="switcher-label switcher-label-right">精确</span>
+			</div>
+		</div>
+	</div>
+	<div class="mix-container">
+		<div class="wrapper-container clearfix">
+			<div class="col-left">
+				<div class="accordion-title">
+					<i class="el-icon-tickets"></i> 资源分类
+					<span class="accordion-count" id="resourceCount"></span>
+				</div>
+        <div class="accordion-left" id="typeNode"></div>
+        <script id="typeTemplate" type="text/html">
+          {{each $data value index}}
+          <div class="accordion-ul">
+            <div class="accordion-header {{if index===0}}open{{/if}}">
+              <span class="accordion-ul-title"><i class="items.icon"></i> {{value.label}}</span>
+              <span class="accordion-ul-num showCount">{{value.cnt}}</span>
+            </div>
+            <ul class="accordion-sub" {{if index===0}}style="display: block"{{/if}}>
+              {{each value.children v i}}
+                <li onclick="$.typeChange(this,{{v}})" class="{{v.code}} {{if v.cnt==0 && !resetSearch}}hide{{/if}}">{{v.label}}<span class="accordion-sub-num showCount">{{v.cnt}}</span></li>
+              {{/each}}
+            </ul>
+          </div>
+          {{/each}}
+        </script>
+			</div>
+			<div class="col-right">
+        <div id="viewListNode"></div>
+        <div id="viewListLoad" class="loading-mask" style="display: none;"><div class="loading-spinner"><svg viewBox="25 25 50 50" class="circular"><circle cx="50" cy="50" r="20" fill="none" class="path"></circle></svg></div></div>
+        <!--<div v-show="total<=0" style="color: #22b5b5;text-align: center;padding:60px 20px 0;min-height:300px;font-size:18px;">
+					<i class="el-icon-s-opportunity" style="font-size:20px;"></i>
+					<span v-if="controlLoading">拼命检索中......</span>
+					<span v-else>没有查到您所需要的数据，建议您调整搜索条件</span>
+				</div>-->
+        <script id="viewListTemplate" type="text/html">
+          {{set count = rows.length}}
+          <div class="top-bar">
+            {{if total>0}}
+                {{if filterFields.length>0 }}<span class="filter-show-btn filter_btn" onclick="$.orderFilter(this,'filterForm')">筛选<i>▾</i></span>{{/if}}
+                {{if orderFields.length>0 }}<span class="filter-show-btn order_btn" onclick="$.orderFilter(this,'orderForm')">排序<i>▾</i></span>{{/if}}
+            {{/if}}
+            <span class="search-total">搜索结果：共搜到 <strong>{{if total===10000}}大于{{/if}}{{total}}</strong> 项，{{if total>count}}仅展示前{{count}}条，{{/if}}用时<strong>{{searchTime/1000}}</strong>秒</span>
+            {{if total>0}}<button class="export-xls" onclick="$.exportExcel()">导出EXCEL</button>{{/if}}
+          </div>
+          <div class="filter-form" id="filterForm">
+            <div class="filter-form-inline">
+              <form id="paramMap" class="clearfix">
+                  {{each filterFields field n}}
+                  <div class="form-item">
+                    <label class="form-item-label">{{field.label}}</label>
+                    <div class="form-item-input">
+                      {{if field.inputType === 'date'}}
+                        <input type="text" class="date-item" name="{{field.code}}">
+                      {{else if field.inputType === 'select' && (field.options && field.options.length>0)}}
+                        <select name="{{field.code}}">
+                          <option value="">请选择</option>
+                          {{each field.options op t}}
+                              <option value="{{op.code}}">{{op.label}}</option>
+                          {{/each}}
+                        </select>
+                      {{else}}
+                        <input type="text" name="{{field.code}}">
+                      {{/if}}
+                    </div>
+                  </div>
+                  {{/each}}
+              </form>
+              <div class="form-btn">
+                  <button class="filter-btn" onclick="$.smartFilterForm()">搜索</button>
+                  <button class="filter-btn-c" onclick="$.closeFilterForm('filter_btn','filterForm')">关闭</button>
+              </div>
+            </div>
+          </div>
+          <div class="filter-form" id="orderForm">
+            <div class="filter-form-inline order-form">
+              <form id="orderMap" class="clearfix">
+                {{each orderFields field n}}
+                <div class="form-item">
+                  <label class="form-item-label">{{field.label}}</label>
+                  <div class="form-item-input order-switch">
+                      <div class="switcher order-switch-on">
+                          <input id="open{{field.code}}{{n}}" name="{{field.code}}" value="{{field.code}}" type="checkbox" {{if field.isDefaultOrder}}checked{{/if}} />
+                          <span class="switcher-label switcher-label-left">关闭</span>
+                          <label for="open{{field.code}}{{n}}" class="switcher-layer">
+                            <span class="switcher-point"></span>
+                          </label>
+                          <span class="switcher-label switcher-label-right">开启</span>
+                      </div>
+                      <div class="switcher">
+                          <input id="order{{field.code}}{{n}}" name="{{field.code}}" value="asc" type="checkbox" />
+                          <span class="switcher-label switcher-label-left">降序</span>
+                          <label for="order{{field.code}}{{n}}" class="switcher-layer">
+                            <span class="switcher-point"></span>
+                          </label>
+                          <span class="switcher-label switcher-label-right">升序</span>
+                      </div>
+                  </div>
+                </div>
+                {{/each}}
+              </form>
+              <div class="form-btn">
+                <button class="filter-btn" onclick="$.smartOrderForm()">排序</button>
+                <button class="filter-btn-c" onclick="$.closeFilterForm('order_btn','orderForm')">关闭</button>
+              </div>
+            </div>
+          </div>
+          <div class="search-wrap">
+            {{if count>0}}
+              {{include 'listTemplate'}}
+            {{/if}}
+          </div>
+        </script>
+        <script id="listTemplate" type="text/html">
+          <div class="item" style="height: 700px;overflow-y: auto">
+            {{each rows value index}}
+            {{set identifyVal = identify(value.data,identifyName)}}
+            <div class="child-item">
+              {{if headers && headers.length>0}}
+              <div class="item-top clearfix">
+                <div class="card-num">{{value.data | headerFormat headers}}</div>
+              </div>
+              {{/if}}
+              <div class="item-middle">
+                {{if identifyName && identifyVal}}<div class="child-avatar"><img src="/fastsearch/personnel/image/{{identifyVal}}"></div>{{/if}}
+                <div class="child-data" style="margin-left:{{if identifyName==''}}15px{{else}}95px{{/if}};">
+                  <div class="child-field clearfix">
+                    {{each value.data fieldName i}}
+                      {{if fieldName.label==='id'&& value.index === 'personnel_base'}}
+                      <div class="field-content"><a href="/politics/a/personnel/personnelBase/formDetail?id={{fieldName.value }}" target="_blank">详情</a></div>
+                      {{else if fieldName.label==='id'&& value.index === 'affair_party_member'}}
+                      <div class="field-content"><a href="/politics/a/affair/affairPartyMember/formDetail?id={{fieldName.value }}" target="_blank">详情</a></div>
+                      {{else if fieldName.label==='id'&& value.index === 'affair_party_reward_punish'}}
+                      <div class="field-content"><a href="/politics/a/affair/affairPartyRewardPunish/formDetail?id={{fieldName.value }}" target="_blank">详情</a></div>
+                      {{else if fieldName.label==='id'&& value.index === 'affair_tj_register'}}
+                      <div class="field-content"><a href="/politics/a/affair/affairTjRegister/formDetail?id={{fieldName.value }}" target="_blank">详情</a></div>
+                    {{else if fieldName.label==='id'&& value.index === 'affair_xc_unit_reward'}}
+                    <div class="field-content"><a href="/politics/a/affair/affairXcUnitReward/formDetail?id={{fieldName.value }}" target="_blank">详情</a></div>
+                      {{else if fieldName.label==='id'&& value.index === 'affair_interior_instructor_library'}}
+                      <div class="field-content"><a href="/politics/a/affair/affairInteriorInstructorLibrary/formDetail?id={{fieldName.value }}" target="_blank">详情</a></div>
+                      {{else if fieldName.label==='id'&& value.index === 'affair_wenhua'}}
+                      <div class="field-content"><a href="/politics/a/affair/affairWenhua/formDetail?id={{fieldName.value }}" target="_blank">详情</a></div>
+                      {{else if fieldName.label==='id'&& value.index === 'affair_seven_knowledge'}}
+                      <div class="field-content"><a href="/politics/a/affair/affairSevenKnowledge/formDetail?id={{fieldName.value }}" target="_blank">详情</a></div>
+                      {{else if fieldName.label==='id'&& value.index === 'affair_news'}}
+                      <div class="field-content"><a href="/politics/a/affair/affairNews/formDetail?id={{fieldName.value }}" target="_blank">详情</a></div>
+                      {{else if fieldName.label==='id'&& value.index === 'affair_correspondent'}}
+                      <div class="field-content"><a href="/politics/a/affair/affairCorrespondent/formDetail?id={{fieldName.value }}" target="_blank">详情</a></div>
+                      {{else if fieldName.label==='id'&& value.index === 'affair_commentators'}}
+                      <div class="field-content"><a href="/politics/a/affair/affairCommentators/formDetail?id={{fieldName.value }}" target="_blank">详情</a></div>
+                      {{else if fieldName.label==='id'&& value.index === 'affair_police_help_educate'}}
+                      <div class="field-content"><a href="/politics/a/affair/affair_policeHelpEducate/formDetail?id={{fieldName.value }}" target="_blank">详情</a></div>
+                      {{else if fieldName.label==='id'&& value.index === 'affair_talk_heart'}}
+                      <div class="field-content"><a href="/politics/a/affair/affairTalkHeart/formDetail?id={{fieldName.value }}" target="_blank">详情</a></div>
+                      {{else if fieldName.label==='id'&& value.index === 'affair_home_visit'}}
+                      <div class="field-content"><a href="/politics/a/affair/affairHomeVisit/formDetail?id={{fieldName.value }}" target="_blank">详情</a></div>
+                      {{else if fieldName.label==='id'&& value.index === 'affair_learn_power'}}
+                      <div class="field-content"><a href="/politics/a/affair/affairLearnPower/formDetail?id={{fieldName.value }}" target="_blank">详情</a></div>
+                      {{else if fieldName.label==='id'&& value.index === 'affair_yj_build'}}
+                      <div class="field-content"><a href="/politics/a/affair/affairYjBuild/formDetail?id={{fieldName.value }}" target="_blank">详情</a></div>
+                      {{else if fieldName.label==='id'&& value.index === 'affair_police_home'}}
+                      <div class="field-content"><a href="/politics/a/affair/affairPoliceHome/formDetail?id={{fieldName.value }}" target="_blank">详情</a></div>
+                      {{else if fieldName.label==='id'&& value.index === 'affair_xzy'}}
+                      <div class="field-content"><a href="/politics/a/affair/affairXzy/formDetail?id={{fieldName.value }}" target="_blank">详情</a></div>
+                      {{else if fieldName.label==='id'&& value.index === 'affair_brand_management'}}
+                      <div class="field-content"><a href="/politics/a/affair/affairBrandManagement/formDetail?id={{fieldName.value }}" target="_blank">详情</a></div>
+                      {{else if fieldName.label==='id'&& value.index === 'affair_yq_contol'}}
+                      <div class="field-content"><a href="/politics/a/affair/affairYqContol/formDetail?id={{fieldName.value }}" target="_blank">详情</a></div>
+                      {{else if fieldName.label==='id'&& value.index === 'affair_personal_award'}}
+                      <div class="field-content"><a href="/politics/a/affair/affairPersonalAward/formDetail?id={{fieldName.value }}" target="_blank">详情</a></div>
+                      {{else if fieldName.label==='id'&& value.index === 'affair_tw_personal_award'}}
+                      <div class="field-content"><a href="/politics/a/affair/affairTwPersonalAward/formDetail?id={{fieldName.value }}" target="_blank">详情</a></div>
+                      {{else if fieldName.label==='id'&& value.index === 'affair_health_checkup'}}
+                      <div class="field-content"><a href="/politics/a/affair/affairHealthCheckup/formDetail?id={{fieldName.value }}" target="_blank">详情</a></div>
+                      {{else if fieldName.label==='id'&& value.index === 'affair_mjxy_report'}}
+                      <div class="field-content"><a href="/politics/a/affair/affairMjxyReport/formDetail?id={{fieldName.value }}" target="_blank">详情</a></div>
+                      {{else if fieldName.label==='id'&& value.index === 'affair_zk_info'}}
+                      <div class="field-content"><a href="/politics/a/affair/affairZkInfo/formDetail?id={{fieldName.value }}" target="_blank">详情</a></div>
+                      {{else if fieldName.label==='id'&& value.index === 'affair_zx_info'}}
+                      <div class="field-content"><a href="/politics/a/affair/affairZxInfo/formDetail?id={{fieldName.value }}" target="_blank">详情</a></div>
+                      {{else if fieldName.label==='id'&& value.index === 'affair_zy_info'}}
+                      <div class="field-content"><a href="/politics/a/affair/affairZyInfo/formDetail?id={{fieldName.value }}" target="_blank">详情</a></div>
+                      {{else if fieldName.label==='id'&& value.index === 'affair_tousujubaoguanli'}}
+                      <div class="field-content"><a href="/politics/a/affair/affairTousujubaoguanli/formDetail?id={{fieldName.value }}" target="_blank">详情</a></div>
+                      {{else if fieldName.label==='id'&& value.index === 'affair_disciplinary_action'}}
+                      <div class="field-content"><a href="/politics/a/affair/affairDisciplinaryAction/formDetail?id={{fieldName.value }}" target="_blank">详情</a></div>
+                      {{else if fieldName.label==='id'&& value.index === 'affair_dcwt_library'}}
+                      <div class="field-content"><a href="/politics/a/affair/affairDcwtLibrary/formDetail?id={{fieldName.value }}" target="_blank">详情</a></div>
+                      {{else if fieldName.label==='id'&& value.index === 'affair_wenti_talent'}}
+                      <div class="field-content"><a href="/politics/a/affair/affairWentiTalent/formDetail?id={{fieldName.value }}" target="_blank">详情</a></div>
+                      {{else if fieldName.label==='id'&& value.index === 'affair_file_notice'}}
+                      <div class="field-content"><a href="/politics/a/affair/affairFileNotice/formDetail?id={{fieldName.value }}" target="_blank">详情</a></div>
+                      {{else if fieldName.label==='id'&& value.index === 'article'}}
+                      <div><a href="/politics/index/view2-{{fieldName.value }}.html" target="_blank">详情</a></div>
+                      {{else if fieldName.label==='categoryId'&& value.index === 'article'}}
+                      <div class="field-content"><a href="/politics/index/view-{{value.data.category_id.value }}-{{fieldName.value }}.html" target="_blank">详情</a></div>
+                      {{else if fieldName.label==='id'&& value.index === 'affair_belong_to'}}
+                      <div class="field-content"><a href="/politics/a/affair/affairBelongTo/formDetail?id={{fieldName.value }}" target="_blank">详情</a></div>
+                      {{else if fieldName.label==='id'&& value.index === 'affair_election'}}
+                      <div class="field-content"><a href="/politics/a/affair/affairElection/formDetail?id={{fieldName.value }}" target="_blank">详情</a></div>
+                      {{else if fieldName.label==='id'&& value.index === 'affair_media_management'}}
+                      <div class="field-content"><a href="/politics/a/affair/affairMediaManagement/formDetail?id={{fieldName.value }}" target="_blank">详情</a></div>
+                      {{else if fieldName.label==='id'&& value.index === 'affair_general_situation'}}
+                      <div class="field-content"><a href="/politics/a/affair/affairGeneralSituation/formDetail?id={{fieldName.value }}" target="_blank">详情</a></div>
+                      {{else if fieldName.label==='id'&& value.index === 'affair_organization_bulid'}}
+                      <div class="field-content"><a href="/politics/a/affair/affairOrganizationBulid/formDetail?id={{fieldName.value }}" target="_blank">详情</a></div>
+                      {{else if fieldName.label==='id'&& value.index === 'affair_tw_base'}}
+                      <div class="field-content"><a href="/politics/a/affair/affairTwBase/formDetail?id={{fieldName.value }}" target="_blank">详情</a></div>
+                      {{else if fieldName.label==='id'&& value.index === 'personnel_daily_contact'}}
+                      <div class="field-content"><a href="/politics/a/affair/personnelDailyContact/formDetail?id={{fieldName.value }}" target="_blank">详情</a></div>
+                      {{else if fieldName.label==='id'&& value.index === 'office'}}
+                      <div class="field-content"><a href="/politics/a/affair/sysOffice/formDetail?id={{fieldName.value }}" target="_blank">详情</a></div>
+                      {{else if fieldName.label==='id'&& value.index === 'affair_org_reward_punish'}}
+                      <div class="field-content"><a href="/politics/a/affair/affairOrgRewardPunish/formDetail?id={{fieldName.value }}" target="_blank">详情</a></div>
+                      {{else if fieldName.label==='id'&& value.index === 'affair_collective_award'}}
+                      <div class="field-content"><a href="/politics/a/affair/affairCollectiveAward/formDetail?id={{fieldName.value }}" target="_blank">详情</a></div>
+                     {{else if fieldName.label==='id'&& value.index === 'affair_tw_unit_award'}}
+                      <div class="field-content"><a href="/politics/a/affair/affairTwUnitAward/formDetail?id={{fieldName.value }}" target="_blank">详情</a></div>
+                    {{else if fieldName.label==='id'&& value.index === 'affair_basic_knowledge'}}
+                    <div class="field-content"><a href="/politics/a/affair/affairBasicKnowledge/formDetail?id={{fieldName.value }}" target="_blank">详情</a></div>
+                    {{else}}
+                      <div class="field-content">{{fieldName.label}}：{{ fieldName.value }}</div>
+                      {{/if}}
+                      {{/each}}
+                  </div>
+                </div>
+              </div>
+            </div>
+            {{/each}}
+          </div>
+        </script>
+			</div>
+      <div id="wrapperLoad" class="loading-mask" style="display: none;"><div class="loading-spinner"><svg viewBox="25 25 50 50" class="circular"><circle cx="50" cy="50" r="20" fill="none" class="path"></circle></svg></div></div>
+		</div>
+	</div>
+</div>
+<script type="text/javascript" src="plugin/jquery.min.js"></script>
+<script type="text/javascript" src="plugin/lodash/lodash.min.js"></script>
+<script type="text/javascript" src="plugin/laydate/laydate.js"></script>
+<script type="text/javascript" src="plugin/js.cookie.min.js"></script>
+<script type="text/javascript" src="js/common/config.js"></script>
+<script type="text/javascript" src="js/common/common.js"></script>
+<script type="text/javascript">
+  $(function() {
+    // 查询传参
+	  var listQuery = {
+      queryString: '',
+      paramMap: {},
+      order: [],
+      index:''
+    }
+    template.defaults.imports.resetSearch = true;
+    // 需要参与统计的分类
+    var resourceArr = [], sourceTypeArr  = [], exportFileName = '信息表格';
+		// 初始化渲染模板
+	  templateInit()
+    // 默认加载分类
+    ajaxRequest(GLOBAL_AJAX_URL.keySearchType,'GET',{},function (response) {
+      if(response.code === 200){
+        let _that = this
+        $('#resourceCount').text(response.data.total)
+        let data =  response.data.data;
+        console.log(data);
+        resourceArr = _.cloneDeep(data);
+        // 所有源数据分类编码
+        sourceTypeArr = _.map(_.flatten(_.map(data, 'children')), 'code');
+        // 默认加载的条件
+        if(data.length>0){
+          let dataItem = data[0].children
+          if(dataItem.length>0){
+            // 当前类别
+            listQuery.index = dataItem[0].code;
+            // 当前类别可筛选的字段
+            getFilterForm(dataItem[0].fields)
+            // 加载列表
+            getSearchList()
+          }
+        }
+        $('#typeNode').html(template('typeTemplate', response.data.data));
+      }
+    })
+		$('body').on('click','.accordion-header',function () {
+			var $this = $(this), $subUl = $this.next(".accordion-sub"),hasOpen = $this.hasClass('open');
+			if(hasOpen){
+				$this.removeClass('open')
+				$subUl.slideUp()
+			}else{
+				var $otherSub = $this.parent().siblings();
+				$this.addClass('open');
+				$subUl.slideDown();
+				$otherSub.find('.accordion-header').removeClass('open').next('.accordion-sub').slideUp()
+			}
+		})
+    // 点击搜索按钮
+    $('#queryBtn').on('click',function(){
+        queryInfo()
+    });
+    // 回车搜索
+    $('#queryString').bind('keydown',function(event){
+      if(event.keyCode == "13") {
+        queryInfo();
+      }
+    });
+	  // 开始搜索前
+    function queryInfo() {
+      if (listQuery.index === '') {
+        alert('请先选择要查的源数据类别')
+        return
+      }
+      // this.resetSearch = false;
+      $('#wrapperLoad').show()
+      listQuery.paramMap = {};
+      listQuery.order = [];
+      updateTypeTotal();
+      //template.defaults.imports.resetSearch = false;
+    }
+    // 搜索结果渲染 todo:查询根据传参||，防止全局传参有漏定义
+    function getSearchList(paramQuery){
+      $('#viewListLoad').show()
+      var val = $('#queryString').val();
+      var key = document.getElementById("switcher-check").checked?'"'+val+'"':val;
+      ajaxRequest(GLOBAL_AJAX_URL.keySearchSearch,'POST',JSON.stringify({
+        queryString: key,
+        paramMap: listQuery.paramMap,
+        order: listQuery.order,
+        index: listQuery.index
+      }),function (response) {
+        $('#viewListLoad').hide()
+        if(response.code === 200){
+          // 前端分页展示
+          $('#viewListNode').html(template('viewListTemplate', response.data.data));
+          $('.'+listQuery.index).addClass('active')
+          // 给日期input加入选择器
+          lay('.date-item').each(function(){
+            laydate.render({
+              elem: this,
+              format: 'yyyyMMdd'
+            });
+          });
+        }
+      })
+    }
+    // 切换分类
+    $.typeChange = function(e,value) {
+      $('.accordion-sub>.active').removeClass('active')
+      $(e).addClass('active')
+      // 导出文件名
+      exportFileName = value.label;
+      listQuery.paramMap = {};
+      listQuery.order = [];
+      // 当前类别表名
+      listQuery.index = value.code;
+      // 表单字段
+      getFilterForm(value.fields)
+      //加载列表
+      getSearchList()
+    }
+    // 刷新分类统计数
+    function updateTypeTotal(){
+      var val = $('#queryString').val();
+      var key = document.getElementById("switcher-check").checked?'"'+val+'"':val;
+      ajaxRequest(GLOBAL_AJAX_URL.keySearchCount,'POST',JSON.stringify({queryString:key,index:sourceTypeArr}),function (res) {
+        if(res.code === 200){
+          const _that = this;
+          const selectIndex = [];
+          const selectLabel = [];
+          const selectField = [];
+          $('#wrapperLoad').hide()
+          res.data.data.forEach(function(via, index, arr){
+            resourceArr[index].cnt = via.cnt
+            via.children.forEach(function(v, i, a){
+              resourceArr[index].children[i].cnt = v.cnt
+              //判断不等于的 匹配新数组
+              if(v.cnt>0){
+                selectIndex.push(v.code)
+                selectLabel.push(v.label)
+                selectField.push(resourceArr[index].children[i].fields)
+              }
+            })
+          })
+          $('#typeNode').html(template('typeTemplate', resourceArr));
+          $('.showCount').show();
+          // 设置默认选中分类及其筛选的表单
+          listQuery.index = selectIndex[0];
+          exportFileName = selectLabel[0];
+          getFilterForm(selectField[0]);
+          getSearchList()
+        }
+      })
+    }
+    // 获取当前分类包含筛选字段，并设置到tpl
+    function getFilterForm(formFieIds) {
+      template.defaults.imports.filterFields = (formFieIds || []).filter(function (field) {
+        return field.isSearch
+      })
+      template.defaults.imports.orderFields = (formFieIds || []).filter(function (field) {
+        return field.isOrder
+      })
+    }
+    // 点击打开筛选or排序按钮
+    $.orderFilter = function(event,id){
+        var isOpen = $(event).hasClass('open');
+        if(isOpen){
+            $(event).removeClass('open');
+            $('#'+id).slideUp();
+        }else{
+            $(event).addClass('open');
+            $('#'+id).slideDown();
+        }
+    }
+    // 筛选内关闭按钮
+    $.closeFilterForm = function(btn,id){
+        $('.'+btn).removeClass('open');
+        $('#'+id).slideUp();
+    }
+    $.smartFilterForm = function () {
+        var fd =  $('#paramMap').serializeObject();
+        listQuery.paramMap = _.cloneDeep(fd)
+        getSearchList({
+          paramMap:_.cloneDeep(fd)
+        })
+    }
+    // 排序组合数据
+    $.smartOrderForm = function () {
+        var fd =  $('#orderMap').serializeArray();
+        var od = {};
+        var orderList = []
+        $.each(fd, function() {
+          if(od[this.name]){
+            od[this.name] = this.value
+          }else{
+            if(this.value!='asc'){
+              od[this.name] = this.value
+            }
+          }
+        });
+        for(let key in od){
+          if(key===od[key]){
+            orderList.push({"fieldName":key,"sortOrder":"desc"})
+          } else {
+            orderList.push({"fieldName":key,"sortOrder":od[key]})
+          }
+        }
+        listQuery.order = orderList
+        getSearchList({
+          order:orderList
+        })
+    }
+    // 导出文件
+    var downloadLoading = true
+    $.exportExcel = function(){
+      var val = $('#queryString').val();
+      var key = document.getElementById("switcher-check").checked?'"'+val+'"':val;
+      if(downloadLoading){
+        downloadLoading = false
+        xhrDownload({
+          url:GLOBAL_AJAX_URL.keySearchExport,
+          method: 'POST',
+          title:exportFileName,
+          data:JSON.stringify({
+            queryString: key,
+            paramMap: listQuery.paramMap,
+            order: listQuery.order,
+            index:listQuery.index
+          })
+        },function () {
+          downloadLoading = true
+        })
+      }
+    }
+	})
+  // jQuery扩展表单提交数据格式，没有值则不赋值
+  $.fn.serializeObject = function() {
+    var o = {};
+    var a = this.serializeArray();
+    $.each(a, function() {
+      if(this.value){
+        if (o[this.name]) {
+          if (!o[this.name].push) {
+            o[this.name] = [o[this.name]];
+          }
+          o[this.name].push(this.value || '');
+        } else {
+          o[this.name] = this.value || '';
+        }
+      }
+    });
+    return o;
+  };
+  function open(url) {
+      top.$.jBox.open(url, title,1000,400,{
+          buttons:{"关闭":true},
+          loaded:function(h){
+              $(".jbox-content", top.document).css("overflow-y","hidden");
+          }
+      });
+  }
+  function opent(url) {
+      top.$.jBox.open(url, title,1000,400,{
+          buttons:{"关闭":true},
+          loaded:function(h){
+              $(".jbox-content", top.document).css("overflow-y","hidden");
+          }
+      });
+  }
+</script>
+</body>
+</html>

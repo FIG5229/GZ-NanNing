@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairAdminStatisticsDao">
+    
+	<sql id="affairAdminStatisticsColumns">
+		a.id AS "id",
+		a.nick_name AS "nickName",
+		a.name AS "name",
+		a.sex AS "sex",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.control AS "control",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="affairAdminStatisticsJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairAdminStatistics">
+		SELECT 
+			<include refid="affairAdminStatisticsColumns"/>
+		FROM affair_admin_statistics a
+		<include refid="affairAdminStatisticsJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairAdminStatistics">
+		SELECT 
+			<include refid="affairAdminStatisticsColumns"/>
+		FROM affair_admin_statistics a
+		<include refid="affairAdminStatisticsJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="unit != null and unit != ''">
+				AND a.unit LIKE
+					<if test="dbName == 'oracle'">'%'||#{unit}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{unit}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{unit},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{unit}||'%'</if>
+			</if>
+			${sqlMap.dsf}
+			<!--AND (o.id = '34' OR o.parent_ids LIKE '0,1,34,%' OR u.id = 'a1fb3139ecfe4f2bb4e61abb18eae828' OR u.office_id = '28')
+			<if test="userId != '' and userId != null and officeId != '' and officeId != null ">
+				AND ( o.ID = #{userId} OR o.parent_ids LIKE'%,'||#{userId}||',%' OR u.ID = #{officeId}  or u.office_id = #{userId})
+			</if>-->
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairAdminStatistics">
+		SELECT 
+			<include refid="affairAdminStatisticsColumns"/>
+		FROM affair_admin_statistics a
+		<include refid="affairAdminStatisticsJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_admin_statistics(
+			id,
+			nick_name,
+			name,
+			sex,
+			unit,
+			unit_id,
+			control,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{nickName},
+			#{name},
+			#{sex},
+			#{unit},
+			#{unitId},
+			#{control},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_admin_statistics SET 	
+			nick_name = #{nickName},
+			name = #{name},
+			sex = #{sex},
+			unit = #{unit},
+			unit_id = #{unitId},
+			control = #{control},
+			create_id_no = #{createIdNo},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_admin_statistics SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_admin_statistics SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+	
+</mapper>

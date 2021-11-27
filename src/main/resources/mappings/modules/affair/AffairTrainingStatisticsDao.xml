@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairTrainingStatisticsDao">
+    
+	<sql id="affairTrainingStatisticsColumns">
+		a.id AS "id",
+		a.number AS "number",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.class_name AS "className",
+		a.training_method AS "trainingMethod",
+		a.begin_time AS "beginTime",
+		a.end_time AS "endTime",
+		a.class_sum AS "classSum",
+		a.begin_state AS "beginState",
+		a.end_state AS "endState",
+		a.evaluation_score AS "evaluationScore",
+		a.should_join AS "shouldJoin",
+		a.true_join AS "trueJoin",
+		a.participation_number AS "participationNumber",
+		a.passed_number AS "passedNumber",
+		a.not_passed_number AS "notPassedNumber",
+		a.pass_ratio AS "passRatio",
+		a.teacher_cost AS "teacherCost",
+		a.accommodation_cost AS "accommodationCost",
+		a.food_cost AS "foodCost",
+		a.site_cost AS "siteCost",
+		a.other_cost AS "otherCost",
+		a.cost_sum AS "costSum",
+		a.learn_time_sum AS "learnTimeSum",
+		a.learn_time_avg AS "learnTimeAvg",
+		a.count_sum AS "countSum",
+		a.count_avg AS "countAvg",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="affairTrainingStatisticsJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairTrainingStatistics">
+		SELECT 
+			<include refid="affairTrainingStatisticsColumns"/>
+		FROM affair_training_statistics a
+		<include refid="affairTrainingStatisticsJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairTrainingStatistics">
+		SELECT 
+			<include refid="affairTrainingStatisticsColumns"/>
+		FROM affair_training_statistics a
+		<include refid="affairTrainingStatisticsJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="number != null and number != ''">
+				AND a.number LIKE
+				<if test="dbName == 'oracle'">'%'||#{number}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{number}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{number},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{number}||'%'</if>
+			</if>
+			<if test="className != null and className != ''">
+				AND a.class_name LIKE
+				<if test="dbName == 'oracle'">'%'||#{className}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{className}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{className},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{className}||'%'</if>
+			</if>
+			<if test="trainingMethod != null and trainingMethod != ''">
+				AND a.training_method LIKE
+				<if test="dbName == 'oracle'">'%'||#{trainingMethod}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{trainingMethod}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{trainingMethod},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{trainingMethod}||'%'</if>
+			</if>
+			<if test="unit != null and unit != ''">
+				AND a.unit LIKE
+				<if test="dbName == 'oracle'">'%'||#{unit}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{unit}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{unit},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{unit}||'%'</if>
+			</if>
+			<if test="endState != null and endState != ''">
+				AND a.end_state LIKE
+				<if test="dbName == 'oracle'">'%'||#{endState}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{endState}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{endState},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{endState}||'%'</if>
+			</if>
+
+			<choose>
+				<when test="beginTime != null and beginTime != '' and endTime != null and endTime != ''">
+					AND a.begin_time between #{beginTime} and #{endTime}
+				</when>
+				<otherwise>
+					<if test="beginTime != null and beginTime != ''">
+						AND a.begin_time  >= #{beginTime}
+					</if>
+					<if test="endTime != null and endTime != ''">
+						AND #{endTime} >= a.end_time
+					</if>
+				</otherwise>
+			</choose>
+			${sqlMap.dsf}
+			<!--AND (o.id = '34' OR o.parent_ids LIKE '0,1,34,%' OR u.id = 'a1fb3139ecfe4f2bb4e61abb18eae828' OR u.office_id = '28')
+			<if test="userId != '' and userId != null and officeId != '' and officeId != null ">
+				AND ( o.ID = #{userId} OR o.parent_ids LIKE'%,'||#{userId}||',%' OR u.ID = #{officeId}  or u.office_id = #{userId})
+			</if>-->
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairTrainingStatistics">
+		SELECT 
+			<include refid="affairTrainingStatisticsColumns"/>
+		FROM affair_training_statistics a
+		<include refid="affairTrainingStatisticsJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_training_statistics(
+			id,
+			number,
+			unit,
+			unit_id,
+			class_name,
+			training_method,
+			begin_time,
+			end_time,
+			class_sum,
+			begin_state,
+			end_state,
+			evaluation_score,
+ 			should_join,
+ 			true_join,
+			participation_number,
+			passed_number,
+			not_passed_number,
+			pass_ratio,
+			teacher_cost,
+			accommodation_cost,
+			food_cost,
+			site_cost,
+			other_cost,
+			cost_sum,
+			learn_time_sum,
+			learn_time_avg,
+			count_sum,
+			count_avg,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{number},
+			#{unit},
+			#{unitId},
+			#{className},
+			#{trainingMethod},
+			#{beginTime},
+			#{endTime},
+			#{classSum},
+			#{beginState},
+			#{endState},
+			#{evaluationScore},
+			#{shouldJoin},
+			#{trueJoin},
+			#{participationNumber},
+			#{passedNumber},
+			#{notPassedNumber},
+			#{passRatio},
+			#{teacherCost},
+			#{accommodationCost},
+			#{foodCost},
+			#{siteCost},
+			#{otherCost},
+			#{costSum},
+			#{learnTimeSum},
+			#{learnTimeAvg},
+			#{countSum},
+			#{countAvg},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_training_statistics SET 	
+			number = #{number},
+			unit = #{unit},
+			unit_id = #{unitId},
+			class_name = #{className},
+			training_method = #{trainingMethod},
+			begin_time = #{beginTime},
+			end_time = #{endTime},
+			class_sum = #{classSum},
+			begin_state = #{beginState},
+			end_state = #{endState},
+			evaluation_score = #{evaluationScore},
+			should_join = #{shouldJoin},
+ 			true_join = #{trueJoin},
+			participation_number = #{participationNumber},
+			passed_number = #{passedNumber},
+			not_passed_number = #{notPassedNumber},
+			pass_ratio = #{passRatio},
+			teacher_cost = #{teacherCost},
+			accommodation_cost = #{accommodationCost},
+			food_cost = #{foodCost},
+			site_cost = #{siteCost},
+			other_cost = #{otherCost},
+			cost_sum = #{costSum},
+			learn_time_sum = #{learnTimeSum},
+			learn_time_avg = #{learnTimeAvg},
+			count_sum = #{countSum},
+			count_avg = #{countAvg},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_training_statistics SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+
+	<update id="deleteByIds">
+		UPDATE affair_training_statistics SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+</mapper>

@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.tw.dao.AcSaftyAuditDao">
+    
+	<sql id="acSaftyAuditColumns">
+		a.guid AS "guid",
+		a.shmj AS "shmj",
+		a.shld AS "shld",
+		a.sfllyhglxt AS "sfllyhglxt",
+		a.shsj AS "shsj",
+		a.cjr AS "cjr",
+		a.cjsj AS "cjsj",
+		a.f_guid AS "fGuid",
+		a.shclqk AS "shclqk"
+	</sql>
+	
+	<sql id="acSaftyAuditJoins">
+	</sql>
+    
+	<select id="get" resultType="AcSaftyAudit">
+		SELECT 
+			<include refid="acSaftyAuditColumns"/>
+		FROM ac_safty_audit a
+		<include refid="acSaftyAuditJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AcSaftyAudit">
+		SELECT 
+			<include refid="acSaftyAuditColumns"/>
+		FROM ac_safty_audit a
+		<include refid="acSaftyAuditJoins"/>
+		<where>
+			
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AcSaftyAudit">
+		SELECT 
+			<include refid="acSaftyAuditColumns"/>
+		FROM ac_safty_audit a
+		<include refid="acSaftyAuditJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+    <select id="selectAllExcption" resultType="com.thinkgem.jeesite.modules.tw.entity.AcSaftyAudit">
+		SELECT
+			*
+		FROM
+			( ac_safty_audit ac LEFT JOIN ac_mobile_data A ON ac.f_guid = A.ac_type )
+			LEFT JOIN user_p_view u ON A.user_id = u.username
+		WHERE
+			A.ac_date LIKE concat ('%',#{checkTime},'%')
+			AND u.fullunitname LIKE concat ('%',#{unit},'%')
+			AND a.ac_type = '隐患排查'
+	</select>
+
+    <insert id="insert">
+		INSERT INTO ac_safty_audit(
+			guid,
+			shmj,
+			shld,
+			sfllyhglxt,
+			shsj,
+			cjr,
+			cjsj,
+			f_guid,
+			shclqk
+		) VALUES (
+			#{guid},
+			#{shmj},
+			#{shld},
+			#{sfllyhglxt},
+			#{shsj},
+			#{cjr},
+			#{cjsj},
+			#{fGuid},
+			#{shclqk}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE ac_safty_audit SET 	
+			guid = #{guid},
+			shmj = #{shmj},
+			shld = #{shld},
+			sfllyhglxt = #{sfllyhglxt},
+			shsj = #{shsj},
+			cjr = #{cjr},
+			cjsj = #{cjsj},
+			f_guid = #{fGuid},
+			shclqk = #{shclqk}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM ac_safty_audit
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

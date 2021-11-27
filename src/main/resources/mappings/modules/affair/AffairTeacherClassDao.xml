@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairTeacherClassDao">
+    
+	<sql id="affairTeacherClassColumns">
+		a.id AS "id",
+		a.class_name AS "className",
+		a.class_id AS "classId",
+		a.way AS "way",
+		a.type AS "type",
+		a.project AS "project",
+		a.apply_begin_time AS "applyBeginTime",
+		a.apply_end_time AS "applyEndTime",
+		a.department AS "department",
+		a.train_begin_time AS "trainBeginTime",
+		a.train_end_time AS "trainEndTime",
+		a.state AS "state",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="affairTeacherClassJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairTeacherClass">
+		SELECT 
+			<include refid="affairTeacherClassColumns"/>
+		FROM affair_teacher_class a
+		<include refid="affairTeacherClassJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairTeacherClass">
+		SELECT 
+			<include refid="affairTeacherClassColumns"/>
+		FROM affair_teacher_class a
+		<include refid="affairTeacherClassJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			/*	编号模糊查询--未明确，保留	*/
+			<!--<if test="className != null and className != ''">
+				AND a.className LIKE
+				<if test="dbName == 'oracle'">'%'||#{className}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{className}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{className},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{className}||'%'</if>
+			</if>-->
+
+			<if test="className != null and className != ''">
+				AND a.class_name LIKE
+				<if test="dbName == 'oracle'">'%'||#{className}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{className}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{className},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{className}||'%'</if>
+			</if>
+			<choose>
+				<when test="trainBeginTime != null and trainBeginTime != '' and trainEndTime != null and trainEndTime != ''">
+					AND a.train_begin_time between #{trainBeginTime} and #{trainEndTime}
+				</when>
+				<otherwise>
+					<if test="trainBeginTime != null and trainBeginTime != ''">
+						AND a.train_begin_time  >= #{trainBeginTime}
+					</if>
+					<if test="trainEndTime != null and trainEndTime != ''">
+						AND #{trainEndTime} >= a.train_end_time
+					</if>
+				</otherwise>
+			</choose>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairTeacherClass">
+		SELECT 
+			<include refid="affairTeacherClassColumns"/>
+		FROM affair_teacher_class a
+		<include refid="affairTeacherClassJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_teacher_class(
+			id,
+			class_name,
+			class_id,
+			way,
+			type,
+			project,
+			apply_begin_time,
+			apply_end_time,
+			department,
+			train_begin_time,
+			train_end_time,
+			state,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{className},
+			#{classId},
+			#{way},
+			#{type},
+			#{project},
+			#{applyBeginTime},
+			#{applyEndTime},
+			#{department},
+			#{trainBeginTime},
+			#{trainEndTime},
+			#{state},
+			#{createBy.id},
+			#{createOrgId},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateOrgId},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_teacher_class SET 	
+			class_name = #{className},
+			class_id = #{classId},
+			way = #{way},
+			type = #{type},
+			project = #{project},
+			apply_begin_time = #{applyBeginTime},
+			apply_end_time = #{applyEndTime},
+			department = #{department},
+			train_begin_time = #{trainBeginTime},
+			train_end_time = #{trainEndTime},
+			state = #{state},
+			create_org_id = #{createOrgId},
+			create_id_no = #{createIdNo},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateOrgId},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_teacher_class SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+
+	<update id="deleteByIds">
+		UPDATE affair_teacher_class SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+	
+</mapper>

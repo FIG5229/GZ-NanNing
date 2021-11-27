@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairApplyPersonnelDao">
+    
+	<sql id="affairApplyPersonnelColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.job AS "job",
+		a.apply_state AS "applyState",
+		a.approver AS "approver",
+		a.approval_opinion AS "approvalOpinion",
+		a.phone AS "phone",
+		a.trip AS "trip",
+		a.station AS "station",
+		a.ad_free AS "adFree",
+		a.class_id AS "classId",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="affairApplyPersonnelJoins">
+	</sql>
+    
+	<select id="get" resultType="AffairApplyPersonnel">
+		SELECT 
+			<include refid="affairApplyPersonnelColumns"/>
+		FROM affair_apply_personnel a
+		<include refid="affairApplyPersonnelJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairApplyPersonnel">
+		SELECT 
+			<include refid="affairApplyPersonnelColumns"/>
+		FROM affair_apply_personnel a
+		<include refid="affairApplyPersonnelJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL} and class_id = #{classId}
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairApplyPersonnel">
+		SELECT 
+			<include refid="affairApplyPersonnelColumns"/>
+		FROM affair_apply_personnel a
+		<include refid="affairApplyPersonnelJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+    <insert id="insert">
+		INSERT INTO affair_apply_personnel(
+			id,
+			name,
+			unit,
+			unit_id,
+			job,
+			apply_state,
+			approver,
+			approval_opinion,
+			phone,
+			trip,
+			station,
+			ad_free,
+			class_id,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{name},
+			#{unit},
+			#{unitId},
+			#{job},
+			#{applyState},
+			#{approver},
+			#{approvalOpinion},
+			#{phone},
+			#{trip},
+			#{station},
+			#{adFree},
+			#{classId},
+			#{createBy.id},
+			#{createOrgId},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateOrgId},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_apply_personnel SET 	
+			name = #{name},
+			unit = #{unit},
+			unit_id = #{unitId},
+			job = #{job},
+			apply_state = #{applyState},
+			approver = #{approver},
+			approval_opinion = #{approvalOpinion},
+			phone = #{phone},
+			trip = #{trip},
+			station = #{station},
+			ad_free = #{adFree},
+			class_id = #{classId},
+			create_org_id = #{createOrgId},
+			create_id_no = #{createIdNo},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateOrgId},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_apply_personnel SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_apply_personnel SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<select id="selectAllPersonnelByClassId" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairApplyPersonnel">
+		SELECT
+			<include refid="affairApplyPersonnelColumns"/>
+		FROM affair_apply_personnel a
+			<include refid="affairApplyPersonnelJoins"/>
+		<where>
+			a.del_flag = '0'
+			and class_id = #{classId}
+		</where>
+	</select>
+
+	<select id="findLike" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairApplyPersonnel">
+		SELECT
+		<include refid="affairApplyPersonnelColumns"/>
+		FROM affair_apply_personnel a
+		<include refid="affairApplyPersonnelJoins"/>
+		<where>
+			a.del_flag = '0' and class_id = #{classId}
+
+			AND a.name LIKE #{name}
+
+			AND a.apply_state LIKE #{applyState}
+
+			ORDER BY a.update_date DESC
+		</where>
+	</select>
+
+</mapper>

@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairKnowledgeDao">
+    
+	<sql id="affairKnowledgeColumns">
+		a.id AS "id",
+		a.title AS "title",
+		a.type AS "type",
+		a.publish_dep AS "publishDep",
+		a.publish_org_id AS "publishOrgId",
+		a.publisher AS "publisher",
+		a.receive_dep AS "receiveDep",
+		a.receive_dep_id AS "receiveDepId",
+		a.content AS "content",
+		a.file_path AS "filePath",
+		a.publish_date AS "publishDate",
+		a.status AS "status",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="affairKnowledgeJoins">
+		/*LEFT JOIN sys_office o4 ON o4.id = a.publish_dep
+		LEFT JOIN sys_office o7 ON o7.id = a.receive_dep*/
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairKnowledge">
+		SELECT 
+			<include refid="affairKnowledgeColumns"/>
+		FROM affair_knowledge a
+		<include refid="affairKnowledgeJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairKnowledge">
+		<choose>
+			<when test="hasAuth == true">/*发布人*/
+				SELECT
+				<include refid="affairKnowledgeColumns"/>
+				FROM affair_knowledge a
+				<include refid="affairKnowledgeJoins"/>
+				<where>
+					a.del_flag = #{DEL_FLAG_NORMAL}
+					<if test="title != null and title != ''">
+						AND a.title LIKE CONCAT('%',#{title},'%')
+					</if>
+					<if test="type != null and type != ''">
+						AND a.type = #{type}
+					</if>
+					<choose>
+						<when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+							AND date_trunc('day', a.update_date) between  #{startDate} and  #{endDate}
+						</when>
+						<when test="startDate != null and startDate != ''">
+							AND a.update_date >= #{startDate}
+						</when>
+						<when test="endDate != null and endDate != ''">
+							AND  #{endDate} >= date_trunc('day', a.update_date)
+						</when>
+						<otherwise>
+						</otherwise>
+					</choose>
+					<if test="status != null and status != ''">
+						AND a.status = #{status}
+					</if>
+					<!-- 数据范围过滤 -->
+					${sqlMap.dsf}
+				</where>
+			</when>
+			<otherwise>/*非发布人*/
+				SELECT
+				<include refid="affairKnowledgeColumns"/>
+				FROM affair_knowledge a LEFT JOIN affair_knowledge_receive r on a.id = r.notice_id
+				<!--<include refid="affairKnowledgeJoins"/>-->
+				<where>
+					a.del_flag = #{DEL_FLAG_NORMAL} and r.org_id = #{createBy.office.id}
+					<if test="title != null and title != ''">
+						AND a.title LIKE CONCAT('%',#{title},'%')
+					</if>
+					<if test="type != null and type != ''">
+						AND a.type = #{type}
+					</if>
+					<choose>
+						<when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+							AND date_trunc('day', a.update_date) between  #{startDate} and  #{endDate}
+						</when>
+						<when test="startDate != null and startDate != ''">
+							AND a.update_date >= #{startDate}
+						</when>
+						<when test="endDate != null and endDate != ''">
+							AND  #{endDate} >= date_trunc('day', a.update_date)
+						</when>
+						<otherwise>
+						</otherwise>
+					</choose>
+					<if test="status != null and status != ''">
+						AND a.status = #{status}
+					</if>
+				</where>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairKnowledge">
+		SELECT 
+			<include refid="affairKnowledgeColumns"/>
+		FROM affair_knowledge a
+		<include refid="affairKnowledgeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_knowledge(
+			id,
+			title,
+			type,
+			publish_dep,
+			publish_org_id,
+			publisher,
+			receive_dep,
+			receive_dep_id,
+			content,
+			file_path,
+			publish_date,
+			status,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{title},
+			#{type},
+			#{publishDep},
+			#{publishOrgId},
+			#{publisher},
+			#{receiveDep},
+			#{receiveDepId},
+			#{content},
+			#{filePath},
+			#{publishDate},
+			#{status},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_knowledge SET 	
+			title = #{title},
+			type = #{type},
+			publish_dep = #{publishDep},
+			publish_org_id = #{publishOrgId},
+			publisher = #{publisher},
+			receive_dep = #{receiveDep},
+			receive_dep_id = #{receiveDepId},
+			content = #{content},
+			file_path = #{filePath},
+			publish_date = #{publishDate},
+			status = #{status},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_knowledge SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_knowledge SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+			 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<select id="findByIds" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairKnowledge">
+		select <include refid="affairKnowledgeColumns"/>
+		from affair_knowledge a where id in <foreach collection="ids" item="item" index="index"
+			   open="(" separator="," close=")">#{item}</foreach>
+	</select>
+</mapper>

@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.tw.dao.PatrolrecordDao">
+    
+	<sql id="patrolrecordColumns">
+		a.guid AS "guid",
+		a.userid AS "userid",
+		a.imei AS "imei",
+		a.date AS "date",
+		a.punchingpointid AS "punchingpointid",
+		a.x AS "x",
+		a.y AS "y",
+		a.reviewuserid AS "reviewuserid",
+		a.reviewtime AS "reviewtime",
+		a.ispass AS "ispass",
+		a.isjoinstatistics AS "isjoinstatistics"
+	</sql>
+	
+	<sql id="patrolrecordJoins">
+	</sql>
+    
+	<select id="get" resultType="Patrolrecord">
+		SELECT 
+			<include refid="patrolrecordColumns"/>
+		FROM patrolrecord a
+		<include refid="patrolrecordJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="Patrolrecord">
+		SELECT 
+			<include refid="patrolrecordColumns"/>
+		FROM patrolrecord a
+		<include refid="patrolrecordJoins"/>
+		<where>
+			
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="Patrolrecord">
+		SELECT 
+			<include refid="patrolrecordColumns"/>
+		FROM patrolrecord a
+		<include refid="patrolrecordJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+    <select id="selectAllExcption" resultType="com.thinkgem.jeesite.modules.tw.entity.Patrolrecord">
+		SELECT
+			*
+		FROM
+			patrolrecord
+			P LEFT JOIN user_p_view u ON P.userid = u.username
+		WHERE
+			P.ispass = '2'
+			AND u.organizationcode = #{code}
+			AND substr(p."DATE",1,10) BETWEEN #{yearL} AND #{yearT}
+	</select>
+	<select id="selectAllExcptionYear" resultType="com.thinkgem.jeesite.modules.tw.entity.Patrolrecord">
+		SELECT
+			*
+		FROM
+			patrolrecord
+			P LEFT JOIN user_p_view u ON P.userid = u.username
+		WHERE
+			P.ispass = '2'
+			AND u.organizationcode = #{code}
+			AND substr(p."DATE",1,10) BETWEEN #{yearL} AND #{yearT}
+	</select>
+
+    <insert id="insert">
+		INSERT INTO patrolrecord(
+			guid,
+			userid,
+			imei,
+			date,
+			punchingpointid,
+			x,
+			y,
+			reviewuserid,
+			reviewtime,
+			ispass,
+			isjoinstatistics
+		) VALUES (
+			#{guid},
+			#{userid},
+			#{imei},
+			#{date},
+			#{punchingpointid},
+			#{x},
+			#{y},
+			#{reviewuserid},
+			#{reviewtime},
+			#{ispass},
+			#{isjoinstatistics}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE patrolrecord SET 	
+			guid = #{guid},
+			userid = #{userid},
+			imei = #{imei},
+			date = #{date},
+			punchingpointid = #{punchingpointid},
+			x = #{x},
+			y = #{y},
+			reviewuserid = #{reviewuserid},
+			reviewtime = #{reviewtime},
+			ispass = #{ispass},
+			isjoinstatistics = #{isjoinstatistics}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM patrolrecord
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

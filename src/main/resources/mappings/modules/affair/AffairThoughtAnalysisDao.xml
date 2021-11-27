@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairThoughtAnalysisDao">
+    
+	<sql id="affairThoughtAnalysisColumns">
+		a.id AS "id",
+		a.title AS "title",
+		a.own_group AS "ownGroup",
+		a.own_group_id AS "ownGroupId",
+		a.main_content AS "mainContent",
+		a.release_time AS "releaseTime",
+		a.annex AS "annex",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="affairThoughtAnalysisJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairThoughtAnalysis">
+		SELECT 
+			<include refid="affairThoughtAnalysisColumns"/>
+		FROM affair_thought_analysis a
+		<include refid="affairThoughtAnalysisJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairThoughtAnalysis">
+		SELECT 
+			<include refid="affairThoughtAnalysisColumns"/>
+		FROM affair_thought_analysis a
+		<include refid="affairThoughtAnalysisJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="title != null and title != ''">
+				AND a.title LIKE '%'||#{title}||'%'
+			</if>
+			<if test="ownGroupId != null and ownGroupId != ''">
+				AND a.own_group_id = #{ownGroupId}
+			</if>
+			<choose>
+				<when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+					AND a.release_time between #{startDate} and #{endDate}
+				</when>
+				<when test="startDate != null and startDate != ''">
+					AND a.release_time >= #{startDate}
+				</when>
+				<when test="endDate != null and endDate != ''">
+					AND  #{endDate} >= a.release_time
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.release_time DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairThoughtAnalysis">
+		SELECT 
+			<include refid="affairThoughtAnalysisColumns"/>
+		FROM affair_thought_analysis a
+		<include refid="affairThoughtAnalysisJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_thought_analysis(
+			id,
+			title,
+			own_group,
+			own_group_id,
+			main_content,
+			release_time,
+			annex,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{title},
+			#{ownGroup},
+			#{ownGroupId},
+			#{mainContent},
+			#{releaseTime},
+			#{annex},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_thought_analysis SET 	
+			title = #{title},
+			own_group = #{ownGroup},
+			own_group_id = #{ownGroupId},
+			main_content = #{mainContent},
+			release_time = #{releaseTime},
+			annex = #{annex},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_thought_analysis SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_thought_analysis SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<select id="findInfoByCreateOrgId" resultType="java.util.HashMap">
+		SELECT count(id)
+		from affair_thought_analysis ata
+		WHERE
+		ata.del_flag != '1'
+		<if test="id != null and id != ''">
+			AND create_org_id = #{id} AND ata.del_flag = '0'
+		</if>
+	</select>
+
+	<select id="findInfoByCreateOrgIds" resultType="java.util.HashMap">
+		SELECT count(id)
+		from affair_thought_analysis ata
+		WHERE
+		ata.del_flag != '1'
+		AND	create_org_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+	</select>
+
+	<select id="getCount" resultType="java.lang.Integer">
+		select
+		count(1)
+		from affair_thought_analysis a
+		where a.del_flag = '0'
+		<!--and CAST ( SUBSTRING ( TO_CHAR( A.release_time, 'yyyy-mm-dd' ), 1, 4 ) as varchar ) = #{year}-->
+		and a.own_group = #{unit}
+		and a.own_group_id = #{id}
+		<if test="startTime != null and startTime != '' and endTime != null and endTime != ''">
+			AND to_char ( A.release_time, 'yyyy-mm-dd' ) BETWEEN #{startTime} AND #{endTime}
+		</if>
+		<!--and  CAST ( SUBSTRING ( TO_CHAR( A.release_time, 'yyyy-mm-dd' ), 6, 5 ) as varchar ) &lt;= #{time}-->
+	</select>
+
+	<select id="findUnitId" resultType="java.lang.String">
+		select
+		b.code
+		from sys_offices a
+		left join sys_office b on a.id = b.id
+		where
+		a.group_id = #{id}
+	</select>
+
+</mapper>

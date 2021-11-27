@@ -1,0 +1,429 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairElectionDao">
+    
+	<sql id="affairElectionColumns">
+		a.id AS "id",
+		a.jc AS "jc",
+		a.method AS "method",
+		a.jm_date AS "jmDate",
+		a.hj_date AS "hjDate",
+		a.ydh_num AS "ydhNum",
+		a.sdh_num AS "sdhNum",
+		a.quota AS "quota",
+		a.status1 AS "status1",
+		a.status2 AS "status2",
+		a.del_flag AS "delFlag",
+		a.opinion AS "opinion",
+		a.party_organization_name AS "partyOrganizationName",
+		a.party_organization_id AS "partyOrganizationId",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.file_path AS "filePath",
+		a.election_information AS "electionInformation"
+	</sql>
+	
+	<sql id="affairElectionJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairElection">
+		SELECT 
+			<include refid="affairElectionColumns"/>
+		FROM affair_election a
+		<include refid="affairElectionJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairElection">
+		<choose>
+			<when test="hasAuth == true">/*审核人*/
+				SELECT
+				<include refid="affairElectionColumns"/>
+				FROM affair_election a
+				<include refid="affairElectionJoins"/>
+				LEFT JOIN affair_general_situation s
+				ON s.id = a.party_organization_id
+				where a.del_flag = #{DEL_FLAG_NORMAL} and a.status1 = '2'
+				<!-- 数据范围过滤 -->
+				${sqlMap.dsf}
+			</when>
+			<otherwise>/*非审核人*/
+				SELECT
+				<include refid="affairElectionColumns"/>
+				FROM affair_election a
+				LEFT JOIN affair_general_situation s
+				ON s.id = a.party_organization_id
+				where a.del_flag = #{DEL_FLAG_NORMAL} and ( a.create_by =#{createBy.id} or a.status2 != '3' )
+			</otherwise>
+		</choose>
+        /*条件*/
+		<if test="jc != null and jc != ''">
+			AND a.jc = #{jc}
+		</if>
+		<if test="method != null and method != ''">
+			AND a.method = #{method}
+		</if>
+		<choose>
+			<when test="jmStartDate != null and jmStartDate != '' and jmEndDate != null and jmEndDate != ''">
+				AND a.jm_date between #{jmStartDate} and #{jmEndDate}
+			</when>
+			<otherwise>
+				<if test="jmStartDate != null and jmStartDate != ''">
+					AND a.jm_date >= #{jmStartDate}
+				</if>
+				<if test="jmEndDate != null and jmEndDate != ''">
+					AND  #{jmEndDate} >= a.jm_date
+				</if>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="hjStartDate != null and hjStartDate != '' and hjEndDate != null and hjEndDate != ''">
+				AND a.hj_date between #{hjStartDate} and #{hjEndDate}
+			</when>
+			<otherwise>
+				<if test="hjStartDate != null and hjStartDate != ''">
+					AND a.hj_date >= #{hjStartDate}
+				</if>
+				<if test="hjEndDate != null and hjEndDate != ''">
+					AND  #{hjEndDate} >= a.hj_date
+				</if>
+			</otherwise>
+		</choose>
+		<if test="status2 != null and status2 != ''">
+			AND a.status2 = #{status2}
+		</if>
+		<if test="partyOrganizationId != null and partyOrganizationId != ''">
+			AND a.party_organization_id = #{partyOrganizationId}
+		</if>
+		<if test="treeId != null and treeId != ''">
+			<!-- AND (a.party_organization_id = #{treeId} OR s.parent_ids LIKE CONCAT('%,', #{treeId}, ',%'))-->
+			AND a.party_organization_id = #{treeId}
+		</if>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairElection">
+		SELECT 
+			<include refid="affairElectionColumns"/>
+		FROM affair_election a
+		<include refid="affairElectionJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_election(
+			id,
+			jc,
+			method,
+			jm_date,
+			hj_date,
+			ydh_num,
+			sdh_num,
+			quota,
+			status1,
+			status2,
+			del_flag,
+			party_organization_name,
+			party_organization_id,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			file_path,
+			election_information
+		) VALUES (
+			#{id},
+			#{jc},
+			#{method},
+			#{jmDate},
+			#{hjDate},
+			#{ydhNum},
+			#{sdhNum},
+			#{quota},
+			#{status1},
+			#{status2},
+			#{delFlag},
+			#{partyOrganizationName},
+			#{partyOrganizationId},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{filePath},
+			#{electionInformation}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_election SET 	
+			jc = #{jc},
+			method = #{method},
+			jm_date = #{jmDate},
+			hj_date = #{hjDate},
+			ydh_num = #{ydhNum},
+			sdh_num = #{sdhNum},
+			quota = #{quota},
+			status1 = #{status1},
+			status2 = #{status2},
+			opinion = #{opinion},
+			party_organization_name = #{partyOrganizationName},
+			party_organization_id = #{partyOrganizationId},
+			person = #{person},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			file_path = #{filePath},
+			election_information = #{electionInformation}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_election SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="shenHe">
+		UPDATE affair_election SET
+			status2 = #{affairElection.status2},
+			person = #{affairElection.person}, opinion = #{affairElection.opinion},
+			update_date = #{affairElection.updateDate}
+			where id = #{affairElection.id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_election SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+			 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<select id="findByIds" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairElection">
+		select <include refid="affairElectionColumns"/>
+		from affair_election a where id in <foreach collection="ids" item="item" index="index"
+		   open="(" separator="," close=")">#{item}</foreach>
+	</select>
+
+	<select id="countElection" resultType="map">
+		SELECT COUNT( 1 ) as num,
+		'应换届' AS label
+		FROM
+		affair_election A
+		WHERE
+		a.del_flag = '0'
+
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(A.jm_date, 'yyyy-mm')  &lt;= #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.jm_date)  &lt;= #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.jm_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.jm_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.jm_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(A.hj_date, 'yyyy-mm')  &gt;= #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.hj_date)  &gt;= #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.hj_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.hj_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.hj_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		UNION ALL
+		SELECT COUNT( 1 ) as num,
+		'已换届' AS label
+		FROM
+		affair_election A
+		WHERE
+		a.del_flag = '0'
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(A.hj_date, 'yyyy-mm')  &lt;= #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.hj_date)  &lt;= #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.hj_date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.hj_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.hj_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findElectionDetailList" resultType="AffairElection">
+		select <include refid="affairElectionColumns"/>
+		from affair_election A
+		WHERE a.del_flag = '0'
+		<choose>
+			<when test="label == '应换届'">
+				<choose>
+					<when test="month != null and month !=''">
+						AND TO_CHAR(A.jm_date, 'yyyy-mm')  &lt;= #{month}
+					</when>
+					<when test="year != null and year !=''">
+						AND extract(year from a.jm_date)  &lt;= #{year}
+					</when>
+					<when test="jmStartDate != null and jmEndDate != null">
+						AND a.jm_date between  #{jmStartDate,jdbcType=DATE} and #{jmEndDate,jdbcType=DATE}
+					</when>
+					<when test="jmStartDate != null">
+						AND a.jm_date >= #{jmjmStartDate,jdbcType=DATE}
+					</when>
+					<when test="jmEndDate != null">
+						AND  #{jmEndDate,jdbcType=DATE} >= a.jm_date
+					</when>
+					<otherwise>
+					</otherwise>
+				</choose>
+				<choose>
+					<when test="month != null and month !=''">
+						AND TO_CHAR(A.hj_date, 'yyyy-mm')  &gt;= #{month}
+					</when>
+					<when test="year != null and year !=''">
+						AND extract(year from a.hj_date)  &gt;= #{year}
+					</when>
+					<when test="jmStartDate != null and jmEndDate != null">
+						AND a.hj_date between  #{jmStartDate,jdbcType=DATE} and #{jmEndDate,jdbcType=DATE}
+					</when>
+					<when test="jmStartDate != null">
+						AND a.hj_date >= #{jmStartDate,jdbcType=DATE}
+					</when>
+					<when test="jmEndDate != null">
+						AND  #{jmEndDate,jdbcType=DATE} >= a.hj_date
+					</when>
+					<otherwise>
+					</otherwise>
+				</choose>
+			</when>
+			<when test="label == '已换届'">
+				<choose>
+					<when test="month != null and month !=''">
+						AND TO_CHAR(A.hj_date, 'yyyy-mm')  &lt;= #{month}
+					</when>
+					<when test="year != null and year !=''">
+						AND extract(year from a.hj_date)  &lt;= #{year}
+					</when>
+					<when test="jmStartDate != null and jmEndDate != null">
+						AND a.hj_date between  #{jmStartDate,jdbcType=DATE} and #{jmEndDate,jdbcType=DATE}
+					</when>
+					<when test="jmStartDate != null">
+						AND a.hj_date >= #{jmStartDate,jdbcType=DATE}
+					</when>
+					<when test="jmEndDate != null">
+						AND  #{jmEndDate,jdbcType=DATE} >= a.hj_date
+					</when>
+					<otherwise>
+					</otherwise>
+				</choose>
+			</when>
+		</choose>
+	</select>
+
+    <select id="findAllInfo" resultType="AffairElection">
+        select
+        <include refid="affairElectionColumns"/>
+        FROM affair_election a
+        where a.del_flag = '0'
+        <!--and cast(extract(year from a.create_date) as VARCHAR ) = #{year}-->
+        <if test="startYear != null and startYear != '' and endYear != null and endYear != ''">
+			AND to_char ( "hj_date", 'yyyy-mm-dd' ) BETWEEN #{startYear} AND #{endYear}
+		</if>
+    </select>
+
+	<select id="findUnitId" resultType="java.lang.String">
+		select
+		b.code
+		from sys_offices a
+		left join sys_office b on a.id = b.id
+		where
+		a.party_id = #{partyOrganizationId}
+	</select>
+
+	<select id="findUserId" resultType="java.lang.String">
+		select
+		a.id
+		from sys_user a
+		where
+		a.no = #{id}
+	</select>
+
+    <select id="isElection" resultType="java.lang.Integer">
+        select
+        count(1)
+        from affair_election a
+        where
+        a.del_flag = '0'
+        <!--AND CAST ( SUBSTRING ( TO_CHAR( CURRENT_DATE, 'yyyy-mm-dd' ), 6, 2 ) AS INTEGER ) - CAST ( SUBSTRING ( TO_CHAR( #{hjDate}::timestamp , 'yyyy-mm-dd' ), 6, 2 ) AS INTEGER ) 	&gt;= 3-->
+        AND (date_part('day', (CURRENT_DATE::TIMESTAMP - #{hjDate}::TIMESTAMP)))&gt;=90.0
+        AND a.party_organization_name = #{partyOrganizationName}
+        AND a.party_organization_id = #{partyOrganizationId}
+        AND #{year} = cast(extract(year from a.hj_date) as VARCHAR)
+    </select>
+
+	<select id="findAllSHTGList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairElection">
+		SELECT * FROM affair_election a  where a.del_flag = '0'  and status2 ='1'
+	</select>
+
+</mapper>

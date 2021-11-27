@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.exam.dao.ExamKpPersonRelationDao">
+    
+	<sql id="examKpPersonRelationColumns">
+		a.id AS "id",
+		a.kp_type AS "kpType",
+		a.unit_id AS "unitId",
+		a.unit_name AS "unitName",
+		a.kp_user_id AS "kpUserId",
+		a.cs_unit_id AS "csUnitId",
+		a.cs_unit_name AS "csUnitName",
+		a.cs_user_id AS "csUserId",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.kp_user_name AS "kpUserName",
+		a.cs_user_name AS "csUserName"
+	</sql>
+	
+	<sql id="examKpPersonRelationJoins">
+		LEFT JOIN sys_user u3 ON u3.id = a.unit_id
+		LEFT JOIN sys_user u6 ON u6.id = a.cs_unit_id
+	</sql>
+    
+	<select id="get" resultType="ExamKpPersonRelation">
+		SELECT 
+			<include refid="examKpPersonRelationColumns"/>
+		FROM exam_kp_person_relation a
+		<include refid="examKpPersonRelationJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ExamKpPersonRelation">
+		SELECT 
+			<include refid="examKpPersonRelationColumns"/>
+		FROM exam_kp_person_relation a
+		<include refid="examKpPersonRelationJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="kpType != null and kpType != ''">
+				AND a.kp_type = #{kpType}
+			</if>
+			<if test="unitId != null and unitId != ''">
+				AND a.unit_id = #{unitId}
+			</if>
+			<if test="csUnitId != null and csUnitId != ''">
+				AND a.cs_unit_id = #{csUnitId}
+			</if>
+			<if test="csUserId != null and csUserId != ''">
+				AND a.cs_user_id = #{csUserId}
+			</if>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ExamKpPersonRelation">
+		SELECT 
+			<include refid="examKpPersonRelationColumns"/>
+		FROM exam_kp_person_relation a
+		<include refid="examKpPersonRelationJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO exam_kp_person_relation(
+			id,
+			kp_type,
+			unit_id,
+			unit_name,
+			kp_user_id,
+			cs_unit_id,
+			cs_unit_name,
+			cs_user_id,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			kp_user_name,
+			cs_user_name
+		) VALUES (
+			#{id},
+			#{kpType},
+			#{unitId},
+			#{unitName},
+			#{kpUserId},
+			#{csUnitId},
+			#{csUnitName},
+			#{csUserId},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{kpUserName},
+			#{csUserName}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE exam_kp_person_relation SET 	
+			kp_type = #{kpType},
+			unit_id = #{unitId},
+			unit_name = #{unitName},
+			kp_user_id = #{kpUserId},
+			cs_unit_id = #{csUnitId},
+			cs_unit_name = #{csUnitName},
+			cs_user_id = #{csUserId},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			kp_user_name = #{kpUserName},
+			cs_user_name = #{csUserName}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE exam_kp_person_relation SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds" >
+		UPDATE exam_kp_person_relation
+		SET del_flag = '1'
+		where id in <foreach collection="ids" item="item" index="index" open="(" separator="," close=")">#{item}</foreach>
+	</update>
+	
+</mapper>

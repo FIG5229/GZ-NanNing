@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.exam.dao.ExamLdPerformanceAppraisalDao">
+    
+	<sql id="examLdPerformanceAppraisalColumns">
+		a.id AS "id",
+		a.unit AS "unit",
+		a.job AS "job",
+		a.name AS "name",
+		a.fraction AS "fraction",
+		a.item AS "item",
+		a.exam_type AS "examType",
+		a.workflow_id AS "workflowId",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.year AS "year",
+		a.month AS "month"
+	</sql>
+	
+	<sql id="examLdPerformanceAppraisalJoins">
+	</sql>
+    
+	<select id="get" resultType="ExamLdPerformanceAppraisal">
+		SELECT 
+			<include refid="examLdPerformanceAppraisalColumns"/>
+		FROM exam_ld_performance_appraisal a
+		<include refid="examLdPerformanceAppraisalJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ExamLdPerformanceAppraisal">
+		SELECT 
+			<include refid="examLdPerformanceAppraisalColumns"/>
+		FROM exam_ld_performance_appraisal a
+		<include refid="examLdPerformanceAppraisalJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="examType != null and examType != ''">
+				AND a.exam_type = #{examType}
+			</if>
+			<if test="year != null and year != ''">
+				AND a.year = #{year}
+			</if>
+			<if test="month != null and month != ''">
+				AND a.month = #{month}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ExamLdPerformanceAppraisal">
+		SELECT 
+			<include refid="examLdPerformanceAppraisalColumns"/>
+		FROM exam_ld_performance_appraisal a
+		<include refid="examLdPerformanceAppraisalJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO exam_ld_performance_appraisal(
+			id,
+			unit,
+			job,
+			name,
+			fraction,
+			item,
+			exam_type,
+			workflow_id,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			year,
+			month
+		) VALUES (
+			#{id},
+			#{unit},
+			#{job},
+			#{name},
+			#{fraction},
+			#{item},
+			#{examType},
+			#{workflowId},
+			#{createBy.id},
+			#{createOrgId},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateOrgId},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{year},
+			#{month}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE exam_ld_performance_appraisal SET 	
+			unit = #{unit},
+			job = #{job},
+			name = #{name},
+			fraction = #{fraction},
+			item = #{item},
+			exam_type = #{examType},
+			workflow_id = #{workflowId},
+			year = #{year},
+			month = #{month}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE exam_ld_performance_appraisal SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

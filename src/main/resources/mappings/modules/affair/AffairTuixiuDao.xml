@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairTuixiuDao">
+    
+	<sql id="affairTuixiuColumns">
+		a.id AS "id",
+		a.number AS "number",
+		a.date AS "date",
+		a.name AS "name",
+		a.id_number AS "idNumber",
+		a.birth AS "birth",
+		a.nation AS "nation",
+		a.hometown AS "hometown",
+		a.work_date AS "workDate",
+		a.retirement_time AS "retirementTime",
+		a.retirement_job AS "retirementJob",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.remark AS "remark",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.unit_name AS "unitName",
+		a.unit_name_id AS "unitNameId",
+		a.status AS "status",
+		a.sex AS "sex"
+	</sql>
+	
+	<sql id="affairTuixiuJoins">
+		LEFT JOIN affair_labor_office o ON o.id = a.create_org_id
+  		LEFT JOIN affair_labor_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairTuixiu">
+		SELECT 
+			<include refid="affairTuixiuColumns"/>
+		FROM affair_tuixiu a
+		<include refid="affairTuixiuJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="tuiList" resultType="java.util.HashMap">
+		<!--SELECT
+			<include refid="affairTuixiuColumns"/>
+		FROM affair_tuixiu a
+		<include refid="affairTuixiuJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="number != null and number != ''">
+				AND a.number LIKE
+					<if test="dbName == 'oracle'">'%'||#{number}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{number}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{number},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{number}||'%'</if>
+			</if>
+			<choose>
+				<when test="beginDate != null and beginDate != '' and endDate != null and endDate != ''">
+					AND a.date between #{beginDate} and #{endDate}
+				</when>
+				<when test="beginDate != null and beginDate != ''">
+					AND a.date >= #{beginDate}
+				</when>
+				<when test="endDate != null and endDate != ''">
+					AND  #{endDate} >= a.date
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+			</if>
+           ${sqlMap.dsf}
+		</where>-->
+		/*select a.name, a.id_number, a.birthday, a.nation, a.native_place, a.work_date, a.job_abbreviation, a.workunit_name,a.sex
+		FROM personnel_base a
+		WHERE a.del_flag = '0'
+		AND a.birthday + interval '1 month' &lt; ( CURRENT_DATE - interval '60 years')*/
+		SELECT A
+		.NAME,
+		A.id_number,
+		A.birthday,
+		A.nation,
+		A.native_place,
+		A.work_date,
+		A.job_abbreviation,
+		A.workunit_name,
+		a.workunit_id,
+		A.sex
+		FROM
+		personnel_base A
+		WHERE
+		A.del_flag = '0'
+		AND
+		(
+		(
+		A.sex = '1'
+		AND CAST ( SUBSTRING ( TO_CHAR( A.birthday, 'yyyy-mm-dd' ), 1, 4 ) AS INTEGER ) + 60 = CAST ( SUBSTRING ( TO_CHAR( CURRENT_DATE, 'yyyy-mm-dd' ), 1, 4 ) AS INTEGER )
+		)
+		OR
+		A.sex = '2'
+		AND CAST ( SUBSTRING ( TO_CHAR( A.birthday, 'yyyy-mm-dd' ), 1, 4 ) AS INTEGER ) + 55 = CAST ( SUBSTRING ( TO_CHAR( CURRENT_DATE, 'yyyy-mm-dd' ), 1, 4 ) AS INTEGER )
+		)
+		<if test="number != null and number != ''">
+			AND a.number LIKE
+			<if test="dbName == 'oracle'">'%'||#{number}||'%'</if>
+			<if test="dbName == 'mssql'">'%'+#{number}+'%'</if>
+			<if test="dbName == 'mysql'">concat('%',#{number},'%')</if>
+			<if test="dbName == 'postgre'">'%'||#{number}||'%'</if>
+		</if>
+		<choose>
+			<when test="beginDate != null and beginDate != '' and endDate != null and endDate != ''">
+				AND a.retirementTime between #{beginDate} and #{endDate}
+			</when>
+			<when test="beginDate != null and beginDate != ''">
+				AND a.retirementTime >= #{beginDate}
+			</when>
+			<when test="endDate != null and endDate != ''">
+				AND  #{endDate} >= a.retirementTime
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<if test="name != null and name != ''">
+			AND a.name LIKE
+			<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+			<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+			<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			<if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+		</if>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairTuixiu">
+		SELECT
+                    <include refid="affairTuixiuColumns"/>
+                FROM affair_tuixiu a
+                <include refid="affairTuixiuJoins"/>
+                <where>
+                    a.del_flag = #{DEL_FLAG_NORMAL}
+                    <if test="number != null and number != ''">
+                        AND a.number LIKE
+                            <if test="dbName == 'oracle'">'%'||#{number}||'%'</if>
+                            <if test="dbName == 'mssql'">'%'+#{number}+'%'</if>
+                            <if test="dbName == 'mysql'">concat('%',#{number},'%')</if>
+                            <if test="dbName == 'postgre'">'%'||#{number}||'%'</if>
+                    </if>
+                    <choose>
+                        <when test="beginDate != null and beginDate != '' and endDate != null and endDate != ''">
+                            AND a.date between #{beginDate} and #{endDate}
+                        </when>
+                        <when test="beginDate != null and beginDate != ''">
+                            AND a.date >= #{beginDate}
+                        </when>
+                        <when test="endDate != null and endDate != ''">
+                            AND  #{endDate} >= a.date
+                        </when>
+                        <otherwise>
+                        </otherwise>
+                    </choose>
+                    <if test="name != null and name != ''">
+                        AND a.name LIKE
+                            <if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+                            <if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+                            <if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+                            <if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+                    </if>
+					<if test="officeIds != null and officeIds.size() > 0">
+						AND a.unit_name_id  in <foreach collection="officeIds" item="item" index="index"
+												   open="(" separator="," close=")">#{item}</foreach>
+					</if>
+					/*${sqlMap.dsf}*/
+					<if test="userId != null and userId != ''">
+						or a.unit_name_id = #{userId}
+					</if>
+                </where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairTuixiu">
+		SELECT 
+			<include refid="affairTuixiuColumns"/>
+		FROM affair_tuixiu a
+		<include refid="affairTuixiuJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_tuixiu(
+			id,
+			number,
+			date,
+			name,
+			id_number,
+			birth,
+			nation,
+			hometown,
+			work_date,
+			retirement_time,
+			retirement_job,
+			unit,
+			unit_id,
+			remark,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			unit_name,
+			unit_name_id,
+			status,
+			sex
+		) VALUES (
+			#{id},
+			#{number},
+			#{date},
+			#{name},
+			#{idNumber},
+			#{birth},
+			#{nation},
+			#{hometown},
+			#{workDate},
+			#{retirementTime},
+			#{retirementJob},
+			#{unit},
+			#{unitId},
+			#{remark},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{unitName},
+			#{unitNameId},
+			#{status},
+			#{sex}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_tuixiu SET 	
+			number = #{number},
+			date = #{date},
+			name = #{name},
+			id_number = #{idNumber},
+			birth = #{birth},
+			nation = #{nation},
+			hometown = #{hometown},
+			work_date = #{workDate},
+			retirement_time = #{retirementTime},
+			retirement_job = #{retirementJob},
+			unit = #{unit},
+			unit_id = #{unitId},
+			remark = #{remark},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			unit_name = #{unitName},
+			unit_name_id = #{unitNameId},
+			status = #{status},
+			sex = #{sex}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_tuixiu SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_tuixiu SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<update id="queDing">
+		update affair_tuixiu set
+		status = '已确认退休'
+		where id = #{id}
+	</update>
+
+	<select id="findAllId" resultType="java.lang.String">
+		select id_number from affair_tuixiu where del_flag = '0'
+	</select>
+	
+</mapper>

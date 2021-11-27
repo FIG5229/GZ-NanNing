@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairThreeBaseDao">
+    
+	<sql id="affairThreeBaseColumns">
+		a.id AS "id",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.name AS "name",
+		a.id_number AS "idNumber",
+		a.sex AS "sex",
+		a.age AS "age",
+		a.job AS "job",
+		a.basic_knowledge AS "basicKnowledge",
+		a.basic_fitness AS "basicFitness",
+		a.overall_score AS "overallScore",
+		a.remark AS "remark",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.base_skill AS "baseSkill",
+		a.number AS "number",
+		a.year_month AS "yearMonth"
+	</sql>
+	
+	<sql id="affairThreeBaseJoins">
+		LEFT JOIN sys_office o ON o.id = a.unit_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairThreeBase">
+		SELECT 
+			<include refid="affairThreeBaseColumns"/>
+		FROM affair_three_base a
+		<include refid="affairThreeBaseJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairThreeBase">
+		SELECT 
+			<include refid="affairThreeBaseColumns"/>
+		FROM affair_three_base a
+		<include refid="affairThreeBaseJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="unitId != null and unitId != ''">
+				AND (a.unit_id = #{unitId} or o.parent_ids like '%,'||#{unitId}||',%')
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+			</if>
+			<if test="yearMonth != '' and yearMonth != null">
+				AND a.year_month = #{yearMonth}
+			</if>
+			<if test="idNumber != '' and idNumber != null">
+				AND a.id_number = #{idNumber}
+			</if>
+			<if test="overallScore != '' and overallScore != null">
+				AND a.overall_score = #{overallScore}
+			</if>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairThreeBase">
+		SELECT 
+			<include refid="affairThreeBaseColumns"/>
+		FROM affair_three_base a
+		<include refid="affairThreeBaseJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_three_base(
+			id,
+			unit,
+			unit_id,
+			name,
+			id_number,
+			sex,
+			age,
+			job,
+			basic_knowledge,
+			basic_fitness,
+			overall_score,
+			remark,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			base_skill,
+			number,
+			year_month
+		) VALUES (
+			#{id},
+			#{unit},
+			#{unitId},
+			#{name},
+			#{idNumber},
+			#{sex},
+			#{age},
+			#{job},
+			#{basicKnowledge},
+			#{basicFitness},
+			#{overallScore},
+			#{remark},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{baseSkill},
+			#{number},
+			#{yearMonth}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_three_base SET 	
+			unit = #{unit},
+			unit_id = #{unitId},
+			name = #{name},
+			id_number = #{idNumber},
+			sex = #{sex},
+			age = #{age},
+			job = #{job},
+			basic_knowledge = #{basicKnowledge},
+			basic_fitness = #{basicFitness},
+			overall_score = #{overallScore},
+			remark = #{remark},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			base_skill = #{baseSkill},
+			number = #{number},
+			year_month = #{yearMonth}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_three_base SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_three_base SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+</mapper>

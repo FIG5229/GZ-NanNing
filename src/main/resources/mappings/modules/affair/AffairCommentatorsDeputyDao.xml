@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairCommentatorsDeputyDao">
+    
+	<sql id="affairCommentatorsDeputyColumns">
+		a.id AS "id",
+		a.platform AS "platform",
+		a.account AS "account",
+		a.id_number AS "idNumber",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="affairCommentatorsDeputyJoins">
+	</sql>
+    
+	<select id="get" resultType="AffairCommentatorsDeputy">
+		SELECT 
+			<include refid="affairCommentatorsDeputyColumns"/>
+		FROM affair_commentators_deputy a
+		<include refid="affairCommentatorsDeputyJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairCommentatorsDeputy">
+		SELECT 
+			<include refid="affairCommentatorsDeputyColumns"/>
+		FROM affair_commentators_deputy a
+		<include refid="affairCommentatorsDeputyJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairCommentatorsDeputy">
+		SELECT 
+			<include refid="affairCommentatorsDeputyColumns"/>
+		FROM affair_commentators_deputy a
+		<include refid="affairCommentatorsDeputyJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_commentators_deputy(
+			id,
+			platform,
+			account,
+			id_number,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{platform},
+			#{account},
+			#{idNumber},
+			#{createBy.id},
+			#{createOrgId},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateOrgId},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_commentators_deputy SET 	
+			platform = #{platform},
+			account = #{account},
+			id_number = #{idNumber},
+			create_org_id = #{createOrgId},
+			create_id_no = #{createIdNo},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateOrgId},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_commentators_deputy SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<select id="selectDeputyById" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairCommentatorsDeputy">
+		SELECT
+			platform,
+			account,
+			id_number
+		FROM
+			affair_commentators_deputy
+		WHERE
+			id_number = #{idNumber}
+	</select>
+
+
+	<select id="selectPlatFormById" resultType="string">
+		SELECT
+			platform
+		FROM
+			affair_commentators_deputy
+		WHERE
+			id_number = #{idNumber}
+	</select>
+
+
+	<select id="selectAccountById" resultType="string">
+		SELECT
+			account
+		FROM
+			affair_commentators_deputy
+		WHERE
+			id_number = #{idNumber}
+	</select>
+
+
+	<select id="findByParentId" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairCommentatorsDeputy">
+		SELECT
+		<include refid="affairCommentatorsDeputyColumns"/>
+		FROM affair_commentators_deputy a
+		<include refid="affairCommentatorsDeputyJoins"/>
+		WHERE a.id_number = #{id}
+		AND a.del_flag = '0'
+	</select>
+
+
+
+	
+</mapper>

@@ -1,0 +1,416 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairYqContolDao">
+    
+	<sql id="affairYqContolColumns">
+		a.id AS "id",
+		a.title AS "title",
+		a.date AS "date",
+		a.source AS "source",
+		a.leader_ps AS "leaderPs",
+		a.opinion AS "opinion",
+		a.situation AS "situation",
+		a.content AS "content",
+		a.file_path AS "filePath",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.unit AS  "unit",
+		a.unit_id AS "unitId",
+		a.explanation AS "explanation",
+		a.found_date AS "foundDate",
+		a.xj_opinion AS "xjOpinion",
+		a.zy_opinion AS "zyOpinion",
+		a.feedback AS "feedback",
+		a.archive AS "archive",
+		a.zr_unit AS "zrUnit",
+		a.zr_unit_id AS "zrUnitId",
+		a.man AS "man",
+		a.man_id AS "manId",
+		a.submit_man AS "submitMan",
+		a.submit_man_id AS "submitManId"
+	</sql>
+	
+	<sql id="affairYqContolJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairYqContol">
+		SELECT 
+			<include refid="affairYqContolColumns"/>
+		FROM affair_yq_contol a
+		<include refid="affairYqContolJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairYqContol">
+		SELECT 
+			<include refid="affairYqContolColumns"/>
+		FROM affair_yq_contol a
+		<include refid="affairYqContolJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="title != null and title != ''">
+				AND a.title LIKE '%'||#{title}||'%'
+			</if>
+			<choose>
+				<when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+					AND a.date between #{startDate} and #{endDate}
+				</when>
+				<when test="startDate != null and startDate != ''">
+					AND a.date >= #{startDate}
+				</when>
+				<when test="endDate != null and endDate != ''">
+					AND  #{endDate} >= a.date
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			<choose>
+				<when test="beginDate != null and beginDate != '' and finishDate != null and finishDate != ''">
+					AND a.found_date between #{beginDate} and #{finishDate}
+				</when>
+				<when test="beginDate != null and beginDate != ''">
+					AND a.found_date >= #{beginDate}
+				</when>
+				<when test="finishDate != null and finishDate != ''">
+					AND  #{finishDate} >= a.found_date
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			<if test="zrUnitId != null and zrUnitId != ''">
+				AND a.zr_unit_id = #{zrUnitId}
+			</if>
+			<if test="source != null and source != ''">
+				AND a.source = #{source}
+			</if>
+			<choose>
+				<when test="unitId != null and unitId != '' ">
+					AND ( o.ID = #{unitId} OR o.parent_ids LIKE'%,'||#{unitId}||',%' OR u.ID = #{createBy.id} or a.unit_id=#{unitId} or a.submit_man_id = #{userId} or a.create_by = #{userId} or a.man_id LIKE concat('%',#{userId},'%'))
+				</when>
+				<otherwise>
+					AND ( o.ID = #{unitId} OR u.ID = #{createBy.id} or a.unit_id=#{unitId} or a.submit_man_id = #{userId} or a.create_by = #{userId} or a.man_id LIKE concat('%',#{userId},'%'))
+				</otherwise>
+			</choose>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairYqContol">
+		SELECT 
+			<include refid="affairYqContolColumns"/>
+		FROM affair_yq_contol a
+		<include refid="affairYqContolJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_yq_contol(
+			id,
+			title,
+			date,
+			source,
+			leader_ps,
+			opinion,
+			situation,
+			content,
+			file_path,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			unit,
+			unit_id,
+			explanation,
+			found_date,
+			xj_opinion,
+			zy_opinion,
+			feedback,
+			archive,
+			zr_unit,
+			zr_unit_id,
+			man,
+			man_id,
+			submit_man,
+			submit_man_id
+		) VALUES (
+			#{id},
+			#{title},
+			#{date},
+			#{source},
+			#{leaderPs},
+			#{opinion},
+			#{situation},
+			#{content},
+			#{filePath},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{unit},
+			#{unitId},
+			#{explanation},
+			#{foundDate},
+			#{xjOpinion},
+			#{zyOpinion},
+			#{feedback},
+			#{archive},
+			#{zrUnit},
+			#{zrUnitId},
+			#{man},
+			#{manId},
+			#{submitMan},
+			#{submitManId}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_yq_contol SET 	
+			title = #{title},
+			date = #{date},
+			source = #{source},
+			leader_ps = #{leaderPs},
+			opinion = #{opinion},
+			situation = #{situation},
+			content = #{content},
+			file_path = #{filePath},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			unit = #{unit},
+			unit_id = #{unitId},
+			explanation = #{explanation},
+			found_date = #{foundDate},
+			xj_opinion = #{xjOpinion},
+			zy_opinion = #{zyOpinion},
+			feedback = #{feedback},
+			archive = #{archive},
+			zr_unit = #{zrUnit},
+			zr_unit_id = #{zrUnitId},
+			man = #{man},
+			man_id = #{manId},
+			submit_man = #{submitMan},
+			submit_man_id = #{submitManId}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_yq_contol SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_yq_contol SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<select id="findInfoByCreateOrgId" resultType="java.util.HashMap">
+		SELECT
+		ayc.source,
+		count( ayc.source ),
+		sd.label
+		FROM
+		affair_yq_contol ayc
+		LEFT JOIN sys_dict sd ON ayc.source = sd.
+		VALUE
+
+		WHERE
+		ayc.del_flag  = '0'
+		AND sd.type = 'affair_yqly' AND sd.del_flag = '0'
+		<if test="id != null and id != ''">
+			AND ayc.create_org_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from ayc.date) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(ayc.date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND ayc.date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND ayc.date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= ayc.date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		ayc.source,
+		sd.label
+	</select>
+
+	<select id="findInfoByCreateOrgIds" resultType="java.util.HashMap">
+
+		SELECT
+		ayc.source,
+		count( ayc.source ),
+		sd.label
+		FROM
+		affair_yq_contol ayc
+		LEFT JOIN sys_dict sd ON ayc.source = sd.
+		VALUE
+		WHERE
+		ayc.del_flag != '1'
+		AND sd.type = 'affair_yqly' AND sd.del_flag = '0'
+		AND ayc.create_org_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from ayc.date) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(ayc.date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND ayc.date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND ayc.date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= ayc.date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		ayc.source,
+		sd.label
+	</select>
+
+	<select id="findInfoByCreateOrgId2" resultType="java.util.HashMap">
+		SELECT
+		ayc.situation,
+		count( ayc.situation ),
+		sd.label
+		FROM
+		affair_yq_contol ayc
+		LEFT JOIN sys_dict sd ON ayc.situation = sd.
+		VALUE
+
+		WHERE
+		ayc.del_flag = '0'
+		AND sd.type = 'affair_yqcz' AND sd.del_flag = '0'
+		<if test="id != null and id != ''">
+			AND ayc.create_org_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from ayc.date) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(ayc.date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND ayc.date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND ayc.date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= ayc.date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		ayc.situation,
+		sd.label
+	</select>
+
+	<select id="findInfoByCreateOrgIds2" resultType="java.util.HashMap">
+
+		SELECT
+		ayc.situation,
+		count( ayc.situation ),
+		sd.label
+		FROM
+		affair_yq_contol ayc
+		LEFT JOIN sys_dict sd ON ayc.situation = sd.
+		VALUE
+		WHERE
+		ayc.del_flag != '1'
+		AND sd.type = 'affair_yqcz' AND sd.del_flag = '0'
+		AND ayc.create_org_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from ayc.date) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(ayc.date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND ayc.date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND ayc.date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= ayc.date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		ayc.situation,
+		sd.label
+	</select>
+
+	<select id="findByIds" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairYqContol">
+		select <include refid="affairYqContolColumns"/>
+		from affair_yq_contol a where id in <foreach collection="ids" item="item" index="index"
+															open="(" separator="," close=")">#{item}</foreach>
+	</select>
+
+</mapper>

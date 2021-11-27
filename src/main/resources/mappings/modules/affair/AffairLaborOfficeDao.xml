@@ -1,0 +1,385 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairLaborOfficeDao">
+    
+	<sql id="affairLaborOfficeColumns">
+		a.id,
+		a.parent_id AS "parent.id",
+		a.parent_ids,
+		a.area_id AS "area.id",
+		a.code,
+		a.name,
+		a.sort,
+		a.type,
+		a.grade,
+		a.address,
+		a.zip_code,
+		a.master,
+		a.phone,
+		a.fax,
+		a.email,
+		a.remarks,
+		a.create_by AS "createBy.id",
+		a.create_date,
+		a.update_by AS "updateBy.id",
+		a.update_date,
+		a.del_flag,
+		a.useable AS useable,
+		a.primary_person AS "primaryPerson.id",
+		a.deputy_person AS "deputyPerson.id",
+		p.name AS "parent.name",
+		ar.name AS "area.name",
+		ar.parent_ids AS "area.parentIds",
+		pp.name AS "primaryPerson.name",
+		dp.name AS "deputyPerson.name",
+		a.full_name AS "fullName",
+		a.abbreviation AS "abbreviation",
+		a.relationship AS "relationship",
+		a.character_type AS "characterType",
+		a.level AS "level",
+		a.unit_area AS "unitArea",
+		a.hierarchy1 AS "hierarchy1",
+		a.super_unit_name AS "superUnitName",
+		a.super_unit_code AS "superUnitCode",
+		a.dep_polic AS "depPolic",
+		a.unit_type AS "unitType",
+		a.leader AS "leader",
+		a.found_date AS "foundDate",
+		a.approval_file_no AS "approvalFileNo",
+		a.cancel_date AS "cancelDate",
+		a.cancel_file_no AS "cancelFileNo",
+		a.cancel_org AS "cancelOrg",
+		a.unit_dm AS "unitDm",
+		a.cncel_identification AS "cncelIdentification",
+		a.police_station_type AS "policeStationType",
+		a.hu_num AS "huNum",
+		a.hierarchy2 AS "hierarchy2",
+		a.empty_unit AS "emptyUnit",
+		a.person_num AS "personNum",
+		a.sys_code AS "sysCode",
+		a.legal_identification AS "legalIdentification",
+		a.register_org AS "registerOrg",
+		a.scope AS "scope",
+		a.source AS "source",
+		a.approval_org AS "approvalOrg",
+		a.org_update AS "orgUpdate",
+		a.build_situation AS "buildSituation",
+		a.unit_sort AS "unitSort"
+	</sql>
+	
+	<sql id="affairLaborOfficeJoins">
+		LEFT JOIN affair_labor_office p ON p.id = a.id
+		LEFT JOIN sys_area ar ON ar.id = a.area_id
+		LEFT JOIN affair_labor_user pp ON pp.id = a.primary_person
+		LEFT JOIN affair_labor_user dp ON dp.id = a.deputy_person
+	</sql>
+    
+	<select id="get" resultType="AffairLaborOffice">
+		SELECT
+			<include refid="affairLaborOfficeColumns"/>
+		FROM affair_labor_office a
+		<include refid="affairLaborOfficeJoins"/>
+		WHERE a.id = #{id}
+
+	</select>
+	
+	<select id="findList" resultType="AffairLaborOffice">
+		<!--SELECT
+			<include refid="affairLaborOfficeColumns"/>
+		FROM affair_labor_office a
+		<include refid="affairLaborOfficeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>-->
+		SELECT
+		<include refid="affairLaborOfficeColumns"/>
+		FROM affair_labor_office a
+		<include refid="affairLaborOfficeJoins"/>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		<!-- 数据范围过滤 -->
+		<!--${sqlMap.dsf}-->
+		<choose>
+			<when test="officeFlag != '' and officeFlag != null and officeFlag == 'nnc'.toString()">
+				<if test="userId != null and userId != ''">
+					AND ( p.ID = #{userId} OR p.parent_ids LIKE'%,'||#{userId}||',%' OR pp.ID = #{userId}  OR a.id = #{currentUser.office.id} or p.id = '34')
+				</if>
+			</when>
+			<when test="officeFlag != '' and officeFlag != null and officeFlag == 'lzc'.toString()">
+				<if test="userId != null and userId != ''">
+					AND ( p.ID = #{userId} OR p.parent_ids LIKE'%,'||#{userId}||',%' OR pp.ID = #{userId}  OR a.id = #{currentUser.office.id} or p.id = '95')
+				</if>
+			</when>
+			<when test="officeFlag != '' and officeFlag != null and officeFlag == 'bhc'.toString()">
+				<if test="userId != null and userId != ''">
+					AND ( p.ID = #{userId} OR p.parent_ids LIKE'%,'||#{userId}||',%' OR pp.ID = #{userId}  OR a.id = #{currentUser.office.id} or p.id = '156')
+				</if>
+			</when>
+			<otherwise>
+				<if test="userId != null and userId != ''">
+					AND ( p.ID = #{userId} OR p.parent_ids LIKE'%,'||#{userId}||',%' OR pp.ID = #{userId}  OR a.id = #{currentUser.office.id})
+				</if>
+			</otherwise>
+		</choose>
+		<!--<if test="userId != null and userId != ''">
+			AND ( p.ID = #{userId} OR p.parent_ids LIKE'%,'||#{userId}||',%' OR pp.ID = #{userId}  OR a.id = #{currentUser.office.id})
+		</if>-->
+		<!--OR a.id = #{currentUser.office.id}-->
+		ORDER BY a.unit_sort
+	</select>
+	
+	<select id="findAllList" resultType="AffairLaborOffice">
+		<!--SELECT
+			<include refid="affairLaborOfficeColumns"/>
+		FROM affair_labor_office a
+		<include refid="affairLaborOfficeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>-->
+		SELECT
+		<include refid="affairLaborOfficeColumns"/>
+		FROM affair_labor_office a
+		<include refid="affairLaborOfficeJoins"/>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		ORDER BY a.unit_sort
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_labor_office(
+			id,
+			parent_id,
+			parent_ids,
+			area_id,
+			code,
+			name,
+			sort,
+			type,
+			grade,
+			address,
+			zip_code,
+			master,
+			phone,
+			fax,
+			email,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			useable,
+			primary_person,
+			deputy_person,
+			full_name,
+			abbreviation,
+			relationship,
+			character_type,
+			level,
+			unit_area,
+			hierarchy1,
+			super_unit_name,
+			super_unit_code,
+			dep_polic,
+			unit_type,
+			leader,
+			found_date,
+			approval_file_no,
+			cancel_date,
+			cancel_file_no,
+			cancel_org,
+			unit_dm,
+			cncel_identification,
+			police_station_type,
+			hu_num,
+			hierarchy2,
+			empty_unit,
+			person_num,
+			sys_code,
+			legal_identification,
+			register_org,
+			scope,
+			source,
+			approval_org,
+			org_update,
+			build_situation,
+			unit_sort
+		) VALUES (
+			#{id},
+			#{parent.id},
+			#{parentIds},
+			#{area.id},
+			#{code},
+			#{name},
+			#{sort},
+			#{type},
+			#{grade},
+			#{address},
+			#{zipCode},
+			#{master},
+			#{phone},
+			#{fax},
+			#{email},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{useable},
+			#{primaryPerson.id},
+			#{deputyPerson.id},
+			#{fullName},
+			#{abbreviation},
+			#{relationship},
+			#{characterType},
+			#{level},
+			#{unitArea},
+			#{hierarchy1},
+			#{superUnitName},
+			#{superUnitCode},
+			#{depPolic},
+			#{unitType},
+			#{leader},
+			#{foundDate},
+			#{approvalFileNo},
+			#{cancelDate},
+			#{cancelFileNo},
+			#{cancelOrg},
+			#{unitDm},
+			#{cncelIdentification},
+			#{policeStationType},
+			#{huNum},
+			#{hierarchy2},
+			#{emptyUnit},
+			#{personNum},
+			#{sysCode},
+			#{legalIdentification},
+			#{registerOrg},
+			#{scope},
+			#{source},
+			#{approvalOrg},
+			#{orgUpdate},
+			#{buildSituation},
+			#{unitSort}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_labor_office SET 	
+			parent_id = #{parent.id},
+			parent_ids = #{parentIds},
+			area_id = #{area.id},
+			code = #{code},
+			name = #{name},
+			type = #{type},
+			grade = #{grade},
+			address = #{address},
+			zip_code = #{zipCode},
+			master = #{master},
+			phone = #{phone},
+			fax = #{fax},
+			email = #{email},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			useable=#{useable},
+			primary_person=#{primaryPerson.id},
+			deputy_person=#{deputyPerson.id},
+			full_name = #{fullName},
+			abbreviation = #{abbreviation},
+			relationship = #{relationship},
+			character_type = #{characterType},
+			level = #{level},
+			unit_area = #{unitArea},
+			hierarchy1 = #{hierarchy1},
+			super_unit_name = #{superUnitName},
+			super_unit_code = #{superUnitCode},
+			dep_polic = #{depPolic},
+			unit_type = #{unitType},
+			leader = #{leader},
+			found_date = #{foundDate},
+			approval_file_no = #{approvalFileNo},
+			cancel_date = #{cancelDate},
+			cancel_file_no = #{cancelFileNo},
+			cancel_org = #{cancelOrg},
+			unit_dm = #{unitDm},
+			cncel_identification = #{cncelIdentification},
+			police_station_type = #{policeStationType},
+			hu_num = #{huNum},
+			hierarchy2 = #{hierarchy2},
+			empty_unit = #{emptyUnit},
+			person_num = #{personNum},
+			sys_code = #{sysCode},
+			legal_identification = #{legalIdentification},
+			register_org = #{registerOrg},
+			scope = #{scope},
+			source = #{source},
+			approval_org = #{approvalOrg},
+			org_update = #{orgUpdate},
+			build_situation = #{buildSituation},
+			unit_sort = #{unitSort}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_labor_office SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+
+	<select id="findNameById" resultType="java.lang.String">
+		select
+		a.name
+		from affair_labor_office a
+		where
+		a.id = #{id}
+	</select>
+
+	<select id="findListByName" resultType="java.lang.String">
+		SELECT a.id as id
+		FROM affair_labor_office a
+		WHERE a.name = #{name} and a.del_flag = '0'
+	</select>
+
+	<select id="findChildById" resultType="AffairLaborOffice">
+		<choose>
+			<when test='"1" == id'>
+				SELECT a.id,a.name
+				FROM affair_labor_office a
+				<!--WHERE a.parent_ids NOT LIKE '0,1,34,%' AND a.parent_ids NOT LIKE '0,1,95,%' AND a.parent_ids NOT LIKE '0,1,156,%'  AND a.del_flag = '0'-->
+				WHERE a.parent_ids NOT LIKE '0,1,777,%' AND a.parent_ids NOT LIKE '0,1,888,%' AND a.parent_ids NOT LIKE '0,1,999,%'  AND a.del_flag = '0'
+				AND a.id NOT IN ('1','777','888','999')
+				ORDER BY a.update_date ASC
+			</when>
+			<otherwise>
+				SELECT a.id,a.name
+				FROM affair_labor_office a
+				WHERE a.parent_ids LIKE '%,'||#{id}||',%' OR a.id = #{id} AND a.del_flag = '0' ORDER BY a.update_date ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+</mapper>

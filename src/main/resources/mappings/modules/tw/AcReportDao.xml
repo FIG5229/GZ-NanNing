@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.tw.dao.AcReportDao">
+    
+	<sql id="acReportColumns">
+		a.guid AS "guid",
+		a.jbr AS "jbr",
+		a.hbld AS "hbld",
+		a.hbsj AS "hbsj",
+		a.clfs AS "clfs",
+		a.jqdj AS "jqdj",
+		a.cljg AS "cljg",
+		a.cjr AS "cjr",
+		a.cjsj AS "cjsj",
+		a.f_guid AS "fGuid",
+		a.clzrr AS "clzrr"
+	</sql>
+	
+	<sql id="acReportJoins">
+	</sql>
+    
+	<select id="get" resultType="AcReport">
+		SELECT 
+			<include refid="acReportColumns"/>
+		FROM ac_report a
+		<include refid="acReportJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AcReport">
+		SELECT 
+			<include refid="acReportColumns"/>
+		FROM ac_report a
+		<include refid="acReportJoins"/>
+		<where>
+			
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AcReport">
+		SELECT 
+			<include refid="acReportColumns"/>
+		FROM ac_report a
+		<include refid="acReportJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+    <select id="selectAllExcption" resultType="com.thinkgem.jeesite.modules.tw.entity.AcReport">
+		SELECT
+			*
+		FROM
+			( ac_report ac LEFT JOIN ac_mobile_data A ON ac.f_guid = A.ac_type )
+			LEFT JOIN user_p_view u ON A.user_id = u.username
+		WHERE
+			A.ac_date LIKE #{checkTime}
+			AND u.fullunitname LIKE #{unit}
+	</select>
+
+    <insert id="insert">
+		INSERT INTO ac_report(
+			guid,
+			jbr,
+			hbld,
+			hbsj,
+			clfs,
+			jqdj,
+			cljg,
+			cjr,
+			cjsj,
+			f_guid,
+			clzrr
+		) VALUES (
+			#{guid},
+			#{jbr},
+			#{hbld},
+			#{hbsj},
+			#{clfs},
+			#{jqdj},
+			#{cljg},
+			#{cjr},
+			#{cjsj},
+			#{fGuid},
+			#{clzrr}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE ac_report SET 	
+			guid = #{guid},
+			jbr = #{jbr},
+			hbld = #{hbld},
+			hbsj = #{hbsj},
+			clfs = #{clfs},
+			jqdj = #{jqdj},
+			cljg = #{cljg},
+			cjr = #{cjr},
+			cjsj = #{cjsj},
+			f_guid = #{fGuid},
+			clzrr = #{clzrr}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM ac_report
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

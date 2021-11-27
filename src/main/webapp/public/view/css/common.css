@@ -1,0 +1,647 @@
+html, body {
+    background-color: #f2f2f2;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+.b-r-1 {
+    border-right: 1px solid #e4e4e4;
+}
+
+.b-l-1 {
+    border-left: 1px solid #e4e4e4;
+}
+
+.b-b-1 {
+    border-bottom: 1px solid #e4e4e4;
+}
+
+.b-t-1 {
+    border-top: 1px solid #e4e4e4;
+}
+
+/* 限制输入字数，超出部分显示... */
+.word-keep {
+    display: block;
+    word-break: keep-all;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 隐藏元素 元素的位置也没有 不会触发其点击事件*/
+.hide {
+    display: none !important;
+}
+
+.show {
+    display: block !important;
+}
+
+/* 隐藏元素 元素的位置还在 只是设置了透明度 可以触发点击事件*/
+.transparent {
+    opacity: 0;
+}
+
+/* 隐藏元素 但是元素的位置还在 无法触发其点击事件*/
+.invisible {
+    visibility: hidden;
+}
+
+/* 隐藏元素 只是超出部分不显示, 配合js动画使用*/
+.ov {
+    overflow: hidden;
+    _zoom: 1;
+}
+
+/* 隐藏文本 */
+.text-hide {
+    font: 0/0 a;
+    color: transparent;
+    text-shadow: none;
+    background-color: transparent;
+    border: 0;
+}
+
+/* 空元素 */
+.empty {
+    height: 1.3rem;
+    background: #f4f3f9;
+    content: "";
+}
+
+/* 加粗 */
+.b {
+    font-weight: bold;
+}
+
+i {
+    font-style: normal;
+}
+
+/* 删除线样式 */
+.text_through {
+    text-decoration: line-through;
+}
+
+/* 居中对齐 */
+.vertical-middle {
+    vertical-align: middle;
+}
+
+.dashed {
+    border-bottom: 1px dashed #cccccc;
+}
+
+.Opacity {
+    opacity: .5;
+    filter: alpha(opacity=50);
+}
+
+/* 错误消息 */
+#errormsg {
+    color: #f5423b;
+}
+
+.red_color {
+    color: #ff4e5c;
+}
+
+.gray_color {
+    color: #b9b9b9;
+}
+
+/* ==============
+   margin样式
+   ============== */
+.mt-20 {
+    margin-top: 0.26666666666666666rem;
+}
+
+.mt-10 {
+    margin-top: 0.13333333333333333rem;
+}
+
+.mg-t30 {
+    margin-top: 0.4rem;
+}
+
+.mb-20 {
+    margin-bottom: 0.26666666666666666rem;
+}
+
+.mb-100 {
+    margin-bottom: 1.4rem;
+}
+
+.mb-300 {
+    margin-bottom: 4rem;
+}
+
+.mb-600 {
+    margin-bottom: 8rem;
+}
+
+.mb-500 {
+    margin-bottom: 7rem;
+}
+
+.mb-800 {
+    margin-bottom: 12rem;
+}
+
+/* ==============
+   字体大小
+   ============== */
+.fs14 {
+}
+
+.fs16 {
+}
+
+.fs18 {
+    font-size: .28125rem;
+}
+
+.fs20 {
+    font-size: .3125rem;
+}
+
+.fs22 {
+    font-size: .34375rem;
+}
+
+.fs24 {
+    font-size: .375rem;
+}
+
+.fs26 {
+    font-size: .40625rem;
+}
+
+.fs28 {
+    font-size: .4375rem;
+}
+
+.fs30 {
+    font-size: .46875rem;
+}
+
+.fs32 {
+    font-size: .5rem;
+}
+
+.fs34 {
+    font-size: .53125rem;
+}
+
+.fs36 {
+    font-size: .5625rem;
+}
+
+.fs40 {
+    font-size: .625rem;
+}
+
+.fs48 {
+    font-size: 0.75rem;
+}
+
+/* ==============
+   表单样式
+   ============== */
+select,
+textarea,
+input[type=text],
+input[type=search],
+input[type=password],
+input[type=datetime],
+input[type=datetime-local],
+input[type=date],
+input[type=month],
+input[type=time],
+input[type=week],
+input[type=number],
+input[type=email],
+input[type=url],
+input[type=tel],
+input[type=color] {
+    font-weight: normal;
+    -webkit-user-select: text;
+    user-select: text;
+    outline-style: none;
+    background: #fff;
+    vertical-align: middle;
+    -webkit-font-smoothing: antialiased;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    height: 1.14666667rem;
+    line-height: 1.14666667rem;
+    padding: 0.4rem 0.33333333rem;
+    border-radius: 0;
+}
+
+select:focus,
+textarea:focus,
+input[type="text"]:focus,
+input[type="search"]:focus,
+input[type="submit"]:focus,
+input[type="password"]:focus,
+input[type="datetime"]:focus,
+input[type="datetime-local"]:focus,
+input[type="date"]:focus,
+input[type="month"]:focus,
+input[type="time"]:focus,
+input[type="week"]:focus,
+input[type="number"]:focus,
+input[type="email"]:focus,
+input[type="url"]:focus,
+input[type="tel"]:focus,
+input[type="color"]:focus,
+button:focus {
+    border-color: #606060;
+}
+
+input:focus {
+    border-color: #606060;
+}
+
+button {
+    text-align: center;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    outline: 0;
+    border: none;
+    border-radius: 0.04rem;
+}
+
+textarea {
+    resize: none;
+    overflow: auto;
+}
+
+input,
+textarea,
+select {
+    background: #fff;
+    border: 1px solid #e2e2e2;
+    border-radius: 0.04rem;
+}
+
+input:focus,
+textarea:focus {
+    border-color: #333;
+}
+
+input[type="button"], input[type="submit"], input[type="reset"] {
+    -webkit-appearance: none;
+}
+
+textarea {
+    -webkit-appearance: none;
+}
+
+input:focus {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    -webkit-user-modify: read-write-plaintext-only;
+}
+
+/* ==============
+   按钮样式
+   ============== */
+button,
+.redbtn,
+.whitebtn {
+    width: 100%;
+    height: 1.25rem;
+    line-height: 1.25rem;
+}
+
+.btnwrap {
+    padding: 0.46875rem 0;
+}
+
+.btn-bar {
+    padding-top: 1rem;
+    width: 100%;
+}
+
+.btn {
+    display: inline-block;
+    text-align: center;
+    border: 2px solid #17e7d5;
+    border-radius: 2.375rem;
+}
+
+.btn img {
+    height: 50%;
+}
+
+.xs-btn {
+    width: 38%;
+    height: 2.375rem;
+    line-height: 2.375rem;
+    margin-top: 0.4rem;
+}
+
+.s-btn {
+    width: 50%;
+    height: 3.125rem;
+    line-height: 3.125rem;
+    border-radius: 3.125rem;
+    margin-top: 0.6rem;
+}
+
+.xm-btn {
+    width: 45%;
+    height: 1.875rem;
+    line-height: 1.875rem;
+}
+
+.xm-btn img {
+    margin-top: 0.4rem;
+}
+
+.m-btn {
+    width: 65%;
+    height: 2.6rem;
+    border-radius: 2.6rem;
+}
+
+.m-btn img {
+    margin-top: 0.53rem;
+}
+
+.l-btn {
+    width: 70%;
+    height: 2.6875rem;
+    line-height: 2.6875rem;
+    border-radius: 2.6875rem;
+    background-color: #1e202d;
+}
+
+.l-btn img {
+    margin-top: 0.5rem;
+}
+
+.text-btn {
+    display: inline-block;
+    color: #09dca7;
+    font-size: 0.875rem;
+    border: 0;
+    border-radius: 0;
+    text-decoration: underline;
+}
+
+.btn-bar a + a {
+    margin-left: 0.5rem;
+}
+
+.redbtn {
+    color: #fff;
+    background: #f5423b;
+    display: block;
+}
+
+.redbtn:active {
+    background: #e03939;
+}
+
+.whitebtn {
+    color: #f74747;
+    border: 1px solid #f74747;
+    background: #f9f9f9;
+    display: block;
+}
+
+.whitebtn:active {
+    color: #fff;
+    background: #f74747;
+}
+
+.graybtn {
+    color: #fff;
+    background: #aeaeae;
+    display: block;
+    cursor: pointer;
+}
+
+.smallbtn {
+    width: 0.34375rem;
+    height: 0.34375rem;
+}
+
+/* 获取验证码按钮*/
+.getvalidcode {
+    color: #a3a3a3;
+    background: #fff;
+    border: 0.015625rem solid #d2d2d2;
+}
+
+.getvalidcode.active {
+    background: #e2e2e2;
+    border-color: #e2e2e2;
+}
+
+button#getVcode.disabled {
+    background: #f1f1f1;
+    color: #a6a6a6;
+    border-color: #f1f1f1;
+}
+
+/* ==============
+   清除浮动样式
+   ============== */
+.cf:before,
+.cf:after {
+    display: table;
+    content: ' ';
+}
+
+.cf:after {
+    clear: both;
+}
+
+/* 弹窗蒙板背景样式 */
+.bg {
+    background: rgba(0, 0, 0, 0.8);
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9;
+    display: none;
+}
+
+/* 分享浮动层 */
+#share {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: none;
+    width: 100%;
+    height: 100%;
+    text-align: right;
+    background: rgba(0, 0, 0, 0.7) url(/public/static/img/share.png) no-repeat 100% 0;
+    background-size: 6.25rem 6.25rem;
+}
+
+/* ===========
+   placeholder颜色重置
+   =========== */
+
+input::-webkit-input-placeholder, textarea::-webkit-input-placeholder {
+    color: #9296b2;
+    opacity: 1;
+    font-size: 0.75rem;
+}
+
+input:-moz-placeholder, textarea:-moz-placeholder {
+    color: #9296b2;
+    opacity: 1;
+    font-size: 0.75rem;
+}
+
+input:-ms-input-placeholder, textarea:-ms-input-placeholder {
+    color: #9296b2;
+    opacity: 1;
+    font-size: 0.75rem;
+}
+
+::-webkit-input-placeholder {
+    color: #b1b1b1;
+}
+
+::-moz-input-placeholder {
+    color: #b1b1b1;
+}
+
+:-moz-placeholder {
+    color: #9296b2;
+    opacity: 1;
+    font-size: 0.75rem;
+}
+
+::-moz-placeholder {
+    color: #9296b2;
+    opacity: 1;
+    font-size: 0.75rem;
+}
+
+:-ms-input-placeholder {
+    color: #b1b1b1;
+}
+
+/* ==============
+   布局样式
+   ============== */
+.fl {
+    float: left;
+}
+
+.fr {
+    float: right;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-left {
+    text-align: left;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.center {
+    right: 0;
+    left: 0;
+    margin: auto;
+}
+
+.pos-r {
+    position: relative;
+}
+
+.pos-a {
+    position: absolute;
+}
+
+/* ==============
+   动画样式 animate
+   ============== */
+.bounceIn {
+    -webkit-animation: bounceInDown 0.8s ease;
+    animation: bounceInDown 0.8s ease;
+}
+
+.bounceOut {
+    -webkit-animation: bounceOut 0.8s 2s ease both;
+    animation: bounceOut 0.8s 2s ease both;
+}
+
+@-webkit-keyframes bounceInDown {
+    0%, 60%, 75%, 90%, 100% {
+        -webkit-animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+        animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+    }
+    0% {
+        opacity: 0;
+        -webkit-transform: translate3d(0, -3000px, 0);
+        transform: translate3d(0, -3000px, 0);
+    }
+    60% {
+        opacity: 1;
+        -webkit-transform: translate3d(0, 25px, 0);
+        transform: translate3d(0, 25px, 0);
+    }
+    75% {
+        -webkit-transform: translate3d(0, -10px, 0);
+        transform: translate3d(0, -10px, 0);
+    }
+    90% {
+        -webkit-transform: translate3d(0, 5px, 0);
+        transform: translate3d(0, 5px, 0);
+    }
+    100% {
+        -webkit-transform: none;
+        transform: none;
+    }
+}
+
+@-webkit-keyframes bounceOut {
+    20% {
+        -webkit-transform: scale3d(0.9, 0.9, 0.9);
+        transform: scale3d(0.9, 0.9, 0.9);
+    }
+    50%, 55% {
+        opacity: 1;
+        -webkit-transform: scale3d(1.1, 1.1, 1.1);
+        transform: scale3d(1.1, 1.1, 1.1);
+    }
+    100% {
+        opacity: 0;
+        -webkit-transform: scale3d(0.3, 0.3, 0.3);
+        transform: scale3d(0.3, 0.3, 0.3);
+    }
+}
+
+/* ==============
+   媒体查询
+   ============== */
+@media (min-width: 50em) {
+}
+
+@media only screen and (min-width: 26.7em) and (max-width: 49.9999em) {
+}
+
+@media only screen and (min-width: 22.9em) and (max-width: 26.69999999999em) {
+}
+
+@media (max-width: 22.857142857142858em) {
+}

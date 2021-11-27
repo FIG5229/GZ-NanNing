@@ -1,0 +1,747 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairGeneralSituationDao">
+
+	<sql id="affairGeneralSituationColumns">
+		a.id AS "id",
+		a.party_organization AS "partyOrganization",
+		a.parent_id AS "parentId",
+		a.parent_ids AS "parentIds",
+		a.of_party_organization AS "ofPartyOrganization",
+		a.of_party_org_id AS "ofPartyOrgId",
+		a.found_date AS "foundDate",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.type1 AS "type1",
+		a.shuji AS "shuji",
+		a.contactor AS "contactor",
+		a.contactor_id_number AS "contactorIdNumber",
+		a.shuji_id_number AS "shujiIdNumber",
+		a.telephone AS "telephone",
+		a.type2 AS "type2",
+		a.num AS "num",
+		a.introduction AS "introduction",
+		a.is_szwh AS "isSzwh",
+		a.hj_date AS "hjDate",
+		a.zz_situation AS "zzSituation",
+		a.zg_num AS "zgNum",
+		a.area AS "area",
+		a.is_gtly AS "isGtly",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.full_name AS "fullName",
+		a.status AS "status",
+		a.opinion AS "opinion",
+		a.sort AS "sort"
+	</sql>
+
+	<sql id="affairGeneralSituationJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+
+	<select id="get" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairGeneralSituation">
+		SELECT
+			<include refid="affairGeneralSituationColumns"/>
+		FROM affair_general_situation a
+		<include refid="affairGeneralSituationJoins"/>
+		WHERE a.id = #{id}
+		<!--/*添加多个党小组时 查找是否存在党小组*/
+		<if test="partyOrganization != null and partyOrganization != ''" >
+			or a.party_organization=#{partyOrganization}
+		</if>
+		<if test="parentId != null and parentId != ''">
+			and a.parent_id=#{parentId}
+		</if>
+		<if test="parentIds != null and parentIds != ''">
+			and a.parent_Ids=#{parentIds}
+		</if>-->
+	</select>
+
+	<select id="getOrgInfo" resultType="Map">
+		SELECT
+		a.*
+		FROM affair_general_situation a LEFT JOIN sys_offices s ON A.ID = s.party_id
+		WHERE s.id = #{id}
+	</select>
+
+	<select id="findList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairGeneralSituation">
+		SELECT
+			<include refid="affairGeneralSituationColumns"/>
+		FROM affair_general_situation a
+		<include refid="affairGeneralSituationJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			/*党组织名称*/
+			<if test="partyOrganization != null and partyOrganization != ''">
+				AND a.party_organization LIKE concat('%',#{partyOrganization},'%')
+			</if>
+			<if test="ofPartyOrgId != null and ofPartyOrgId != ''">
+				AND a.of_party_org_id = #{ofPartyOrgId}
+			</if>
+			<choose>
+				<when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+					AND a.found_date between #{startDate} and #{endDate}
+				</when>
+				<when test="startDate != null and startDate != ''">
+					AND a.found_date >= #{startDate}
+				</when>
+				<when test="endDate != null and endDate != ''">
+					AND  #{endDate} >= a.found_date
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			<if test="unitId != null and unitId != ''">
+				AND a.unit_id = #{unitId}
+			</if>
+			<if test="treeId != null and treeId != ''">
+				AND (a.id = #{treeId} OR a.parent_ids LIKE '%,'||#{treeId}||',%')
+			</if>
+			<!-- 数据范围过滤
+			${sqlMap.dsf}-->
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY
+				<!--a.sort ASC-->
+				cast(nullif(split_part(a.sort, '-', 1),'') as integer),
+				cast(nullif(split_part(a.sort, '-', 2),'')as integer) ,
+				cast(nullif(split_part(a.sort, '-', 3),'')as integer) ,
+				cast(nullif(split_part(a.sort, '-', 4),'')as integer)
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findAllList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairGeneralSituation">
+		SELECT
+			<include refid="affairGeneralSituationColumns"/>
+		FROM affair_general_situation a
+		<include refid="affairGeneralSituationJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<insert id="insert">
+		INSERT INTO affair_general_situation(
+			id,
+			party_organization,
+			parent_id,
+		    parent_ids,
+			of_party_organization,
+			of_party_org_id,
+			found_date,
+			unit,
+			unit_id,
+			type1,
+			shuji,
+			contactor,
+			contactor_id_number,
+			shuji_id_number,
+			telephone,
+			type2,
+			num,
+			introduction,
+			is_szwh,
+			hj_date,
+			zz_situation,
+			zg_num,
+			area,
+			is_gtly,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			full_name,
+			status,
+			opinion,
+			sort
+		) VALUES (
+			#{id},
+			#{partyOrganization},
+			#{parentId},
+			#{parentIds},
+			#{ofPartyOrganization},
+			#{ofPartyOrgId},
+			#{foundDate},
+			#{unit},
+			#{unitId},
+			#{type1},
+			#{shuji},
+			#{contactor},
+			#{contactorIdNumber},
+			#{shujiIdNumber},
+			#{telephone},
+			#{type2},
+			#{num},
+			#{introduction},
+			#{isSzwh},
+			#{hjDate},
+			#{zzSituation},
+			#{zgNum},
+			#{area},
+			#{isGtly},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{fullName},
+			#{status},
+			#{opinion},
+			#{sort}
+		)
+	</insert>
+
+	<update id="update">
+		UPDATE affair_general_situation SET
+			party_organization = #{partyOrganization},
+			parent_id = #{parentId},
+			parent_ids = #{parentIds},
+			of_party_organization = #{ofPartyOrganization},
+			of_party_org_id = #{ofPartyOrgId},
+			found_date = #{foundDate},
+			unit = #{unit},
+			unit_id = #{unitId},
+			type1 = #{type1},
+			shuji = #{shuji},
+			contactor = #{contactor},
+			contactor_id_number = #{contactorIdNumber},
+			shuji_id_number = #{shujiIdNumber},
+			telephone = #{telephone},
+			type2 = #{type2},
+			num = #{num},
+			introduction = #{introduction},
+			is_szwh = #{isSzwh},
+			hj_date = #{hjDate},
+			zz_situation = #{zzSituation},
+			zg_num = #{zgNum},
+			area = #{area},
+			is_gtly = #{isGtly},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			full_name = #{fullName},
+			status = #{status},
+			opinion = #{opinion},
+			sort = #{sort}
+		WHERE id = #{id}
+	</update>
+
+	<update id="delete">
+		UPDATE affair_general_situation SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_general_situation SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+			 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<select id="findByName" resultType="java.lang.String">
+		SELECT a.id as id
+		FROM affair_general_situation a
+		WHERE a.party_organization = #{name} and a.del_flag = '0'
+	</select>
+
+	<select id="findInfoById"  resultType="java.util.HashMap">
+		SELECT
+		 ags.party_organization "label",
+		 count( ags.party_organization)
+			FROM affair_general_situation ags
+		WHERE ags.del_flag = '0'
+		<if test="id != null and id != ''">
+		  AND ags.id = #{id}
+		</if>
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(ags.create_date, 'yyyy-mm')  = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from ags.create_date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND date_trunc('day', ags.create_date) between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND ags.create_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= date_trunc('day', ags.create_date)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+			GROUP BY ags.party_organization
+	</select>
+
+	<select id="findInfoByIds" resultType="java.util.HashMap">
+		SELECT
+		 ags.party_organization "label",
+		 count( ags.party_organization)
+			FROM affair_general_situation ags
+		WHERE ags.del_flag = '0' and ags.id in (
+			<foreach collection="ids" item="id" index="index" separator=",">
+		 	#{id}
+		 </foreach>
+		)
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(ags.create_date, 'yyyy-mm')  = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from ags.create_date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND date_trunc('day', ags.create_date) between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND ags.create_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= date_trunc('day', ags.create_date)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+			GROUP BY ags.party_organization
+	</select>
+	<select id="findTreeData" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairGeneralSituation">
+		select * from (SELECT
+		a.id AS "id",
+		a.party_organization AS "partyOrganization",
+		a.parent_id AS "parentId"
+		FROM affair_general_situation a
+		where a.del_flag = '0'
+		<if test="null != id and null != parentIds">
+		AND	(a.id = #{id} OR a.parent_ids LIKE concat(#{parentIds},#{id},',%') )
+		</if>
+		and  (sort  like '%[0-9]%' or  sort  like '%-%' or  a.sort is  null or sort ='')
+		ORDER BY
+				<!--a.sort ASC-->
+				cast(nullif(split_part(a.sort, '-', 1),'') as integer),
+				cast(nullif(split_part(a.sort, '-', 2),'')as integer) ,
+				cast(nullif(split_part(a.sort, '-', 3),'')as integer) ,
+				cast(nullif(split_part(a.sort, '-', 4),'')as integer)
+        )  table1
+        union all
+        SELECT a.id AS "id", a.party_organization AS "partyOrganization", a.parent_id AS "parentId"
+        FROM affair_general_situation a
+        WHERE a.del_flag = '0'
+        <if test="null != id and null != parentIds">
+		AND	(a.id = #{id} OR a.parent_ids LIKE concat(#{parentIds},#{id},',%') )
+		</if>
+         and  a.sort  not like '%[0-9]%'  and  a.sort not like '%-%'  and  a.sort is not  null and  sort  !=''
+	</select>
+
+	<select id="findTreeData2" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairGeneralSituation">
+		SELECT
+		a.id AS "id",
+		a.party_organization AS "partyOrganization",
+		a.parent_id AS "parentId"
+		FROM affair_general_situation a
+		where a.del_flag = '0'
+		<if test="null != id and null != parentIds">
+			AND	(a.id = #{id} OR a.parent_ids LIKE concat(#{parentIds},#{id},',%') )
+		</if>
+		AND a.id not in (select tree_id from affair_political_group where del_flag = '0')<!--党组织树屏蔽党小组-->
+		order by a.sort asc
+	</select>
+
+	<select id="findByPartyOrganization" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairGeneralSituation">
+		SELECT <include refid="affairGeneralSituationColumns"/>
+		FROM affair_general_situation a
+		WHERE a.party_organization = #{partyOrganization} and a.del_flag = '0'
+	</select>
+
+    <delete id="deleteByPartyOrganization">
+		delete from affair_general_situation a where a.party_organization = #{partyOrganization}
+	</delete>
+
+	<select id="findAllChildIdById" resultType="java.lang.String">
+		SELECT a.id
+		FROM affair_general_situation a
+		WHERE  (a.parent_ids LIKE '%,'||#{id}||',%') and a.del_flag = '0'
+	</select>
+
+	<select id="findALLPartyBranch" resultType="java.lang.Integer">
+		SELECT count(a.id)
+		FROM affair_general_situation a
+		WHERE  a.del_flag = '0'
+	</select>
+	<select id="findJLChFtreeData" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairGeneralSituation">
+		SELECT
+		a.id AS "id",
+		a.party_organization AS "partyOrganization",
+		a.parent_id AS "parentId"
+		FROM affair_general_situation a
+		where a.del_flag = '0'
+		order by a.create_date asc
+	</select>
+
+	<select id="findTransfertreeData" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairGeneralSituation">
+		SELECT
+		a.id AS "id",
+		a.party_organization AS "partyOrganization",
+		a.parent_id AS "parentId"
+		FROM affair_general_situation a
+		where a.del_flag = '0'
+		order by a.create_date asc
+	</select>
+	<select id="findLifeMeetList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairGeneralSituation">
+			<!--党小组parent_ids 为 ’1,‘   此处应该排除党小组-->
+		select
+			<include refid="affairGeneralSituationColumns"/>
+		from affair_general_situation a
+		WHERE
+		A.del_flag = '0' and a.parent_ids  &lt;&gt; '1,'
+		<if test="partyOrganization != null and partyOrganization == 'done'">
+		and a.id in (select b.party_organization_id from affair_life_meet b where b.del_flag = '0'
+			<choose>
+				<when test="contactor != null and contactor !=''">
+					AND TO_CHAR(b.date, 'yyyy-mm') = #{contactor}
+				</when>
+				<when test="num != null and num !=''">
+					AND extract(year from b.date) = #{num}
+				</when>
+				<when test="startDate != null and endDate != null">
+					AND b.date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+				</when>
+				<when test="startDate != null">
+					AND b.date >= #{startDate,jdbcType=DATE}
+				</when>
+				<when test="endDate != null">
+					AND  #{endDate,jdbcType=DATE} >= b.date
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			)
+		</if>
+		<if test="partyOrganization != null and partyOrganization == 'unDone'">
+			and a.id not in (select b.party_organization_id from affair_life_meet b where b.del_flag = '0'
+			<choose>
+				<when test="contactor != null and contactor !=''">
+					AND TO_CHAR(b.date, 'yyyy-mm') = #{contactor}
+				</when>
+				<when test="num != null and num !=''">
+					AND extract(year from b.date) = #{num}
+				</when>
+				<when test="startDate != null and endDate != null">
+					AND b.date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+				</when>
+				<when test="startDate != null">
+					AND b.date >= #{startDate,jdbcType=DATE}
+				</when>
+				<when test="endDate != null">
+					AND  #{endDate,jdbcType=DATE} >= b.date
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			)
+		</if>
+
+	</select>
+
+	<select id="findAssessDetailList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairGeneralSituation">
+		select <include refid="affairGeneralSituationColumns"/>
+		from affair_general_situation a
+		where a.del_flag = '0' and a.id
+		 <choose>
+			 <when test="label == '完成'">
+		 		in
+			 </when>
+			 <otherwise>
+				 not in
+			 </otherwise>
+		 </choose>
+		(select b."party_organization_id"
+			from affair_assess b
+			where b.del_flag = '0' and b.party_organization_id is not null
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(b.date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from b.date) = #{year}
+			</when>
+			<when test="beginDate != null and endDate != null">
+				AND b.date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="beginDate != null">
+				AND b.date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= b.date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+			)
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+    <select id="selectUnitId" resultType="java.lang.String">
+	SELECT ID
+	FROM
+		affair_general_situation
+	WHERE
+		del_flag = '0'
+		AND party_organization = #{unitName}
+		limit 1
+	</select>
+
+	<!--党日活动自动考评-->
+	<select id="findNameByOrg" resultType="java.lang.String">
+		select
+		a.shuji
+		from
+		affair_general_situation a
+		where
+		a.party_organization = #{org}
+		and a.del_flag = '0'
+	</select>
+
+    <select id="selectNameById" resultType="java.lang.String">
+		SELECT
+			party_organization
+		FROM
+			affair_general_situation
+		WHERE
+			del_flag = '0'
+			AND ID =  #{id}
+	</select>
+
+	<select id="selectSJName" resultType="java.lang.String">
+		SELECT
+			shuji
+		FROM
+			affair_general_situation
+		WHERE
+			del_flag = '0'
+			AND party_organization = #{name}
+			LIMIT 1
+	</select>
+
+
+    <select id="selectAllName" resultType="java.lang.String">
+		SELECT
+			party_organization
+		FROM
+			affair_general_situation
+		WHERE
+			del_flag = '0'
+	</select>
+
+
+	<update id="shenHeSave">
+		UPDATE affair_general_situation SET
+			status = #{status},
+			opinion = #{opinion},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+
+	<select id="selectPartyOrganizationById" resultType="java.lang.String">
+		select
+		party_organization
+		FROM
+			affair_general_situation
+		where
+			id = #{id}
+	</select>
+
+	<select id="selectChuPartyBranch"
+			resultType="com.thinkgem.jeesite.modules.affair.entity.AffairGeneralSituation">
+		select <include refid="affairGeneralSituationColumns"/>
+		from affair_general_situation a
+		where a.del_flag = '0'
+		and (a.parent_ids like '%,34,%' or a.parent_ids like '%,95,%' or a.parent_ids like '%,156,%')
+	</select>
+
+	<select id="getJJGPartyBranch"
+			resultType="com.thinkgem.jeesite.modules.affair.entity.AffairGeneralSituation">
+		select <include refid="affairGeneralSituationColumns"/>
+		from affair_general_situation a
+		where a.del_flag = '0'
+		and a.id not in ('0','1','2','34','95','156')
+		and a.parent_ids not like '%,34,%'
+		and a.parent_ids not like '%,95,%'
+		and a.parent_ids not like '%,156,%'
+	</select>
+
+	<select id="getChuPartyBranch"
+			resultType="com.thinkgem.jeesite.modules.affair.entity.AffairGeneralSituation">
+		select DISTINCT <include refid="affairGeneralSituationColumns"/>
+		from affair_general_situation a
+		inner join sys_offices os on a.id = os.party_id
+		left join sys_office o on o.id = os.id
+		left join sys_user u on u.no = o.code
+		left join sys_user_role ur on ur.user_id = u.id
+		where a.del_flag = '0'
+		and a.id &lt;&gt; #{chuId}
+		and a.parent_ids like '%,'||#{chuId}||',%'
+		<if test='type != null and type != "" and type == "1"'>
+			<!--and os.name not like '%派出所%'-->
+			<!--处机关部门（独立单位）-绩效-->
+			and ur.role_id = 'c522c8beb3c6477b82a6a641e9631a7d'
+		</if>
+		<if test='type != null and type != "" and type == "2"'>
+			<!--and os.name like '%派出所%'-->
+			<!--派出所（大队）-绩效 角色-->
+			and ur.role_id = 'dcaebd56498c49dfbc825795c542ca0c'
+		</if>
+	</select>
+
+    <select id="selectdzzName" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairGeneralSituation">
+		select
+			<include refid="affairGeneralSituationColumns"/>
+		from
+			affair_general_situation a
+		WHERE
+			a.party_organization LIKE'%党总支%'
+			and a.del_flag = '0'
+	</select>
+    <select id="selectdzbName" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairGeneralSituation">
+		select
+			<include refid="affairGeneralSituationColumns"/>
+		from
+			affair_general_situation a
+		WHERE
+			a.party_organization LIKE'%党支部%'
+		and a.del_flag = '0'
+	</select>
+	<select id="selectdzbzzName" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairGeneralSituation">
+		select
+		<include refid="affairGeneralSituationColumns"/>
+		from
+		affair_general_situation a
+		WHERE
+		a.party_organization LIKE'%党支部%'
+		OR A.party_organization LIKE'%总支%'
+		and a.del_flag = '0'
+	</select>
+
+	<select id="selectUnitName" resultType="java.lang.String">
+		SELECT A
+			.party_organization
+		FROM
+			affair_general_situation A
+		WHERE
+			A.ID = ( SELECT party_id FROM sys_offices WHERE NAME = #{gzname} )
+	</select>
+
+    <select id="getChuPartyCommittee"
+            resultType="com.thinkgem.jeesite.modules.affair.entity.AffairGeneralSituation">
+		select <include refid="affairGeneralSituationColumns"/>
+		from affair_general_situation a
+		where a.del_flag = '0'
+		and a.id in ('34','95','156')
+	</select>
+
+	<select id="selectAllPartyBranch" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairGeneralSituation">
+		SELECT
+			<include refid="affairGeneralSituationColumns"/>
+		FROM
+			affair_general_situation A
+		WHERE
+			A.del_flag = '0'
+			AND party_organization NOT LIKE '%党总支%'
+	</select>
+
+	<select id="selectAlldzz" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairGeneralSituation">
+		SELECT
+			<include refid="affairGeneralSituationColumns"/>
+		FROM
+			affair_general_situation A
+		WHERE
+			A.del_flag = '0'
+			AND A.party_organization like '%党总支'
+	</select>
+	<select id="selectAllPartydxz" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairGeneralSituation">
+		SELECT
+			<include refid="affairGeneralSituationColumns"/>
+		FROM
+			affair_general_situation A
+		WHERE
+			A.del_flag = '0'
+			AND A.party_organization LIKE '%党小组%'
+	</select>
+
+	<select id="selectAllParty" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairGeneralSituation">
+		SELECT
+			<include refid="affairGeneralSituationColumns"/>
+		FROM
+			affair_general_situation A
+		WHERE
+			A.del_flag = '0'
+	</select>
+	<select id="selectChuParty" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairGeneralSituation">
+		select DISTINCT <include refid="affairGeneralSituationColumns"/>
+		from affair_general_situation a
+		inner join sys_offices os on a.id = os.party_id
+		where a.del_flag = '0'
+		and a.id &lt;&gt; #{chuId}
+		and a.parent_ids like '%,'||#{chuId}||',%'
+	</select>
+    <select id="selectBeanByChuId" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairGeneralSituation">
+		SELECT
+			*
+		FROM
+			"affair_general_situation"
+		WHERE
+			"id" = #{chuId}
+			AND del_flag = '0'
+	</select>
+	<select id="findNameByPartyName" resultType="java.lang.String">
+		select
+		a.shuji
+		from
+		affair_general_situation a
+		where
+		a.party_organization = #{name}
+		and a.del_flag = '0'
+		LIMIT 1
+	</select>
+
+</mapper>

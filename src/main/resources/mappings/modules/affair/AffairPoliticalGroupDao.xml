@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairPoliticalGroupDao">
+    
+	<sql id="affairPoliticalGroupColumns">
+		a.id AS "id",
+		a.group_name AS "groupName",
+		a.time AS "time",
+		a.group_headman AS "groupHeadman",
+		a.phone_number AS "phoneNumber",
+		a.group_contact AS "groupContact",
+		a.group_political_number AS "groupPoliticalNumber",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.parent_id AS "parentId",
+		a.tree_id AS "treeId"
+	</sql>
+	
+	<sql id="affairPoliticalGroupJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairPoliticalGroup">
+		SELECT 
+			<include refid="affairPoliticalGroupColumns"/>
+		FROM affair_political_group a
+		<include refid="affairPoliticalGroupJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairPoliticalGroup">
+		SELECT 
+			<include refid="affairPoliticalGroupColumns"/>
+		FROM affair_political_group a
+		<include refid="affairPoliticalGroupJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="parentId != null and parentId != ''">
+				AND a.parent_id = #{parentId}
+			</if>
+
+			<if test="treeId != null and treeId != ''">
+				AND a.tree_id = #{treeId}
+			</if>
+			<if test="groupName != null and groupName != ''">
+				AND a.group_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{groupName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{groupName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{groupName},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{groupName}||'%'</if>
+			</if>
+			<choose>
+				<when test="beginTime != null and endTime != null and beginTime != '' and endTime != ''">
+					AND a.time BETWEEN #{beginTime} AND #{endTime}
+				</when>
+				<when test="beginTime != null and beginTime != ''">
+					AND a.time &gt;= #{beginTime}
+				</when>
+				<when test="endTime != null and endTime != ''">
+					AND a.time &lt;= #{endTime}
+				</when>
+				<otherwise></otherwise>
+			</choose>
+			<if test="groupHeadman != null and groupHeadman != ''">
+				AND a.group_headman LIKE 
+					<if test="dbName == 'oracle'">'%'||#{groupHeadman}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{groupHeadman}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{groupHeadman},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{groupHeadman}||'%'</if>
+			</if>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairPoliticalGroup">
+		SELECT 
+			<include refid="affairPoliticalGroupColumns"/>
+		FROM affair_political_group a
+		<include refid="affairPoliticalGroupJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	<select id="findInfoByTreeId" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairPoliticalGroup">
+		select  <include refid="affairPoliticalGroupColumns"/>
+		FROM affair_political_group a
+		where a.del_flag = '0'
+		and a.tree_id = #{treeId}
+	</select>
+
+	<insert id="insert">
+		INSERT INTO affair_political_group(
+			id,
+			group_name,
+			time,
+			group_headman,
+			phone_number,
+			group_contact,
+			group_political_number,
+			create_by,
+			create_org_id,
+			create_date,
+			update_by,
+			update_org_id,
+			update_date,
+			del_flag,
+			parent_id,
+			tree_id
+		) VALUES (
+			#{id},
+			#{groupName},
+			#{time},
+			#{groupHeadman},
+			#{phoneNumber},
+			#{groupContact},
+			#{groupPoliticalNumber},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateDate},
+			#{delFlag},
+			#{parentId},
+			#{treeId}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_political_group SET 	
+			group_name = #{groupName},
+			time = #{time},
+			group_headman = #{groupHeadman},
+			phone_number = #{phoneNumber},
+			group_contact = #{groupContact},
+			group_political_number = #{groupPoliticalNumber},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_political_group SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	<update id="deleteByIds">
+		UPDATE affair_political_group SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+
+	
+</mapper>

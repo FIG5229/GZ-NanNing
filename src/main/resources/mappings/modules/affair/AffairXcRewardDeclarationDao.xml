@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairXcRewardDeclarationDao">
+    
+	<sql id="affairXcRewardDeclarationColumns">
+		a.id AS "id",
+		a.date AS "date",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.approval_unit AS "approvalUnit",
+		a.approval_unit_id AS "approvalUnitId",
+		a.name AS "name",
+		a.file_no AS "fileNo",
+		a.remark AS "remark",
+		a.file_path AS "filePath",
+		a.status AS "status",
+		a.opinion AS "opinion",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.sh_person AS "shPerson",
+		a.admin_people AS "adminPeople",
+		a.ts_status AS "tsStatus",
+		a.type AS "type",
+		a.ju_check_man AS "juCheckMan",
+		a,chu_check_man	AS "chuCheckMan",
+		a.submit_man AS "submitMan",
+		a.sb_type AS "sbType",
+		a.ju_check_id AS  "juCheckId",
+		a.chu_check_id AS "chuCheckId",
+		a.submit_id AS "submitMan"
+	</sql>
+	
+	<sql id="affairXcRewardDeclarationJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairXcRewardDeclaration">
+		SELECT 
+			<include refid="affairXcRewardDeclarationColumns"/>
+		FROM affair_xc_reward_declaration a
+		<include refid="affairXcRewardDeclarationJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairXcRewardDeclaration">
+		SELECT 
+			<include refid="affairXcRewardDeclarationColumns"/>
+		FROM affair_xc_reward_declaration a
+		<include refid="affairXcRewardDeclarationJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<choose>
+				<when test="beginDate != null and endDate != null and beginDate != '' and endDate != ''">
+					AND a.date BETWEEN #{beginDate} AND #{endDate}
+				</when>
+				<when test="beginDate != null and beginDate != ''">
+					AND a.date &gt;= #{beginDate}
+				</when>
+				<when test="endDate != null and endDate != ''">
+					AND a.date &lt;= #{endDate}
+				</when>
+				<otherwise></otherwise>
+			</choose>
+			<if test="name != null and name != ''">
+				AND a.name LIKE '%'||#{name}||'%'
+			</if>
+			<if test="fileNo != null and fileNo != ''">
+				AND a.file_no LIKE '%'||#{fileNo}||'%'
+			</if>
+			<if test="unitId != null and unitId != ''">
+				AND a.unit_id = #{unitId}
+			</if>
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+			<!--审核单位一定可以查看到自己审核的内容-->
+		<!--	<if test="approvalUnitId != null and approvalUnitId != ''">
+				or a.approval_unit_id = #{approvalUnitId}
+			</if>
+
+			${sqlMap.dsf}-->
+		<if test="officeId != null and officeId != '' and userId != null and  userId != ''">
+			AND (o.ID = #{officeId} OR o.parent_ids LIKE'%,'||#{officeId}||',%' OR u.ID = #{officeId} or a.unit_id=#{officeId} or a.create_by = #{userId} or submit_id = #{userId} or a.ju_check_id = #{officeId} or a.chu_check_id = #{officeId} )
+		</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairXcRewardDeclaration">
+		SELECT 
+			<include refid="affairXcRewardDeclarationColumns"/>
+		FROM affair_xc_reward_declaration a
+		<include refid="affairXcRewardDeclarationJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_xc_reward_declaration(
+			id,
+			date,
+			unit,
+			unit_id,
+			approval_unit,
+			approval_unit_id,
+			name,
+			file_no,
+			remark,
+			file_path,
+			status,
+			opinion,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			sh_person,
+			admin_people,
+			ts_status,
+			type,
+			ju_check_man,
+			chu_check_man,
+			submit_man,
+			sb_type,
+			ju_check_id,
+			chu_check_id,
+			submit_id
+		) VALUES (
+			#{id},
+			#{date},
+			#{unit},
+			#{unitId},
+			#{approvalUnit},
+			#{approvalUnitId},
+			#{name},
+			#{fileNo},
+			#{remark},
+			#{filePath},
+			#{status},
+			#{opinion},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{shPerson},
+			#{adminPeople},
+			#{tsStatus},
+			#{type},
+			#{juCheckMan},
+			#{chuCheckMan},
+			#{submitMan},
+			1,
+			#{juCheckId},
+			#{chuCheckId},
+			#{submitId}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_xc_reward_declaration SET 	
+			date = #{date},
+			unit = #{unit},
+			unit_id = #{unitId},
+			approval_unit = #{approvalUnit},
+			approval_unit_id = #{approvalUnitId},
+			name = #{name},
+			file_no = #{fileNo},
+			remark = #{remark},
+			file_path = #{filePath},
+			status = #{status},
+			opinion = #{opinion},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			sh_person = #{shPerson},
+			admin_people = #{adminPeople},
+			ts_status = #{tsStatus},
+			type = #{type},
+			ju_check_man = #{juCheckMan},
+			chu_check_man = #{chuCheckMan},
+			submit_man = #{submitMan},
+			sb_type = #{sbType},
+			ju_check_id = #{juCheckId},
+			chu_check_id = #{chuCheckId},
+			submit_id = #{submitId}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_xc_reward_declaration SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_xc_reward_declaration SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<!--<update id="shenHe">
+		UPDATE affair_xc_reward_declaration SET
+		    status = #{affairXcRewardDeclaration.status},
+			sh_person = #{affairXcRewardDeclaration.shPerson}, opinion = #{affairXcRewardDeclaration.opinion},
+			update_date = #{affairXcRewardDeclaration.updateDate}
+			where id = #{affairXcRewardDeclaration.id}
+	</update>-->
+
+	<select id="findByIds" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairXcRewardDeclaration">
+		select <include refid="affairXcRewardDeclarationColumns"/>
+		from affair_xc_reward_declaration a where id in <foreach collection="ids" item="item" index="index"
+															  open="(" separator="," close=")">#{item}</foreach>
+	</select>
+	
+</mapper>

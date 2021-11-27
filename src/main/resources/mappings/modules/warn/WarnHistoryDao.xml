@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.warn.dao.WarnHistoryDao">
+    
+	<sql id="warnHistoryColumns">
+		a.id AS "id",
+		a.warn_name AS "warnName",
+		a.warn_id AS "warnId",
+		a.receive_per_name AS "receivePerName",
+		a.receive_per_id AS "receivePerId",
+		w.month AS "month",
+		w.day AS "day",
+		w.hour AS "hour",
+		w.minute AS "minute",
+		w.week AS "week",
+		w.date AS "date",
+		w.repeat_cycle AS "repeatCycle",
+		a.last_remind_time AS "lastRemindTime",
+		w.remind AS "remind",
+		w.alert_content AS "alertContent",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		w.continue_day AS "continueDay",
+		w.alert_degree AS "alertDegree",
+		w.create_by AS "warnCreateBy"
+	</sql>
+	
+	<sql id="warnHistoryJoins">
+		left join warning w on w.id = a.warn_id
+	</sql>
+    
+	<select id="get" resultType="WarnHistory">
+		SELECT 
+			<include refid="warnHistoryColumns"/>
+		FROM warn_history a
+		<include refid="warnHistoryJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="WarnHistory">
+		SELECT 
+			<include refid="warnHistoryColumns"/>
+		FROM warn_history a
+		<include refid="warnHistoryJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="warnName != null and warnName != ''">
+				AND a.warn_name LIKE
+					<if test="dbName == 'oracle'">'%'||#{warnName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{warnName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{warnName},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{warnName}||'%'</if>
+			</if>
+			<if test="userId != null and userId != ''">
+				AND a.receive_per_id = #{userId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="WarnHistory">
+		SELECT 
+			<include refid="warnHistoryColumns"/>
+		FROM warn_history a
+		<include refid="warnHistoryJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="selByWarnIdReceiveId" resultType="com.thinkgem.jeesite.modules.warn.entity.WarnHistory">
+		select <include refid="warnHistoryColumns"/>
+		from warn_history a
+		<include refid="warnHistoryJoins"/>
+		where a.del_flag = '0'
+		and a.warn_id = #{warnId}
+		and a.receive_per_id = #{receivePerId}
+		limit 1
+	</select>
+
+	<insert id="insert">
+		INSERT INTO warn_history(
+			id,
+			warn_name,
+			warn_id,
+			receive_per_name,
+			receive_per_id,
+			last_remind_time,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{warnName},
+			#{warnId},
+			#{receivePerName},
+			#{receivePerId},
+			#{lastRemindTime},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE warn_history SET 	
+			warn_name = #{warnName},
+			warn_id = #{warnId},
+			receive_per_name = #{receivePerName},
+			receive_per_id = #{receivePerId},
+			last_remind_time = #{lastRemindTime},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE warn_history SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

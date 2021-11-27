@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairOrganizationBulidDao">
+    
+	<sql id="affairOrganizationBulidColumns">
+		a.id AS "id",
+		a.date AS "date",
+		a.unit AS "unit",
+		a.is_assess_sys AS "isAssessSys",
+		a.result AS "result",
+		a.zgh_num AS "zghNum",
+		a.zghr_num AS "zghrNum",
+		a.satisfy_num AS "satisfyNum",
+		a.report AS "report",
+		a.opinion AS "opinion",
+		a.remark AS "remark",
+		a.method AS "method",
+		a.file_path AS "filePath",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.zghz_num AS "zghzNum",
+		a.unit_id AS "unitId",
+		a.sh_person AS "shPerson",
+		a.status AS "status",
+		a.hj_date AS "hjDate",
+		a.name AS "name",
+		a.org_name AS "orgName",
+		a.parent_id AS "parentId",
+		a.parent_ids AS "parentIds",
+		a.sort AS "sort"
+	</sql>
+	
+	<sql id="affairOrganizationBulidJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairOrganizationBulid">
+		SELECT 
+			<include refid="affairOrganizationBulidColumns"/>
+		FROM affair_organization_bulid a
+		<include refid="affairOrganizationBulidJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairOrganizationBulid">
+		SELECT 
+			<include refid="affairOrganizationBulidColumns"/>
+		FROM affair_organization_bulid a
+		<include refid="affairOrganizationBulidJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="beginDate != null and endDate != null and beginDate != '' and endDate != ''">
+				AND a.date BETWEEN #{beginDate} AND #{endDate}
+			</if>
+			<if test="isAssessSys != null and isAssessSys != ''">
+				AND a.is_assess_sys = #{isAssessSys}
+			</if>
+			<if test="zghzNum != null and zghzNum != ''">
+				AND a.zghz_num LIKE #{zghzNum}
+			</if>
+			<if test="treeId != null and treeId != ''">
+				AND (a.id = #{treeId} OR a.parent_ids LIKE '%,'||#{treeId}||',%')
+			</if>
+			<!--
+			${sqlMap.dsf}-->
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.sort ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairOrganizationBulid">
+		SELECT 
+			<include refid="affairOrganizationBulidColumns"/>
+		FROM affair_organization_bulid a
+		<include refid="affairOrganizationBulidJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="getOrgInfo" resultType="Map">
+		SELECT
+		a.*
+		FROM affair_organization_bulid a LEFT JOIN sys_offices s ON A.ID = s.union_id
+		WHERE s.id = #{id}
+	</select>
+
+    <select id="findTreeData" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairOrganizationBulid">
+		SELECT
+		a.id AS "id",
+		a.name AS "name",
+		a.parent_id AS "parentId",
+		a.parent_ids AS "parentIds"
+		FROM affair_organization_bulid a
+		where a.del_flag = '0'
+		<if test="null != id and null != parentIds">
+			AND	(a.id = #{id} OR a.parent_ids LIKE #{parentIds}||#{id}||',%')
+		</if>
+		order by a.sort asc
+	</select>
+
+	<select id="findByName" resultType="java.lang.String">
+		SELECT a.id as id
+		FROM affair_organization_bulid a
+		WHERE a.name = #{name}
+	</select>
+
+    <insert id="insert">
+		INSERT INTO affair_organization_bulid(
+			id,
+			date,
+			unit,
+			is_assess_sys,
+			result,
+			zgh_num,
+			zghr_num,
+			satisfy_num,
+			report,
+			opinion,
+			remark,
+			method,
+			file_path,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			zghz_num,
+			unit_id,
+			sh_person,
+			status,
+			hj_date,
+			name,
+			org_name,
+			parent_id,
+			parent_ids,
+			sort
+		) VALUES (
+			#{id},
+			#{date},
+			#{unit},
+			#{isAssessSys},
+			#{result},
+			#{zghNum},
+			#{zghrNum},
+			#{satisfyNum},
+			#{report},
+			#{opinion},
+			#{remark},
+			#{method},
+			#{filePath},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{zghzNum},
+			#{unitId},
+			#{shPerson},
+			#{status},
+			#{hjDate},
+			#{name},
+			#{orgName},
+			#{parentId},
+			#{parentIds},
+			#{sort}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_organization_bulid SET 	
+			date = #{date},
+			unit = #{unit},
+			is_assess_sys = #{isAssessSys},
+			result = #{result},
+			zgh_num = #{zghNum},
+			zghr_num = #{zghrNum},
+			satisfy_num = #{satisfyNum},
+			report = #{report},
+			opinion = #{opinion},
+			remark = #{remark},
+			method = #{method},
+			file_path = #{filePath},
+			zghz_num = #{zghzNum},
+			unit_id = #{unitId},
+			sh_person = #{shPerson},
+			status = #{status},
+			hj_date = #{hjDate},
+			name = #{name},
+			org_name = #{orgName},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			parent_id = #{parentId},
+			parent_ids = #{parentIds},
+			sort = #{sort}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_organization_bulid SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_organization_bulid SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<update id="shenHe">
+		UPDATE affair_organization_bulid SET
+		    status = #{affairOrganizationBulid.status},
+			sh_person = #{affairOrganizationBulid.shPerson}, opinion = #{affairOrganizationBulid.opinion},
+			update_date = #{affairOrganizationBulid.updateDate}
+			where id = #{affairOrganizationBulid.id}
+	</update>
+
+	<select id="findInfoByUnitId" resultType="java.util.HashMap">
+		SELECT
+		aob.org_name,
+		count( aob.org_name),
+		sd.label
+		FROM
+		affair_organization_bulid aob
+		LEFT JOIN sys_dict sd ON aob.org_name = sd.
+		VALUE
+
+		WHERE
+		aob.del_flag != '1'
+		AND	sd.type = 'affair_gh_org'
+		<if test="id != null and id != ''">
+			AND aob.unit_id = #{id} AND aob.del_flag = '0'
+		</if>
+		GROUP BY
+		aob.org_name,
+		sd.label
+	</select>
+
+	<select id="findInfoByUnitIds" resultType="java.util.HashMap">
+		SELECT
+		aob.org_name,
+		count( aob.org_name ),
+		sd.label
+		FROM
+		affair_organization_bulid aob
+		LEFT JOIN sys_dict sd ON aob.org_name = sd.
+		VALUE
+
+		WHERE
+		aob.del_flag != '1'
+		AND	sd.type = 'affair_gh_org'
+		AND aob.unit_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+		GROUP BY
+		aob.org_name,
+		sd.label
+	</select>
+</mapper>

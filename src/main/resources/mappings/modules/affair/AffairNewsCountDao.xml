@@ -1,0 +1,352 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairNewsCountDao">
+    <sql id="AffairNewsCountColumns">
+            a.date AS "date"
+    </sql>
+    <!--<select id="countByUnit" resultType="AffairNewsCount">
+        select
+        nu.unit_name as unit,
+        nu.unit_id as unit_id,
+        t1.sum1 as sum1,
+        t2.sum2 as sum2,
+        t3.sum3 as sum3,
+        t4.sum4 as sum4,
+        (sum1+sum2+sum3+sum4) as sum
+        from  affair_news a,news_unit_name nu,
+        ( SELECT count(1) AS sum1 FROM news_unit_name n left join affair_news b on b.unit_id = n.unit_id WHERE b.del_flag = '0' AND b.typr = '1'
+            and a.unit_id = b.unit_id
+        ) t1,
+        ( SELECT count(1) AS sum2 FROM news_unit_name n left join affair_news b on b.unit_id = n.unit_id WHERE b.del_flag = '0' AND b.typr = '2'
+            and a.unit_id = b.unit_id
+        ) t2,
+        ( SELECT count(1) AS sum3 FROM news_unit_name n left join affair_news b on b.unit_id = n.unit_id  WHERE b.del_flag = '0' AND b.typr = '3'
+            and a.unit_id = b.unit_id
+        ) t3,
+        ( SELECT count(1) AS sum4 FROM news_unit_name n left join affair_news b on b.unit_id = n.unit_id  WHERE b.del_flag = '0' AND b.typr = '4'
+            and a.unit_id = b.unit_id
+        ) t4
+        <where>
+            a.del_flag='0'
+            <if test="date != null and date != ''">
+                and SUBSTRING( TO_CHAR( a.date, 'yyyy' ),1, 4) = #{date}
+            </if>
+        </where>
+        group by nu.unit_name,nu.unit_id,sum1,sum2,sum3,sum4
+        order by sum DESC
+    </select>-->
+
+    <select id="countByUnit" resultType="AffairNewsCount">
+        select news_unit AS unit ,news_unit_id as unit_id,sum(num1+num2+num3+num4) as sum,
+        sum(num1) As sum1,
+        sum(num2) As sum2,
+        sum(num3) As sum3,
+        sum(num4) As sum4,
+        sum(num5) As sum5
+        from (
+        SELECT b.news_unit,
+        b.news_unit_id,
+        (case when a.typr='1' then 1 else 0 end) As num1,
+        (case when a.typr='2' then 1 else 0 end) As num2,
+        (case when a.typr='3' then 1 else 0 end) As num3,
+        (case when a.typr='4' then 1 else 0 end) As num4,
+        (case when a.typr='5' then 1 else 0 end) As num5
+        FROM affair_news a  right   JOIN  affair_news_unit b on a.id= b.news_id LEFT JOIN news_unit_name c on b.news_unit_id= c.unit_id
+        where
+        b.news_unit_id in(
+        SELECT e.unit_id from news_unit_name e
+        )
+        and c.company_id = #{officeId} and a.del_flag='0'
+        <if test="date != null and date != ''">
+            and SUBSTRING( TO_CHAR( a.date, 'yyyy' ),1, 4) = #{date}
+        </if>
+        ) d GROUP BY unit,unit_id
+        order by sum DESC
+    </select>
+
+    <select id="countByJuUnit" resultType="AffairNewsCount">
+        select news_unit AS unit ,news_unit_id as unit_id,sum(num1+num2+num3+num4) as sum,
+        sum(num1) As sum1,
+        sum(num2) As sum2,
+        sum(num3) As sum3,
+        sum(num4) As sum4,
+        sum(num5) As sum5
+        from (
+        SELECT b.news_unit,
+        b.news_unit_id,
+        (case when a.typr='1' then 1 else 0 end) As num1,
+        (case when a.typr='2' then 1 else 0 end) As num2,
+        (case when a.typr='3' then 1 else 0 end) As num3,
+        (case when a.typr='4' then 1 else 0 end) As num4,
+        (case when a.typr='5' then 1 else 0 end) As num5
+        FROM affair_news a  right   JOIN  affair_news_unit b on a.id= b.news_id LEFT JOIN news_unit_name c on b.news_unit_id= c.unit_id
+        where a.del_flag = '0'
+        <if test="date != null and date != ''">
+            and SUBSTRING( TO_CHAR( a.date, 'yyyy' ),1, 4) = #{date}
+        </if>
+        ) d GROUP BY unit,unit_id
+        order by sum DESC
+
+    </select>
+
+    <!--<select id="countByAuthor" resultType="AffairNewsCount">
+        select
+        a.author,
+        t1.sum1 as sum1,
+        t2.sum2 as sum2,
+        t3.sum3 as sum3,
+        t4.sum4 as sum4,
+        COUNT(a.author) as sum
+        from
+        affair_news a,
+        ( SELECT count(1) AS sum1 FROM affair_news A WHERE A.del_flag = '0' AND A.typr = '1'
+        <if test="author != null and author != ''">
+            and a.author = #{author}
+        </if>
+        ) t1,
+        ( SELECT count(1) AS sum2 FROM affair_news A WHERE A.del_flag = '0' AND A.typr = '2'
+        <if test="author != null and author != ''">
+            and a.author = #{author}
+        </if>
+        ) t2,
+        ( SELECT count(1) AS sum3 FROM affair_news A WHERE A.del_flag = '0' AND A.typr = '3'
+        <if test="author != null and author != ''">
+            and a.author = #{author}
+        </if>
+        ) t3,
+        ( SELECT count(1) AS sum4 FROM affair_news A WHERE A.del_flag = '0' AND A.typr = '4'
+        <if test="author != null and author != ''">
+            and a.author = #{author}
+        </if>
+        ) t4
+        <where>
+            a.del_flag='0'
+            <if test="date != null and date != ''">
+                and SUBSTRING( TO_CHAR( a.date, 'yyyy' ),1, 4) = #{date}
+            </if>
+        </where>
+        group by a.author,sum1,sum2,sum3,sum4
+        order by sum DESC
+    </select>-->
+
+    <select id="countByAuthor" resultType="AffairNewsCount">
+        <!--select
+        a.author,
+        (SELECT count(1) AS sum1 FROM affair_news b WHERE b.del_flag = '0' AND b.typr = '1' and a.author = b.author) sum1,
+        (SELECT count(1) AS sum2 FROM affair_news b WHERE b.del_flag = '0' AND b.typr = '2' and a.author = b.author) sum2,
+        (SELECT count(1) AS sum3 FROM affair_news b WHERE b.del_flag = '0' AND b.typr = '3' and a.author = b.author) sum3,
+        (SELECT count(1) AS sum4 FROM affair_news b WHERE b.del_flag = '0' AND b.typr = '4' and a.author = b.author) sum4,
+        (SELECT count(1) AS sum4 FROM affair_news b WHERE b.del_flag = '0' AND b.typr = '5' and a.author = b.author) sum5,
+        COUNT(a.author) as sum
+        from
+        affair_news a
+        <where>
+            a.del_flag='0'
+            <if test="date != null and date != ''">
+                and SUBSTRING( TO_CHAR( a.date, 'yyyy' ),1, 4) = #{date}
+            </if>
+        </where>
+        group by a.author
+        order by sum DESC-->
+        select news_author as author,sum(num1+num2+num3+num4) as sum,
+        sum(num1) As sum1,
+        sum(num2) As sum2,
+        sum(num3) As sum3,
+        sum(num4) As sum4,
+        sum(num5) As sum5
+        from (
+        SELECT b.news_author,
+        (case when a.typr='1' then 1 else 0 end) As num1,
+        (case when a.typr='2' then 1 else 0 end) As num2,
+        (case when a.typr='3' then 1 else 0 end) As num3,
+        (case when a.typr='4' then 1 else 0 end) As num4,
+        (case when a.typr='5' then 1 else 0 end) As num5
+        FROM affair_news a  right   JOIN  affair_news_author b on a.id= b.news_id
+        LEFT JOIN sys_user c on b.id_number = c.no
+        where a.del_flag='0'
+        <if test="date != null and date != ''">
+            and SUBSTRING( TO_CHAR( a.date, 'yyyy' ),1, 4) = #{date}
+        </if>
+         and c.company_id = #{officeId}
+        )
+        d GROUP BY author
+        order by sum DESC
+    </select>
+
+    <!--<select id="countByName" resultType="AffairNewsCount">
+        select
+        a.name,
+        t1.sum1 as sum1,
+        t2.sum2 as sum2,
+        t3.sum3 as sum3,
+        t4.sum4 as sum4,
+        COUNT(a.name) as sum
+        from
+        affair_news a,
+        ( SELECT count(1) AS sum1 FROM affair_news A WHERE A.del_flag = '0' AND A.typr = '1'
+        <if test="name != null and name != ''">
+            and a.name = #{name}
+        </if>
+        ) t1,
+        ( SELECT count(1) AS sum2 FROM affair_news A WHERE A.del_flag = '0' AND A.typr = '2'
+        <if test="name != null and name != ''">
+            and a.name = #{name}
+        </if>
+        ) t2,
+        ( SELECT count(1) AS sum3 FROM affair_news A WHERE A.del_flag = '0' AND A.typr = '3'
+        <if test="name != null and name != ''">
+            and a.name = #{name}
+        </if>
+        ) t3,
+        ( SELECT count(1) AS sum4 FROM affair_news A WHERE A.del_flag = '0' AND A.typr = '4'
+        <if test="name != null and name != ''">
+            and a.name = #{name}
+        </if>
+        ) t4
+        <where>
+            a.del_flag='0'
+            <if test="date != null and date != ''">
+                and SUBSTRING( TO_CHAR( a.date, 'yyyy' ),1, 4) = #{date}
+            </if>
+        </where>
+        group by a.name,sum1,sum2,sum3,sum4
+        order by sum DESC
+    </select>-->
+
+    <select id="countByName" resultType="AffairNewsCount">
+        <!--select
+        a.name,
+        ( SELECT count(1) AS sum1 FROM affair_news b WHERE b.del_flag = '0' AND b.typr = '1' and a.name = b.name) sum1,
+        ( SELECT count(1) AS sum2 FROM affair_news b WHERE b.del_flag = '0' AND b.typr = '2' and a.name = b.name) sum2,
+        ( SELECT count(1) AS sum3 FROM affair_news b WHERE b.del_flag = '0' AND b.typr = '3' and a.name = b.name) sum3,
+        ( SELECT count(1) AS sum4 FROM affair_news b WHERE b.del_flag = '0' AND b.typr = '4' and a.name = b.name) sum4,
+        ( SELECT count(1) AS sum4 FROM affair_news b WHERE b.del_flag = '0' AND b.typr = '5' and a.name = b.name) sum5,
+        COUNT(a.name) as sum
+        from
+        affair_news a
+        <where>
+            a.del_flag='0'
+            <if test="date != null and date != ''">
+                and SUBSTRING( TO_CHAR( a.date, 'yyyy' ),1, 4) = #{date}
+            </if>
+        </where>
+        group by a.name
+        order by sum DESC-->
+        select news_name as name,sum(num1+num2+num3+num4) as sum,
+        sum(num1) As sum1,
+        sum(num2) As sum2,
+        sum(num3) As sum3,
+        sum(num4) As sum4,
+        sum(num5) As sum5
+        from (
+        SELECT b.news_name,
+        (case when a.typr='1' then 1 else 0 end) As num1,
+        (case when a.typr='2' then 1 else 0 end) As num2,
+        (case when a.typr='3' then 1 else 0 end) As num3,
+        (case when a.typr='4' then 1 else 0 end) As num4,
+        (case when a.typr='5' then 1 else 0 end) As num5
+        FROM affair_news a  right   JOIN  affair_news_name b on a.id= b.news_id
+        LEFT JOIN sys_user c on b.news_id_number = c.no
+        where a.del_flag='0'
+        <if test="date != null and date != ''">
+            and SUBSTRING( TO_CHAR( a.date, 'yyyy' ),1, 4) = #{date}
+        </if>
+        and c.company_id = #{officeId}
+        )
+        d GROUP BY name
+        order by sum DESC
+    </select>
+        <!--下面的三个已经引入到上面-->
+    <select id="detailCountByUnit" resultType="AffairNewsCount">
+        select
+        t1.sum1 as sum1,
+        t2.sum2 as sum2,
+        t3.sum3 as sum3,
+        t4.sum4 as sum4
+        from
+        ( SELECT count(1) AS sum1 FROM affair_news A WHERE A.del_flag = '0' AND A.typr = '1'
+        <if test="unitId != null and unitId != ''">
+            and a.unit_id = #{unitId}
+        </if>
+         ) t1,
+        ( SELECT count(1) AS sum2 FROM affair_news A WHERE A.del_flag = '0' AND A.typr = '2'
+        <if test="unitId != null and unitId != ''">
+            and a.unit_id = #{unitId}
+        </if>
+         ) t2,
+        ( SELECT count(1) AS sum3 FROM affair_news A WHERE A.del_flag = '0' AND A.typr = '3'
+        <if test="unitId != null and unitId != ''">
+            and a.unit_id = #{unitId}
+        </if>
+        ) t3,
+        ( SELECT count(1) AS sum4 FROM affair_news A WHERE A.del_flag = '0' AND A.typr = '4'
+        <if test="unitId != null and unitId != ''">
+            and a.unit_id = #{unitId}
+        </if>
+         ) t4
+
+    </select>
+
+    <select id="detailCountByAuthor" resultType="AffairNewsCount">
+        select
+        t1.sum1 as sum1,
+        t2.sum2 as sum2,
+        t3.sum3 as sum3,
+        t4.sum4 as sum4
+        from
+        ( SELECT count(1) AS sum1 FROM affair_news A WHERE A.del_flag = '0' AND A.typr = '1'
+        <if test="author != null and author != ''">
+            and a.author = #{author}
+        </if>
+        ) t1,
+        ( SELECT count(1) AS sum2 FROM affair_news A WHERE A.del_flag = '0' AND A.typr = '2'
+        <if test="author != null and author != ''">
+            and a.author = #{author}
+        </if>
+        ) t2,
+        ( SELECT count(1) AS sum3 FROM affair_news A WHERE A.del_flag = '0' AND A.typr = '3'
+        <if test="author != null and author != ''">
+            and a.author = #{author}
+        </if>
+        ) t3,
+        ( SELECT count(1) AS sum4 FROM affair_news A WHERE A.del_flag = '0' AND A.typr = '4'
+        <if test="author != null and author != ''">
+            and a.author = #{author}
+        </if>
+        ) t4
+    </select>
+
+    <select id="detailCountByName" resultType="AffairNewsCount">
+        select
+        t1.sum1 as sum1,
+        t2.sum2 as sum2,
+        t3.sum3 as sum3,
+        t4.sum4 as sum4
+        from
+        ( SELECT count(1) AS sum1 FROM affair_news A WHERE A.del_flag = '0' AND A.typr = '1'
+        <if test="name != null and name != ''">
+            and a.name = #{name}
+        </if>
+        ) t1,
+        ( SELECT count(1) AS sum2 FROM affair_news A WHERE A.del_flag = '0' AND A.typr = '2'
+        <if test="name != null and name != ''">
+            and a.name = #{name}
+        </if>
+        ) t2,
+        ( SELECT count(1) AS sum3 FROM affair_news A WHERE A.del_flag = '0' AND A.typr = '3'
+        <if test="name != null and name != ''">
+            and a.name = #{name}
+        </if>
+        ) t3,
+        ( SELECT count(1) AS sum4 FROM affair_news A WHERE A.del_flag = '0' AND A.typr = '4'
+        <if test="name != null and name != ''">
+            and a.name = #{name}
+        </if>
+        ) t4
+    </select>
+
+    <select id="findAllUnit" resultType="java.util.HashMap">
+        select a.unit_name AS unit, a.unit_id AS unitId from news_unit_name a where a.company_id = #{officeId}
+    </select>
+
+</mapper>

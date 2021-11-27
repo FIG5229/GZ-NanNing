@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairBorrowDao">
+    
+	<sql id="affairBorrowColumns">
+		a.id AS "id",
+		a.jyr_name AS "jyrName",
+		a.jyr_id_number AS "jyrIdNumber",
+		a.bjyr_name AS "bjyrName",
+		a.bjyr_id_number AS "bjyrIdNumber",
+		a.time AS "time",
+		a.jyr_unit AS "jyrUnit",
+		a.jyr_face AS "jyrFace",
+		a.jyr_unit_id AS "jyrUnitId",
+		a.approver AS "approver",
+		a.situation AS "situation",
+		a.remark AS "remark",
+		a.handler AS "handler",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="affairBorrowJoins">
+        LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairBorrow">
+		SELECT 
+			<include refid="affairBorrowColumns"/>
+		FROM affair_borrow a
+		<include refid="affairBorrowJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairBorrow">
+		SELECT 
+			<include refid="affairBorrowColumns"/>
+		FROM affair_borrow a
+		<include refid="affairBorrowJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="jyrName != null and jyrName != ''">
+				AND a.jyr_name LIKE '%'||#{jyrName}||'%'
+			</if>
+			<if test="jyrIdNumber != null and jyrIdNumber != ''">
+				AND a.jyr_id_number LIKE '%'||#{jyrIdNumber}||'%'
+			</if>
+			<if test="bjyrName != null and bjyrName != ''">
+				AND a.bjyr_name LIKE '%'||#{bjyrName}||'%'
+			</if>
+			<if test="bjyrIdNumber != null and bjyrIdNumber != ''">
+				AND a.bjyr_id_number LIKE '%'||#{bjyrIdNumber}||'%'
+			</if>
+			<choose>
+				<when test="beginTime != null and endTime != null and beginTime != '' and endTime != ''">
+					AND a.time BETWEEN #{beginTime} AND #{endTime}
+				</when>
+				<when test="beginTime != null and beginTime != ''">
+					AND a.time &gt;= #{beginTime}
+				</when>
+				<when test="endTime != null and endTime != ''">
+					AND a.time &lt;= #{endTime}
+				</when>
+				<otherwise></otherwise>
+			</choose>
+
+			<if test="jyrUnitId != null and jyrUnitId != ''">
+				AND a.jyr_unit_id = #{jyrUnitId}
+			</if>
+			<if test="jyrFace != null and jyrFace != ''">
+				AND a.jyr_face = #{jyrFace}
+			</if>
+			<if test="approver != null and approver != ''">
+				AND a.approver LIKE '%'||#{approver}||'%'
+			</if>
+			<if test="handler != null and handler != ''">
+				AND a.handler LIKE '%'||#{handler}||'%'
+			</if>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairBorrow">
+		SELECT 
+			<include refid="affairBorrowColumns"/>
+		FROM affair_borrow a
+		<include refid="affairBorrowJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_borrow(
+			id,
+			jyr_name,
+			jyr_id_number,
+			bjyr_name,
+			bjyr_id_number,
+			time,
+			jyr_unit,
+			jyr_face,
+			jyr_unit_id,
+			approver,
+			situation,
+			remark,
+			handler,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{jyrName},
+			#{jyrIdNumber},
+			#{bjyrName},
+			#{bjyrIdNumber},
+			#{time},
+			#{jyrUnit},
+			#{jyrFace},
+			#{jyrUnitId},
+			#{approver},
+			#{situation},
+			#{remark},
+			#{handler},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_borrow SET 	
+			jyr_name = #{jyrName},
+			jyr_id_number = #{jyrIdNumber},
+			bjyr_name = #{bjyrName},
+			bjyr_id_number = #{bjyrIdNumber},
+			time = #{time},
+			jyr_unit = #{jyrUnit},
+			jyr_face = #{jyrFace},
+			approver = #{approver},
+			situation = #{situation},
+			handler = #{handler},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_borrow SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_borrow SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+	
+	<select id="findInfoByCreateOrgId" resultType="java.util.HashMap">
+		SELECT
+			ab.jyr_unit "label",
+			count( ab.jyr_unit ) 
+		FROM
+			affair_borrow ab 
+		<if test="id != null and id != ''">
+		WHERE ab.create_org_id = #{id}
+		</if>
+		GROUP BY
+			ab.jyr_unit
+	</select>
+	
+	
+	<select id="findInfoByCreateOrgIds" resultType="java.util.HashMap">
+		SELECT
+			ab.jyr_unit "label",
+			count( ab.jyr_unit ) 
+		FROM
+			affair_borrow ab 
+		WHERE ab.create_org_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			 	#{id}
+		</foreach>	
+		)
+		GROUP BY
+			ab.jyr_unit
+	</select>
+</mapper>

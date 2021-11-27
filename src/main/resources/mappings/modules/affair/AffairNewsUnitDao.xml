@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairNewsUnitDao">
+    
+	<sql id="affairNewsUnitColumns">
+		a.id AS "id",
+		a.news_unit AS "newsUnit",
+		a.news_unit_id AS "newsUnitId",
+		a.news_id AS "newsId",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="affairNewsUnitJoins">
+	</sql>
+    
+	<select id="get" resultType="AffairNewsUnit">
+		SELECT 
+			<include refid="affairNewsUnitColumns"/>
+		FROM affair_news_unit a
+		<include refid="affairNewsUnitJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairNewsUnit">
+		SELECT 
+			<include refid="affairNewsUnitColumns"/>
+		FROM affair_news_unit a
+		<include refid="affairNewsUnitJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="newsUnit != null and newsUnit != ''">
+				AND a.news_unit = #{newsUnit}
+			</if>
+			<if test="newsUnitId != null and newsUnitId != ''">
+				AND a.news_unit_id = #{newsUnitId}
+			</if>
+			<if test="newsId != null and newsId != ''">
+				AND a.news_id = #{newsId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairNewsUnit">
+		SELECT 
+			<include refid="affairNewsUnitColumns"/>
+		FROM affair_news_unit a
+		<include refid="affairNewsUnitJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_news_unit(
+			id,
+			news_unit,
+			news_unit_id,
+			news_id,
+			del_flag
+		) VALUES (
+			#{id},
+			#{newsUnit},
+			#{newsUnitId},
+			#{newsId},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_news_unit SET 	
+			news_unit = #{newsUnit},
+			news_unit_id = #{newsUnitId},
+			news_id = #{newsId}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete" parameterType="map">
+		UPDATE affair_news_unit SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE news_id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_news_unit SET
+		del_flag = '1'
+		WHERE news_id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+	
+</mapper>

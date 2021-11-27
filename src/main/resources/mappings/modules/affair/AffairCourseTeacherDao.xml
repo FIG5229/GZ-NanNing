@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairCourseTeacherDao">
+    
+	<sql id="affairCourseTeacherColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.class_id AS "classId",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.state AS "state"
+	</sql>
+	
+	<sql id="affairCourseTeacherJoins">
+	</sql>
+    
+	<select id="get" resultType="AffairCourseTeacher">
+		SELECT 
+			<include refid="affairCourseTeacherColumns"/>
+		FROM affair_course_teacher a
+		<include refid="affairCourseTeacherJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairCourseTeacher">
+		SELECT 
+			<include refid="affairCourseTeacherColumns"/>
+		FROM affair_course_teacher a
+		<include refid="affairCourseTeacherJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+			</if>
+			<if test="classId != null and classId != ''">
+				AND a.class_id LIKE
+					<if test="dbName == 'oracle'">'%'||#{classId}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{classId}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{classId},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{classId}||'%'</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairCourseTeacher">
+		SELECT 
+			<include refid="affairCourseTeacherColumns"/>
+		FROM affair_course_teacher a
+		<include refid="affairCourseTeacherJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="selectBean" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairCourseTeacher">
+		select
+			a.id,
+			a.name,
+			a.class_id,
+			a.create_by,
+			a.create_org_id,
+			a.create_id_no,
+			a.create_date,
+			a.update_by,
+			a.update_org_id,
+			a.update_id_no,
+			a.update_date,
+			a.state
+		from
+			affair_course_teacher a
+		where
+			a.del_flag = '0' and
+			a.class_id = #{id}
+	</select>
+
+	<insert id="insert">
+		INSERT INTO affair_course_teacher(
+			id,
+			name,
+			class_id,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			state
+		) VALUES (
+			#{id},
+			#{name},
+			#{classId},
+			#{createBy.id},
+			#{createOrgId},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateOrgId},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{state}
+		)
+	</insert>
+
+
+	<update id="update">
+		UPDATE affair_course_teacher SET 	
+			name = #{name},
+			class_id = #{classId},
+			create_org_id = #{createOrgId},
+			create_id_no = #{createIdNo},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateOrgId},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			state = #{state}
+
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_course_teacher SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_course_teacher SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+</mapper>

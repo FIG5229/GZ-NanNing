@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.exam.dao.ExamWorkflowSegmentGuanlianDao">
+    
+	<sql id="examWorkflowSegmentGuanlianColumns">
+		a.id AS "id",
+		a.workflow_define_id AS "workflowDefineId",
+		a.type AS "type",
+		a.name AS "name",
+		a.sort AS "sort",
+		a.status AS "status",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.seg_def_id AS "segDefId"
+	</sql>
+	
+	<sql id="examWorkflowSegmentGuanlianJoins">
+	</sql>
+	<delete id="deleteAllByWdId">
+		delete FROM exam_workflow_segment_guanlian where workflow_define_id = #{wdId}
+	</delete>
+
+	<select id="get" resultType="ExamWorkflowSegmentGuanlian">
+		SELECT 
+			<include refid="examWorkflowSegmentGuanlianColumns"/>
+		FROM exam_workflow_segment_guanlian a
+		<include refid="examWorkflowSegmentGuanlianJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ExamWorkflowSegmentGuanlian">
+		SELECT 
+			<include refid="examWorkflowSegmentGuanlianColumns"/>
+		FROM exam_workflow_segment_guanlian a
+		<include refid="examWorkflowSegmentGuanlianJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="workflowDefineId != null and workflowDefineId != ''">
+				AND a.workflow_define_id = #{workflowDefineId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ExamWorkflowSegmentGuanlian">
+		SELECT 
+			<include refid="examWorkflowSegmentGuanlianColumns"/>
+		FROM exam_workflow_segment_guanlian a
+		<include refid="examWorkflowSegmentGuanlianJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+    <insert id="insert">
+		INSERT INTO exam_workflow_segment_guanlian(
+			id,
+			workflow_define_id,
+			type,
+			name,
+			sort,
+			status,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			seg_def_id
+		) VALUES (
+			#{id},
+			#{workflowDefineId},
+			#{type},
+			#{name},
+			#{sort},
+			#{status},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{segDefId}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE exam_workflow_segment_guanlian SET 	
+			workflow_define_id = #{workflowDefineId},
+			type = #{type},
+			name = #{name},
+			sort = #{sort},
+			status = #{status},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			seg_def_id = #{segDefId}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE exam_workflow_segment_guanlian SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+
+	<select id="findByWdIdAndType" resultType="com.thinkgem.jeesite.modules.exam.entity.ExamWorkflowSegmentGuanlian">
+		select
+			<include refid="examWorkflowSegmentGuanlianColumns"/>
+			from exam_workflow_segment_guanlian a
+		where a.workflow_define_id =#{wdId} and a.type = #{flowType} ORDER BY a.sort asc
+	</select>
+
+	<select id="findByWdIdAndSegDefId" resultType="com.thinkgem.jeesite.modules.exam.entity.ExamWorkflowSegmentGuanlian">
+		select
+		<include refid="examWorkflowSegmentGuanlianColumns"/>
+		from exam_workflow_segment_guanlian a
+		where a.workflow_define_id =#{wdId} and a.seg_def_id = #{segDefId}
+	</select>
+</mapper>

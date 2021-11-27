@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairStandardDao">
+    
+	<sql id="affairStandardColumns">
+		a.id AS "id",
+		a.party_organization AS "partyOrganization",
+		a.party_organization_id AS "partyOrganizationId",
+		a.content AS "content",
+		a.status AS "status",
+		a.material_path AS "materialPath",
+		a.name AS "name",
+		a.id_number AS "idNumber",
+		a.add_status AS "addStatus",
+		a.sh_person AS "shPerson",
+		a.opinion AS "opinion",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="affairStandardJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairStandard">
+		SELECT 
+			<include refid="affairStandardColumns"/>
+		FROM affair_standard a
+		<include refid="affairStandardJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairStandard">
+		<choose>
+			<when test="hasAuth == true">/*审核人*/
+				SELECT
+				<include refid="affairStandardColumns"/>
+				FROM affair_standard a
+				<include refid="affairStandardJoins"/>
+				LEFT JOIN affair_general_situation s
+				ON s.id = a.party_organization_id
+				where
+				 a.del_flag = #{DEL_FLAG_NORMAL} and a.add_status = '2'
+			</when>
+			<otherwise>/*非审核人*/
+				SELECT
+				<include refid="affairStandardColumns"/>
+				FROM affair_standard a
+				<include refid="affairStandardJoins"/>
+				LEFT JOIN affair_general_situation s
+				ON s.id = a.party_organization_id
+				where a.del_flag = #{DEL_FLAG_NORMAL}
+			</otherwise>
+		</choose>
+		/*条件*/
+		<if test="partyOrganizationId != null and partyOrganizationId != ''">
+			AND a.party_organization_id = #{partyOrganizationId}
+		</if>
+		<if test="status != null and status != ''">
+			AND a.status = #{status}
+		</if>
+		<choose>
+			<when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+				AND  a.update_date between #{startDate} and #{endDate}
+			</when>
+			<otherwise>
+				<if test="startDate != null and startDate != ''">
+					AND a.update_date >= #{startDate}
+				</if>
+				<if test="endDate != null and endDate != ''">
+					AND  #{endDate} >= a.update_date
+				</if>
+			</otherwise>
+		</choose>
+		<if test="treeId != null and treeId != ''">
+			AND (a.party_organization_id = #{treeId} OR s.parent_ids LIKE CONCAT('%,', #{treeId}, ',%'))
+		</if>
+		<if test="idNumber != null and idNumber != ''">
+			AND a.id_number = #{idNumber}
+		</if>
+		<!-- 数据范围过滤 -->
+		${sqlMap.dsf}
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairStandard">
+		SELECT 
+			<include refid="affairStandardColumns"/>
+		FROM affair_standard a
+		<include refid="affairStandardJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_standard(
+			id,
+			party_organization,
+			party_organization_id,
+			content,
+			status,
+			material_path,
+			name,
+			id_number,
+			add_status,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{partyOrganization},
+			#{partyOrganizationId},
+			#{content},
+			#{status},
+			#{materialPath},
+			#{name},
+			#{idNumber},
+			#{addStatus},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_standard SET 	
+			party_organization = #{partyOrganization},
+			content = #{content},
+			status = #{status},
+			material_path = #{materialPath},
+			name = #{name},
+			id_number = #{idNumber},
+			add_status = #{addStatus},
+			sh_person = #{shPerson},
+			opinion = #{opinion},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_standard SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="shenHe">
+		UPDATE affair_standard SET
+			status = #{affairStandard.status},
+			sh_person = #{affairStandard.shPerson}, opinion = #{affairStandard.opinion},
+			update_date = #{affairStandard.updateDate}
+			where id = #{affairStandard.id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_standard SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+			 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+</mapper>

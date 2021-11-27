@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.personnel.dao.PersonnelPersonBianzhiDao">
+    
+	<sql id="personnelPersonBianzhiColumns">
+		a.id AS "id",
+		a.id_number AS "idNumber",
+		a.type AS "type",
+		a.into_date AS "intoDate",
+		a.pre_identity_type AS "preIdentityType",
+		a.pre_unit AS "preUnit",
+		a.method AS "method",
+		a.into_approval_unit AS "intoApprovalUnit",
+		a.out_date AS "outDate",
+		a.out_reason AS "outReason",
+		a.out_approval_unit AS "outApprovalUnit",
+		a.funds_type AS "fundsType",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.personnel_name AS "personnelName"
+	</sql>
+	
+	<sql id="personnelPersonBianzhiJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="com.thinkgem.jeesite.modules.personnel.entity.PersonnelPersonBianzhi">
+		SELECT 
+			<include refid="personnelPersonBianzhiColumns"/>
+		FROM personnel_person_bianzhi a
+		<include refid="personnelPersonBianzhiJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="com.thinkgem.jeesite.modules.personnel.entity.PersonnelPersonBianzhi">
+		SELECT 
+			<include refid="personnelPersonBianzhiColumns"/>
+		FROM personnel_person_bianzhi a
+		<include refid="personnelPersonBianzhiJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<choose>
+				<when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+					AND a.into_date between #{startDate} and #{endDate}
+				</when>
+				<when test="startDate != null and startDate != ''">
+					AND a.into_date >= #{startDate}
+				</when>
+				<when test="endDate != null and endDate != ''">
+					AND  #{endDate} >= a.into_date
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			<if test="preUnit != null and preUnit != ''">
+				AND a.pre_unit LIKE '%'||#{preUnit}||'%'
+			</if>
+			<if test="method != null and method != ''">
+				AND a.method = #{method}
+			</if>
+			<if test="idNumber != null and idNumber != ''">
+				AND a.id_number = #{idNumber}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.into_date asc
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="com.thinkgem.jeesite.modules.personnel.entity.PersonnelPersonBianzhi">
+		SELECT 
+			<include refid="personnelPersonBianzhiColumns"/>
+		FROM personnel_person_bianzhi a
+		<include refid="personnelPersonBianzhiJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO personnel_person_bianzhi(
+			id,
+			id_number,
+			type,
+			into_date,
+			pre_identity_type,
+			pre_unit,
+			method,
+			into_approval_unit,
+			out_date,
+			out_reason,
+			out_approval_unit,
+			funds_type,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			personnel_name
+		) VALUES (
+			#{id},
+			#{idNumber},
+			#{type},
+			#{intoDate},
+			#{preIdentityType},
+			#{preUnit},
+			#{method},
+			#{intoApprovalUnit},
+			#{outDate},
+			#{outReason},
+			#{outApprovalUnit},
+			#{fundsType},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{personnelName}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE personnel_person_bianzhi SET 	
+			id_number = #{idNumber},
+			type = #{type},
+			into_date = #{intoDate},
+			pre_identity_type = #{preIdentityType},
+			pre_unit = #{preUnit},
+			method = #{method},
+			into_approval_unit = #{intoApprovalUnit},
+			out_date = #{outDate},
+			out_reason = #{outReason},
+			out_approval_unit = #{outApprovalUnit},
+			funds_type = #{fundsType},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			personnel_name = #{personnelName}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE personnel_person_bianzhi SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	<update id="deleteByIds">
+		UPDATE personnel_person_bianzhi SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<update id="deleteByIdNumbers">
+		UPDATE personnel_person_bianzhi SET
+		del_flag = '1'
+		WHERE id_number in <foreach collection="idNumbers" item="idNumber" index="index"
+									open="(" separator="," close=")">#{idNumber}</foreach>
+	</update>
+
+</mapper>

@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairXzyDao">
+    
+	<sql id="affairXzyColumns">
+		a.id AS "id",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.name AS "name",
+		a.vg_area AS "vgArea",
+		a.or_area AS "orArea",
+		a.or_num AS "orNum",
+		a.ck_num AS "ckNum",
+		a.dk_num AS "dkNum",
+		a.ge_num AS "geNum",
+		a.pg_num AS "pgNum",
+		a.other_num AS "otherNum",
+		a.fh_num AS "fhNum",
+		a.fp_area AS "fpArea",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.content AS "content",
+		a.file_path AS "filePath",
+		a.yz_area AS "yzArea",
+		a.jing_ban AS "jingBan",
+		a.unit_sh_ren AS "unitShRen",
+		a.chu_sh_opinion AS "chuShOpinion",
+		a.ju_sh_opinion AS "juShOpinion",
+		a.date AS "date"
+	</sql>
+	
+	<sql id="affairXzyJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairXzy">
+		SELECT 
+			<include refid="affairXzyColumns"/>
+		FROM affair_xzy a
+		<include refid="affairXzyJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairXzy">
+		SELECT 
+			<include refid="affairXzyColumns"/>
+		FROM affair_xzy a
+		<include refid="affairXzyJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="unitId != null and unitId != ''">
+				AND a.unit_id = #{unitId}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE '%'||#{name}||'%'
+			</if>
+			<!--${sqlMap.dsf}
+			<if test="userId != null and userId != ''">
+				or (a.unit_id = #{userId} AND a.del_flag = #{DEL_FLAG_NORMAL})
+			</if>-->
+			<if test="userId != null and userId != ''">
+				AND ( o.ID = #{userId} OR o.parent_ids LIKE'%,'||#{userId}||',%' OR u.ID = #{userId} or a.unit_id=#{userId})
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairXzy">
+		SELECT 
+			<include refid="affairXzyColumns"/>
+		FROM affair_xzy a
+		<include refid="affairXzyJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_xzy(
+			id,
+			unit,
+			unit_id,
+			name,
+			vg_area,
+			or_area,
+			or_num,
+			ck_num,
+			dk_num,
+			ge_num,
+			pg_num,
+			other_num,
+			fh_num,
+			fp_area,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			content,
+			file_path,
+			yz_area,
+			jing_ban,
+		    unit_sh_ren,
+		    chu_sh_opinion ,
+		    ju_sh_opinion,
+		    date
+		) VALUES (
+			#{id},
+			#{unit},
+			#{unitId},
+			#{name},
+			#{vgArea},
+			#{orArea},
+			#{orNum},
+			#{ckNum},
+			#{dkNum},
+			#{geNum},
+			#{pgNum},
+			#{otherNum},
+			#{fhNum},
+			#{fpArea},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{content},
+			#{filePath},
+			#{yzArea},
+			#{jingBan},
+			#{unitShRen},
+			#{chuShOpinion},
+			#{juShOpinion},
+			#{date}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_xzy SET 	
+			unit = #{unit},
+			unit_id = #{unitId},
+			name = #{name},
+			vg_area = #{vgArea},
+			or_area = #{orArea},
+			or_num = #{orNum},
+			ck_num = #{ckNum},
+			dk_num = #{dkNum},
+			ge_num = #{geNum},
+			pg_num = #{pgNum},
+			other_num = #{otherNum},
+			fh_num = #{fhNum},
+			fp_area = #{fpArea},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			content = #{content},
+			file_path = #{filePath},
+			yz_area = #{yzArea},
+			jing_ban = #{jingBan},
+		    unit_sh_ren = #{unitShRen},
+		    chu_sh_opinion = #{chuShOpinion},
+		    ju_sh_opinion = #{juShOpinion},
+		    date = #{date}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_xzy SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	<update id="deleteByIds">
+		UPDATE affair_xzy SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<select id="findInfoByCreateOrgId" resultType="java.util.HashMap">
+		SELECT count(id)
+		from affair_xzy ax
+		WHERE
+		ax.del_flag = '0'
+		<if test="id != null and id != ''">
+			AND ax.create_org_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from ax.create_date) = #{year}
+			</when>
+			<when test="mStartDate != null and mEndDate != null">
+				AND date_trunc('day', ax.create_date) between  #{mStartDate,jdbcType=DATE} and #{mEndDate,jdbcType=DATE}
+			</when>
+			<when test="mStartDate != null">
+				AND ax.create_date >= #{mStartDate,jdbcType=DATE}
+			</when>
+			<when test="mEndDate != null">
+				AND  #{mEndDate,jdbcType=DATE} >= date_trunc('day', ax.create_date)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findInfoByCreateOrgIds" resultType="java.util.HashMap">
+		SELECT count(id)
+		from affair_xzy ax
+		WHERE
+		ax.del_flag = '0'
+		AND	ax.create_org_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from ax.create_date) = #{year}
+			</when>
+			<when test="mStartDate != null and mEndDate != null">
+				AND date_trunc('day', ax.create_date) between  #{mStartDate,jdbcType=DATE} and #{mEndDate,jdbcType=DATE}
+			</when>
+			<when test="mStartDate != null">
+				AND ax.create_date >= #{mStartDate,jdbcType=DATE}
+			</when>
+			<when test="mEndDate != null">
+				AND  #{mEndDate,jdbcType=DATE} >= date_trunc('day', ax.create_date)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+</mapper>

@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairTwPersonalAwardDao">
+    
+	<sql id="affairTwPersonalAwardColumns">
+		a.id AS "id",
+		a.date AS "date",
+		a.name AS "name",
+		a.id_number AS "idNumber",
+		a.sex AS "sex",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.approval_unit AS "approvalUnit",
+		a.approval_unit_id AS "approvalUnitId",
+		a.reward_name AS "rewardName",
+		a.file_no AS "fileNo",
+		a.remark AS "remark",
+		a.file_path AS "filePath",
+		a.opinion AS "opinion",
+		a.status AS "status",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.sh_person AS "shPerson",
+		a.push_type AS "pushType",
+		a.type AS "type",
+		a.type_flag AS "typeFlag"
+	</sql>
+	
+	<sql id="affairTwPersonalAwardJoins">
+         LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairTwPersonalAward">
+		SELECT 
+			<include refid="affairTwPersonalAwardColumns"/>
+		FROM affair_tw_personal_award a
+		<include refid="affairTwPersonalAwardJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairTwPersonalAward">
+		SELECT 
+			<include refid="affairTwPersonalAwardColumns"/>
+		FROM affair_tw_personal_award a
+		<include refid="affairTwPersonalAwardJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<choose>
+				<when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+					AND a.date between #{startDate} and #{endDate}
+				</when>
+				<when test="startDate != null and startDate != ''">
+					AND a.date >= #{startDate}
+				</when>
+				<when test="endDate != null and endDate != ''">
+					AND  #{endDate} >= a.date
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			<if test="name != null and name != ''">
+				AND a.name LIKE '%'||#{name}||'%'
+			</if>
+			<if test="approvalUnit != null and approvalUnit != ''">
+				AND a.approval_unit LIKE '%'||#{approvalUnit}||'%'
+			</if>
+			<if test="sex != null and sex != ''">
+				AND a.sex = #{sex}
+			</if>
+			<if test="unitId != null and unitId != ''">
+				AND a.unit_id = #{unitId}
+			</if>
+			<if test="rewardName != null and rewardName != ''">
+				AND a.reward_name LIKE '%'||#{rewardName}||'%'
+			</if>
+			<if test="fileNo != null and fileNo != ''">
+				AND a.file_no LIKE '%'||#{fileNo}||'%'
+			</if>
+			<choose>
+				<when test="userId != null and userId != '' ">
+					AND ( o.ID = #{userId} OR o.parent_ids LIKE'%,'||#{userId}||',%' OR u.ID = #{createBy.id} or a.unit_id=#{userId} or a.id_number=#{cardNum})
+				</when>
+				<otherwise>
+					AND ( o.ID = #{userId} OR u.ID = #{createBy.id} or a.unit_id=#{userId})
+				</otherwise>
+			</choose>
+			<!--<if test="userId != null and userId != ''">
+				or (a.unit_id = #{userId} AND a.del_flag = #{DEL_FLAG_NORMAL})
+			</if>-->
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.date DESC,a.id
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairTwPersonalAward">
+		SELECT 
+			<include refid="affairTwPersonalAwardColumns"/>
+		FROM affair_tw_personal_award a
+		<include refid="affairTwPersonalAwardJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<!--<select id="findPushFormById" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairTwPersonalAward">
+		SELECT
+		<include refid="affairTwPersonalAwardColumns"/>
+		FROM affair_tw_personal_award a
+		WHERE a.id = #{ids}
+		&lt;!&ndash;in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>&ndash;&gt;
+	</select>-->
+	<insert id="insert">
+		INSERT INTO affair_tw_personal_award(
+			id,
+			date,
+			name,
+			id_number,
+			sex,
+			unit,
+			unit_id,
+			approval_unit,
+			approval_unit_id,
+			reward_name,
+			file_no,
+			remark,
+			file_path,
+			opinion,
+			status,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			sh_person,
+			push_type,
+			type,
+			type_flag
+		) VALUES (
+			#{id},
+			#{date},
+			#{name},
+			#{idNumber},
+			#{sex},
+			#{unit},
+			#{unitId},
+			#{approvalUnit},
+			#{approvalUnitId},
+			#{rewardName},
+			#{fileNo},
+			#{remark},
+			#{filePath},
+			#{opinion},
+			#{status},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{shPerson},
+			#{pushType},
+			#{type},
+			'2'
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_tw_personal_award SET 	
+			date = #{date},
+			name = #{name},
+			id_number = #{idNumber},
+			sex = #{sex},
+			unit = #{unit},
+			unit_id = #{unitId},
+			approval_unit = #{approvalUnit},
+			approval_unit_id = #{approvalUnitId},
+			reward_name = #{rewardName},
+			file_no = #{fileNo},
+			remark = #{remark},
+			file_path = #{filePath},
+			opinion = #{opinion},
+			status = #{status},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			push_type = #{pushType},
+			type = #{type}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_tw_personal_award SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_tw_personal_award SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<update id="shenHe">
+		UPDATE affair_tw_personal_award SET
+		    status = #{affairTwPersonalAward.status},
+			sh_person = #{affairTwPersonalAward.shPerson}, opinion = #{affairTwPersonalAward.opinion},
+			update_date = #{affairTwPersonalAward.updateDate}
+			where id = #{affairTwPersonalAward.id}
+	</update>
+
+	<select id="findInfoByCreateOrgId" resultType="java.util.HashMap">
+		SELECT count(id)
+		from affair_tw_personal_award atpa
+		WHERE
+		atpa.del_flag != '1'
+		<if test="id != null and id != ''">
+			AND create_org_id = #{id} AND atpa.del_flag = '0'
+		</if>
+	</select>
+
+	<select id="findInfoByCreateOrgIds" resultType="java.util.HashMap">
+		SELECT count(id)
+		from affair_tw_personal_award atpa
+		WHERE
+		atpa.del_flag != '1'
+		AND	create_org_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+	</select>
+
+	<select id="findByIds" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairTwPersonalAward">
+		select <include refid="affairTwPersonalAwardColumns"/>
+		from affair_tw_personal_award a where id in <foreach collection="ids" item="item" index="index"
+														 open="(" separator="," close=")">#{item}</foreach>
+	</select>
+</mapper>

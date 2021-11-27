@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairLedgerOutDao">
+    
+	<sql id="affairLedgerOutColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.archive_no AS "archiveNo",
+		a.id_number AS "idNumber",
+		a.old_unit AS "oldUnit",
+		a.to_dep AS "toDep",
+		a.old_unit_id AS "oldUnitId",
+		a.to_dep_id AS "toDepId",
+		a.date AS "date",
+		a.reason AS "reason",
+		a.z_num AS "zNum",
+		a.f_num AS "fNum",
+		a.notice_no AS "noticeNo",
+		a.remark AS "remark",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="affairLedgerOutJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairLedgerOut">
+		SELECT 
+			<include refid="affairLedgerOutColumns"/>
+		FROM affair_ledger_out a
+		<include refid="affairLedgerOutJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairLedgerOut">
+		SELECT 
+			<include refid="affairLedgerOutColumns"/>
+		FROM affair_ledger_out a
+		<include refid="affairLedgerOutJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE '%'||#{name}||'%'
+			</if>
+			<if test="oldUnitId != null and oldUnitId != ''">
+				AND a.old_unit_Id = #{oldUnitId}
+			</if>
+			<if test="toDep != null and toDep != ''">
+				AND a.to_dep LIKE  '%'||#{toDep}||'%'
+			</if>
+			<choose>
+				<when test="startDate != null and endDate != null and startDate != '' and endDate != ''">
+					AND a.date BETWEEN #{startDate} AND #{endDate}
+				</when>
+				<when test="startDate != null and startDate != ''">
+					AND a.date &gt;= #{startDate}
+				</when>
+				<when test="endDate != null and endDate != ''">
+					AND a.date &lt;= #{endDate}
+				</when>
+				<otherwise></otherwise>
+			</choose>
+			<if test="noticeNo != null and noticeNo != ''">
+				AND a.notice_no LIKE '%'||#{noticeNo}||'%'
+			</if>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairLedgerOut">
+		SELECT 
+			<include refid="affairLedgerOutColumns"/>
+		FROM affair_ledger_out a
+		<include refid="affairLedgerOutJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_ledger_out(
+			id,
+			name,
+			archive_no,
+			id_number,
+			old_unit,
+			to_dep,
+			old_unit_id,
+			to_dep_id,
+			date,
+			reason,
+			z_num,
+			f_num,
+			notice_no,
+			remark,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{name},
+			#{archiveNo},
+			#{idNumber},
+			#{oldUnit},
+			#{toDep},
+			#{oldUnitId},
+			#{toDepId},
+			#{date},
+			#{reason},
+			#{zNum},
+			#{fNum},
+			#{noticeNo},
+			#{remark},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+		    #{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_ledger_out SET 	
+			name = #{name},
+			archive_no = #{archiveNo},
+			old_unit = #{oldUnit},
+			to_dep = #{toDep},
+			date = #{date},
+			reason = #{reason},
+			z_num = #{zNum},
+			f_num = #{fNum},
+			notice_no = #{noticeNo},
+			remark = #{remark},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_ledger_out SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_ledger_out SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+
+</mapper>

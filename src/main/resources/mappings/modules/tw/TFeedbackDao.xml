@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.tw.dao.TFeedbackDao">
+    
+	<sql id="tFeedbackColumns">
+		a.id AS "id",
+		a.police_message_id AS "policeMessageId",
+		a.describe_message AS "describeMessage",
+		a.feedback_people AS "feedbackPeople",
+		a.describe_time AS "describeTime",
+		a.feedback_people_id AS "feedbackPeopleId",
+		a.to_police_people AS "toPolicePeople",
+		a.to_police_time AS "toPoliceTime",
+		a.create_time AS "createTime",
+		a.to_police_organization AS "toPoliceOrganization"
+	</sql>
+	
+	<sql id="tFeedbackJoins">
+	</sql>
+    
+	<select id="get" resultType="TFeedback">
+		SELECT 
+			<include refid="tFeedbackColumns"/>
+		FROM t_feedback a
+		<include refid="tFeedbackJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="TFeedback">
+		SELECT 
+			<include refid="tFeedbackColumns"/>
+		FROM t_feedback a
+		<include refid="tFeedbackJoins"/>
+		<where>
+			
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="TFeedback">
+		SELECT 
+			<include refid="tFeedbackColumns"/>
+		FROM t_feedback a
+		<include refid="tFeedbackJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+    <insert id="insert">
+		INSERT INTO t_feedback(
+			id,
+			police_message_id,
+			describe_message,
+			feedback_people,
+			describe_time,
+			feedback_people_id,
+			to_police_people,
+			to_police_time,
+			create_time,
+			to_police_organization
+		) VALUES (
+			#{id},
+			#{policeMessageId},
+			#{describeMessage},
+			#{feedbackPeople},
+			#{describeTime},
+			#{feedbackPeopleId},
+			#{toPolicePeople},
+			#{toPoliceTime},
+			#{createTime},
+			#{toPoliceOrganization}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE t_feedback SET 	
+			police_message_id = #{policeMessageId},
+			describe_message = #{describeMessage},
+			feedback_people = #{feedbackPeople},
+			describe_time = #{describeTime},
+			feedback_people_id = #{feedbackPeopleId},
+			to_police_people = #{toPolicePeople},
+			to_police_time = #{toPoliceTime},
+			create_time = #{createTime},
+			to_police_organization = #{toPoliceOrganization}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM t_feedback
+		WHERE id = #{id}
+	</update>
+
+	<select id="selectAll" resultType="com.thinkgem.jeesite.modules.tw.entity.TFeedback">
+		select
+			*
+		FROM
+			t_feedback
+		WHERE
+			 CAST(create_time as varchar(8000)) like '%'||#{time}||'%'
+			and to_police_organization = #{name}
+	</select>
+
+</mapper>

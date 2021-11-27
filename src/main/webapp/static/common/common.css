@@ -1,0 +1,47 @@
+/* 一行省略 */
+.line1Hidden{
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+/* 两行省略 */
+.line2Hidden{
+  text-overflow: -o-ellipsis-lastline;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.displayinlineb{
+	display: inline-block;
+}
+/* 表单定宽 */
+.form-horizontal .form-row{
+	overflow: hidden;
+}
+.form-horizontal .form-fixw{
+	float: left;
+	width: 360px;
+	border: none;
+}
+.form-horizontal .form-fixw .control-label{
+	width: 140px;
+}
+.form-horizontal .form-fixw .controls{
+	margin-left: 150px;
+}
+.form-fixw input,
+.form-fixw textarea,
+.form-fixw .uneditable-input{
+	width: 150px;
+}
+/* 按钮组 */
+.btn-group-custom {
+    margin-top: -30px;
+}
+.btn-group-custom a{
+	color: #000;
+}

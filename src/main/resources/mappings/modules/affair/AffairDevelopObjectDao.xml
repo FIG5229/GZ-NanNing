@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairDevelopObjectDao">
+    
+	<sql id="affairDevelopObjectColumns">
+		a.id AS "id",
+		a.police_no AS "policeNo",
+		a.id_number AS "idNumber",
+		a.name AS "name",
+		a.sex AS "sex",
+		a.party_branch AS "partyBranch",
+		a.party_branch_id AS "partyBranchId",
+		a.foster_people AS "fosterPeople",
+		a.approval_date AS "approvalDate",
+		a.enter_date AS "enterDate",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.enter_part_date AS "enterPartDate",
+		a.status AS "status"
+	</sql>
+	
+	<sql id="affairDevelopObjectJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+
+	<select id="get" resultType="AffairDevelopObject">
+		SELECT 
+			<include refid="affairDevelopObjectColumns"/>
+		FROM affair_develop_object a
+		<include refid="affairDevelopObjectJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairDevelopObject">
+		SELECT 
+			<include refid="affairDevelopObjectColumns"/>
+		FROM affair_develop_object a
+		<include refid="affairDevelopObjectJoins"/>
+		LEFT JOIN affair_general_situation s
+		ON s.id = a.party_branch_id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			AND a.status != '1'
+			<if test="policeNo != null and policeNo != ''">
+				AND a.police_no LIKE '%'||#{policeNo}||'%'
+			</if>
+			<if test="idNumber != null and idNumber != ''">
+				AND a.id_number LIKE '%'||#{idNumber}||'%'
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE '%'||#{name}||'%'
+			</if>
+			<if test="sex != null and sex != ''">
+				AND a.sex = #{sex}
+			</if>
+			<if test="partyBranchId != null and partyBranchId != ''">
+				AND a.party_branch_id = #{partyBranchId}
+			</if>
+			<if test="fosterPeople != null and fosterPeople != ''">
+				AND a.foster_people like '%'||#{fosterPeople}||'%'
+			</if>
+			<choose>
+				<when test="approvalStartDate != null and approvalStartDate != '' and approvalEndDate != null and approvalEndDate != ''">
+					AND  a.approval_date between #{approvalStartDate} and #{approvalEndDate}
+				</when>
+				<otherwise>
+					<if test="approvalStartDate != null and approvalStartDate != ''">
+						AND a.approval_date >= #{approvalStartDate}
+					</if>
+					<if test="approvalEndDate != null and approvalEndDate != ''">
+						AND  #{approvalEndDate} >= a.approval_date
+					</if>
+				</otherwise>
+			</choose>
+			<choose>
+				<when test="enterStartDate != null and enterStartDate != '' and enterEndDate != null and enterEndDate != ''">
+					AND  a.enter_date between #{enterStartDate} and #{enterEndDate}
+				</when>
+				<otherwise>
+					<if test="enterStartDate != null and enterStartDate != ''">
+						AND a.enter_date >= #{enterStartDate}
+					</if>
+					<if test="enterEndDate != null and enterEndDate != ''">
+						AND  #{enterEndDate} >= a.enter_date
+					</if>
+				</otherwise>
+			</choose>
+			<choose>
+				<when test="enterPartStartDate != null and enterPartStartDate != '' and enterPartEndDate != null and enterPartEndDate != ''">
+					AND  a.enter_part_date between #{enterPartStartDate} and #{enterPartEndDate}
+				</when>
+				<otherwise>
+					<if test="enterPartStartDate != null and enterPartStartDate != ''">
+						AND a.enter_part_date >= #{enterPartStartDate}
+					</if>
+					<if test="enterPartEndDate != null and enterPartEndDate != ''">
+						AND  #{enterPartEndDate} >= a.enter_part_date
+					</if>
+				</otherwise>
+			</choose>
+			<if test="treeId != null and treeId != ''">
+				AND (a.party_branch_id = #{treeId} OR s.parent_ids LIKE CONCAT('%,', #{treeId}, ',%'))
+			</if>
+			<!-- 数据范围过滤 -->
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairDevelopObject">
+		SELECT 
+			<include refid="affairDevelopObjectColumns"/>
+		FROM affair_develop_object a
+		<include refid="affairDevelopObjectJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+    <insert id="insert">
+		INSERT INTO affair_develop_object(
+			id,
+			police_no,
+			id_number,
+			name,
+			sex,
+			party_branch,
+			party_branch_id,
+			foster_people,
+			approval_date,
+			enter_date,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			enter_part_date,
+			status
+		) VALUES (
+			#{id},
+			#{policeNo},
+			#{idNumber},
+			#{name},
+			#{sex},
+			#{partyBranch},
+			#{partyBranchId},
+			#{fosterPeople},
+			#{approvalDate},
+			#{enterDate},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{enterPartDate},
+			'0'
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_develop_object SET 	
+			police_no = #{policeNo},
+			id_number = #{idNumber},
+			name = #{name},
+			sex = #{sex},
+			party_branch = #{partyBranch},
+			party_branch_id = #{partyBranchId},
+			foster_people = #{fosterPeople},
+			approval_date = #{approvalDate},
+			enter_date = #{enterDate},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			enter_part_date = #{enterPartDate},
+			status = #{status}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_develop_object SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_develop_object SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+			 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<select id="findListByIdNo" resultType="java.lang.String">
+		select a.id from affair_develop_object a where a.id_number = #{idNo} and a.del_flag = '0'
+	</select>
+
+	<delete id="deleteByIdNo">
+		delete from affair_develop_object a where a.id_number = #{idNo}
+	</delete>
+	<select id="findDevelopList" resultType="AffairDevelopObject">
+		select <include refid="affairDevelopObjectColumns"/>
+		from affair_develop_object a
+		where a.del_flag = '0'
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.approval_date, 'yyyy-mm')  = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.approval_date) = #{year}
+			</when>
+			<when test="dateStart != null and dateEnd != null">
+				AND a.approval_date between  #{dateStart,jdbcType=DATE} and #{dateEnd,jdbcType=DATE}
+			</when>
+			<when test="dateStart != null">
+				AND a.approval_date >= #{dateStart,jdbcType=DATE}
+			</when>
+			<when test="dateEnd != null">
+				AND  #{dateEnd,jdbcType=DATE} >= a.approval_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+</mapper>

@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairTypicalTeamChildDao">
+    
+	<sql id="affairTypicalTeamChildColumns">
+		a.id AS "id",
+		a.title AS "title",
+		a.url AS "url",
+		a.typical_team_id AS "typicalTeamId",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="affairTypicalTeamChildJoins">
+	</sql>
+    
+	<select id="get" resultType="AffairTypicalTeamChild">
+		SELECT 
+			<include refid="affairTypicalTeamChildColumns"/>
+		FROM affair_typical_team_child a
+		<include refid="affairTypicalTeamChildJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairTypicalTeamChild">
+		SELECT 
+			<include refid="affairTypicalTeamChildColumns"/>
+		FROM affair_typical_team_child a
+		<include refid="affairTypicalTeamChildJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairTypicalTeamChild">
+		SELECT 
+			<include refid="affairTypicalTeamChildColumns"/>
+		FROM affair_typical_team_child a
+		<include refid="affairTypicalTeamChildJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_typical_team_child(
+			id,
+			title,
+			url,
+			typical_team_id,
+			create_by,
+			create_org_id,
+			create_date,
+			update_by,
+			update_org_id,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{title},
+			#{url},
+			#{typicalTeamId},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_typical_team_child SET 	
+			title = #{title},
+			url = #{url},
+			typical_team_id = #{typicalTeamId},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_typical_team_child SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByParentIds">
+		UPDATE affair_typical_team_child SET
+		del_flag = '1'
+		WHERE typical_team_id in <foreach collection="ids" item="item" index="index"
+											open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<update id="deleteById">
+		UPDATE affair_typical_team_child SET
+			del_flag = '1'
+		WHERE typical_team_id = #{id}
+	</update>
+	
+</mapper>

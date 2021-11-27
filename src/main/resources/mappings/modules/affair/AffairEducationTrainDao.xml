@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairEducationTrainDao">
+
+    <sql id="affairEducationTrainColumns">
+		a.id AS "id",
+		a.train_year AS "trainYear",
+		a.unit_id AS "unitId",
+		a.unit AS "unit",
+		a.title AS "title",
+		a.informant AS "informant",
+		a.began_date AS "beganDate",
+		a.result_date AS "resultDate",
+		a.last_date AS "lastDate",
+		a.reviewer AS "reviewer",
+		a.approve_date AS "approveDate",
+		a.approve_level AS "approveLevel",
+		a.approve_result AS "approveResult",
+		a.approve_status AS "approveStatus",
+		a.filled_class_count AS "filledClassCount",
+		a.approved_class_count AS "approvedClassCount",
+		a.approved_count AS "approvedCount",
+		a.incomplete_approval_count AS "incompleteApprovalCount",
+		a.remarks AS "remarks",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.train_date AS "trainDate",
+		a.train_name AS "trainName",
+		a.train_count AS "trainCount",
+		a.train_object AS "trainObject",
+		a.train_site AS "trainSite",
+		a.train_purpose AS "trainPurpose",
+		a.content AS "content",
+		a.list_of_channel AS "listOfChannel",
+		a.train_fees AS "trainFees",
+		a.teacher_fees AS "teacherFees",
+		a.train_day AS "trainDay",
+		a.implement_status AS "implementStatus"
+	</sql>
+
+    <sql id="affairEducationTrainJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+
+    <select id="get" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairEducationTrain">
+        SELECT
+        <include refid="affairEducationTrainColumns"/>
+        FROM affair_education_train a
+        <include refid="affairEducationTrainJoins"/>
+        WHERE a.id = #{id}
+    </select>
+
+    <select id="findList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairEducationTrain">
+        SELECT
+        <include refid="affairEducationTrainColumns"/>
+        FROM affair_education_train a
+        <include refid="affairEducationTrainJoins"/>
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            <choose>
+                <when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+                    AND a.result_date between #{startDate} and #{endDate}
+                </when>
+                <when test="startDate != null and startDate != ''">
+                    AND a.result_date >= #{startDate}
+                </when>
+                <when test="endDate != null and endDate != ''">
+                    AND #{endDate} >= a.result_date
+                </when>
+                <otherwise>
+                </otherwise>
+            </choose>
+            <if test="trainYear != null and trainYear != ''">
+                AND a.train_year = #{trainYear}
+            </if>
+            <if test="unit != null and unit != ''">
+                AND a.unit = #{unit}
+            </if>
+            <if test="title != null and title != ''">
+                AND a.title LIKE
+                <if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+                <if test="dbName == 'postgre'">'%'||#{title}||'%'</if>
+            </if>
+            <!-- 数据范围过滤 -->
+            ${sqlMap.dsf}
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.result_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="findAllList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairEducationTrain">
+        SELECT
+        <include refid="affairEducationTrainColumns"/>
+        FROM affair_education_train a
+        <include refid="affairEducationTrainJoins"/>
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <insert id="insert">
+		INSERT INTO affair_education_train(
+			id,
+			train_year,
+			unit_id,
+			unit,
+			title,
+			informant,
+			began_date,
+			result_date,
+			last_date,
+			reviewer,
+			approve_date,
+			approve_level,
+			approve_result,
+			approve_status,
+			filled_class_count,
+			approved_class_count,
+			approved_count,
+			incomplete_approval_count,
+			remarks,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			train_date,
+			train_name,
+			train_count,
+			train_object,
+			train_site,
+			train_purpose,
+			content,
+			list_of_channel,
+			train_fees,
+			teacher_fees,
+			train_day,
+			implement_status
+
+		) VALUES (
+			#{id},
+			#{trainYear},
+			#{unitId},
+			#{unit},
+			#{title},
+			#{informant},
+			#{beganDate},
+			#{resultDate},
+			#{lastDate},
+			#{reviewer},
+			#{approveDate},
+			#{approveLevel},
+			#{approveResult},
+			#{approveStatus},
+			#{filledClassCount},
+			#{approvedClassCount},
+			#{approvedCount},
+			#{incompleteApprovalCount},
+			#{remarks},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{trainDate},
+			#{trainName},
+			#{trainCount},
+			#{trainObject},
+			#{trainSite},
+			#{trainPurpose},
+			#{content},
+			#{listOfChannel},
+			#{trainFees},
+			#{teacherFees},
+			#{trainDay},
+			#{implementStatus}
+		)
+	</insert>
+
+    <update id="update">
+		UPDATE affair_education_train SET 	
+			train_year = #{trainYear},
+			unit_id = #{unitId},
+			unit = #{unit},
+			title = #{title},
+			informant = #{informant},
+			began_date = #{beganDate},
+			result_date = #{resultDate},
+			last_date = #{lastDate},
+			reviewer = #{reviewer},
+			approve_date = #{approveDate},
+			approve_level = #{approveLevel},
+			approve_result = #{approveResult},
+			approve_status = #{approveStatus},
+			filled_class_count = #{filledClassCount},
+			approved_class_count = #{approvedClassCount},
+			approved_count = #{approvedCount},
+			incomplete_approval_count = #{incompleteApprovalCount},
+			remarks = #{remarks},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			train_date = #{trainDate},
+			train_name = #{trainName},
+			train_count = #{trainCount},
+			train_object = #{trainObject},
+			train_site = #{trainSite},
+			train_purpose = #{trainPurpose},
+			content = #{content},
+			list_of_channel = #{listOfChannel},
+			train_fees = #{trainFees},
+			teacher_fees = #{teacherFees},
+			train_day = #{trainDay},
+			implement_status = #{implementStatus}
+
+		WHERE id = #{id}
+	</update>
+
+    <update id="delete">
+		UPDATE affair_education_train SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+    <update id="deleteByIds">
+        UPDATE affair_education_train SET
+        del_flag = '1'
+        WHERE id in
+        <foreach collection="ids" item="item" index="index"
+                 open="(" separator="," close=")">#{item}
+        </foreach>
+    </update>
+
+    <update id="shenHe">
+		UPDATE affair_education_train SET
+		    approve_result = #{affairEducationTrain.approveResult},
+			remarks = #{affairEducationTrain.remarks},
+			update_date = #{affairEducationTrain.updateDate}
+			where id = #{affairEducationTrain.id}
+	</update>
+
+<!--    	<select id="findInfoByCreateOrgId" resultType="java.util.HashMap">-->
+<!--    		SELECT count(id)-->
+<!--    		from affair_education_train atua-->
+<!--    		WHERE-->
+<!--    		atua.del_flag != '1'-->
+<!--    		<if test="id != null and id != ''">-->
+<!--    			AND create_org_id = #{id} AND atua.del_flag = '0'-->
+<!--    		</if>-->
+<!--    	</select>-->
+
+<!--    	<select id="findInfoByCreateOrgIds" resultType="java.util.HashMap">-->
+<!--    		SELECT count(id)-->
+<!--    		from affair_education_train atua-->
+<!--    		WHERE-->
+<!--    		atua.del_flag != '1'-->
+<!--    		AND	create_org_id in (-->
+<!--    		<foreach collection="ids" item="id" index="index" separator=",">-->
+<!--    			#{id}-->
+<!--    		</foreach>-->
+<!--    		)-->
+<!--    	</select>-->
+    <select id="findByIds" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairEducationTrain">
+        select
+        <include refid="affairEducationTrainColumns"/>
+        from affair_education_train a where id in
+        <foreach collection="ids" item="item" index="index"
+                 open="(" separator="," close=")">#{item}
+        </foreach>
+    </select>
+
+</mapper>

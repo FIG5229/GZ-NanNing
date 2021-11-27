@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairTwoOneDao">
+    
+	<sql id="affairTwoOneColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.study_date AS "studyDate",
+		a.party_organization AS "partyOrganization",
+		a.party_organization_id AS "partyOrganizationId",
+		a.record AS "record",
+		a.file_path AS "filePath",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.examine_status AS "examineStatus",
+		a.opinion AS "opinion"
+	</sql>
+	
+	<sql id="affairTwoOneJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairTwoOne">
+		SELECT 
+			<include refid="affairTwoOneColumns"/>
+		FROM affair_two_one a
+		<include refid="affairTwoOneJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairTwoOne">
+		SELECT 
+			<include refid="affairTwoOneColumns"/>
+		FROM affair_two_one a
+		<include refid="affairTwoOneJoins"/>
+		LEFT JOIN affair_general_situation s
+		ON s.id = a.party_organization_id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE concat('%',#{name},'%')
+			</if>
+			<choose>
+				<when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+					AND  a.study_date between #{startDate} and #{endDate}
+				</when>
+				<otherwise>
+					<if test="startDate != null and startDate != ''">
+						AND a.study_date >= #{startDate}
+					</if>
+					<if test="examineStatus != null and examineStatus != ''">
+						and a.examine_status = #{examineStatus}
+					</if>
+					<if test="endDate != null and endDate != ''">
+						AND  #{endDate} >= a.study_date
+					</if>
+				</otherwise>
+			</choose>
+			<if test="partyOrganizationId != null and partyOrganizationId != ''">
+				AND a.party_organization_id = #{partyOrganizationId}
+			</if>
+			<if test="treeId != null and treeId != ''">
+				AND (a.party_organization_id = #{treeId} OR s.parent_ids LIKE CONCAT('%,', #{treeId}, ',%'))
+			</if>
+			<!-- 数据范围过滤 -->
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairTwoOne">
+		SELECT 
+			<include refid="affairTwoOneColumns"/>
+		FROM affair_two_one a
+		<include refid="affairTwoOneJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_two_one(
+			id,
+			name,
+			study_date,
+			party_organization,
+			party_organization_id,
+			record,
+			file_path,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			examine_status ,
+			opinion
+		) VALUES (
+			#{id},
+			#{name},
+			#{studyDate},
+			#{partyOrganization},
+			#{partyOrganizationId},
+			#{record},
+			#{filePath},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{examineStatus},
+			#{opinion}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_two_one SET 	
+			name = #{name},
+			study_date = #{studyDate},
+			party_organization = #{partyOrganization},
+			party_organization_id = #{partyOrganizationId},
+			record = #{record},
+			file_path = #{filePath},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			examine_status = #{examineStatus},
+			opinion = #{opinion}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_two_one SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_two_one SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+			 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+	
+	<select id="findInfoByCreateOrgId" resultType="java.util.HashMap">
+		SELECT
+			ato.party_organization "label",
+			count( ato.party_organization ) 
+		FROM
+			affair_two_one ato
+		WHERE ato.del_flag = '0'
+		<if test="id != null and id != ''">
+		  AND ato.create_org_id = #{id} AND ato.del_flag = '0'
+		</if>
+		<choose>
+			<when test="month != null and month !=''">
+				AND concat(extract(year from ato.study_date),extract(month from ato.study_date)) &lt;= #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from ato.study_date) &lt;= #{year}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+			ato.party_organization
+	</select>
+	
+	<select id="findInfoByCreateOrgIds" resultType="java.util.HashMap">
+		SELECT
+			ato.party_organization "label",
+			count( ato.party_organization ) 
+		FROM
+			affair_two_one ato
+		WHERE  ato.del_flag = '0' AND ato.create_org_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			 	#{id}
+		</foreach>	
+		)
+		<choose>
+			<when test="month != null and month !=''">
+				AND concat(extract(year from ato.study_date),extract(month from ato.study_date)) &lt;= #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from ato.study_date) &lt;= #{year}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+			ato.party_organization
+	</select>
+
+    <select id="selectAllYear" resultType="java.lang.String">
+		SELECT DISTINCT
+			( to_char( study_date, 'yyyy' ) )
+		FROM
+			affair_two_one
+		WHERE
+			del_flag = '0'
+	</select>
+	<select id="selectAllMonth" resultType="java.lang.String">
+		SELECT DISTINCT
+			( to_char( study_date, 'MM' ) )
+		FROM
+			affair_two_one
+		WHERE
+			del_flag = '0'
+	</select>
+
+    <select id="selectNum" resultType="java.lang.Integer">
+		SELECT
+			"count" ( * )
+		FROM
+			affair_two_one
+		WHERE
+			to_char ( "study_date", 'yyyy-mm-dd HH24:mi:ss:ff' ) = #{time}
+			AND party_organization_id = #{id}
+			AND del_flag = '0'
+	</select>
+
+	<select id="selectNumYear" resultType="java.lang.Integer">
+		SELECT
+			"count" ( * )
+		FROM
+			affair_two_one
+		WHERE
+			to_char ( "study_date", 'yyyy-mm-dd HH24:mi:ss:ff' ) = #{year}
+			AND party_organization_id = #{id}
+			AND del_flag = '0'
+	</select>
+</mapper>

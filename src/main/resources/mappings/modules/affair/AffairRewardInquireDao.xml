@@ -1,0 +1,606 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairRewardInquireDao">
+
+    <sql id="affairOrgRewardPunishColumns">
+        a.id AS "id",
+		'' AS "name",
+		a.party_organization AS "unit",
+		a.party_organization_id AS "unitId",
+		a.title AS "title",
+		a.file_no AS "fileNo",
+		a.approval_org AS "approvalOrg",
+		a.approval_org_id AS "approvalOrgId",
+		a.type AS "type",
+		a.del_flag AS "delFlag",
+		'1' AS "flag"
+	</sql>
+    <sql id="affairPartyRewardPunishColumns">
+        b.id AS "id",
+		b.name AS "name",
+		b.party_organization AS "unit",
+		b.party_organization_id AS "unitId",
+		b.title AS "title",
+		b.file_no AS "fileNo",
+		b.approval_org AS "approvalOrg",
+		b.approval_org_id AS "approvalOrgId",
+		b.type AS "type",
+		b.del_flag AS "delFlag",
+		'2' AS "flag"
+	</sql>
+
+    <sql id="affairXcUnitRewardColumns">
+        c.id AS "id",
+		'' AS "name",
+		c.unit AS "unit",
+		c.unit_id AS "unitId",
+		c.name AS "title",
+		c.file_no AS "fileNo",
+		c.approval_unit AS "approvalOrg",
+		c.approval_unit_id AS "approvalOrgId",
+		c.type AS "type",
+		c.del_flag AS "delFlag",
+		'3' AS "flag"
+	</sql>
+
+    <sql id="affairPersonalRewardColumns">
+        d.id AS "id",
+		d.name AS "name",
+		d.unit AS "unit",
+		d.unit_id AS "unitId",
+		d.reward_name AS "title",
+		d.file_no AS "fileNo",
+		d.approval_unit AS "approvalOrg",
+		d.approval_unit_id AS "approvalOrgId",
+		d.type AS "type",
+		d.del_flag AS "delFlag",
+		'4' AS "flag"
+	</sql>
+
+    <sql id="affairCollectiveAwardColumns">
+        e.id AS "id",
+		'' AS "name",
+		e.unit AS "unit",
+		e.unit_id AS "unitId",
+		e.award_name AS "title",
+		e.file_no AS "fileNo",
+		e.bz_unit AS "approvalOrg",
+		e.bz_unit_id AS "approvalOrgId",
+		e.award_level AS "type",
+		e.del_flag AS "delFlag",
+		'5' AS "flag"
+	</sql>
+
+    <sql id="affairPersonalAwardColumns">
+        f.id AS "id",
+		f.police_name AS "name",
+		f.unit AS "unit",
+		f.unit_id AS "unitId",
+		f.award_name AS "title",
+		f.file_no AS "fileNo",
+		f.bz_unit AS "approvalOrg",
+		f.bz_unit_id AS "approvalOrgId",
+		f.award_level AS "type",
+		f.del_flag AS "delFlag",
+		'6' AS "flag"
+	</sql>
+
+    <sql id="affairTwUnitAwardColumns">
+        g.id AS "id",
+		'' AS "name",
+		g.unit AS "unit",
+		g.unit_id AS "unitId",
+		g.name AS "title",
+		g.file_no AS "fileNo",
+		g.approval_unit AS "approvalOrg",
+		g.approvale_unit_id AS "approvalOrgId",
+		g.type AS "type",
+		g.del_flag AS "delFlag",
+		'7' AS "flag"
+	</sql>
+
+    <sql id="affairTwPersonalAwardColumns">
+        h.id AS "id",
+		h.name AS "name",
+		h.unit AS "unit",
+		h.unit_id AS "unitId",
+		h.reward_name AS "title",
+		h.file_no AS "fileNo",
+		h.approval_unit AS "approvalOrg",
+		h.approval_unit_id AS "approvalOrgId",
+		h.type AS "type",
+		h.del_flag AS "delFlag",
+		'8' AS "flag"
+	</sql>
+
+    <sql id="joins">
+		 LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+
+    <select id="findList" resultType="java.util.Map">
+        SELECT
+        a.id AS "id",
+        '' AS "name",
+        a.party_organization AS "unit",
+        a.party_organization_id AS "unitId",
+        a.title AS "title",
+        a.file_no AS "fileNo",
+        a.approval_org AS "approvalOrg",
+        a.approval_org_id AS "approvalOrgId",
+        a.type AS "type",
+        a.del_flag AS "delFlag",
+        a.create_by AS "createBy.id",
+        a.create_org_id AS "createOrgId",
+        '1' AS "flag",
+        a.type_flag AS "typeFlag",
+        a.date as "date"
+        FROM affair_org_reward_punish a
+        LEFT JOIN sys_office o ON o.id = a.create_org_id
+        LEFT JOIN sys_user u ON u.id = a.create_by
+        <where>
+            a.del_flag = '0'
+            <if test="title != null and title != ''">
+                AND a.title LIKE '%'||#{title}||'%'
+            </if>
+            <if test="type != null and type != ''">
+                AND a.type = #{type}
+            </if>
+            <if test="name != null and name != ''">
+                AND '' = #{name}
+            </if>
+            <if test="unitId != null and unitId != ''">
+                AND a.party_organization_id = #{unitId}
+            </if>
+            <if test="typeFlag != null and typeFlag != ''">
+                AND a.type_flag = #{typeFlag}
+            </if>
+            <choose>
+                <when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+                    AND date_trunc('day', a.create_date) between  #{startDate} and #{endDate}
+                </when>
+                <when test="startDate != null and startDate != ''">
+                    AND a.create_date >= #{startDate}
+                </when>
+                <when test="endDate != null and endDate != ''">
+                    AND  #{endDate} >= date_trunc('day', a.create_date)
+                </when>
+                <otherwise>
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="userId != null and userId != '' ">
+                    AND ( o.ID = #{userId} OR o.parent_ids LIKE'%,'||#{userId}||',%' OR u.ID = #{userId} or a.party_organization_id=#{userId} )
+                </when>
+                <otherwise>
+                    AND ( o.ID = #{userId} OR u.ID = #{userId} or a.unit_id=#{userId})
+                </otherwise>
+            </choose>
+        </where>
+        UNION ALL
+        SELECT
+        b.id AS "id",
+        b.name AS "name",
+        b.party_organization AS "unit",
+        b.party_organization_id AS "unitId",
+        b.title AS "title",
+        b.file_no AS "fileNo",
+        b.approval_org AS "approvalOrg",
+        b.approval_org_id AS "approvalOrgId",
+        b.type AS "type",
+        b.del_flag AS "delFlag",
+        b.create_by AS "createBy.id",
+        b.create_org_id AS "createOrgId",
+        '2' AS "flag",
+        b.type_flag AS "typeFlag",
+        b.approval_time as "date"
+        FROM affair_party_reward_punish b
+        LEFT JOIN sys_office o ON o.id = b.create_org_id
+        LEFT JOIN sys_user u ON u.id = b.create_by
+        <where>
+            b.del_flag = '0'
+            <if test="title != null and title != ''">
+                AND b.title LIKE '%'||#{title}||'%'
+            </if>
+            <if test="type != null and type != ''">
+                AND b.type = #{type}
+            </if>
+            <if test="name != null and  name != ''">
+                AND b.name LIKE '%'||#{name}||'%'
+            </if>
+            <if test="unitId != null and unitId != ''">
+                AND b.party_organization_id = #{unitId}
+            </if>
+            <if test="typeFlag != null and typeFlag != ''">
+                AND b.type_flag = #{typeFlag}
+            </if>
+            <choose>
+                <when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+                    AND date_trunc('day', b.create_date) between  #{startDate} and #{endDate}
+                </when>
+                <when test="startDate != null and startDate != ''">
+                    AND b.create_date >= #{startDate}
+                </when>
+                <when test="endDate != null and endDate != ''">
+                    AND  #{endDate} >= date_trunc('day', b.create_date)
+                </when>
+                <otherwise>
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="userId != null and userId != '' ">
+                    AND ( o.ID = #{userId} OR o.parent_ids LIKE'%,'||#{userId}||',%' OR u.ID = #{userId} or b.party_organization_id=#{userId} )
+                </when>
+                <otherwise>
+                    AND ( o.ID = #{userId} OR u.ID = #{userId} or b.unit_id=#{userId})
+                </otherwise>
+            </choose>
+        </where>
+        UNION ALL
+        SELECT
+        c.id AS "id",
+        '' AS "name",
+        c.unit AS "unit",
+        c.unit_id AS "unitId",
+        c.name AS "title",
+        c.file_no AS "fileNo",
+        c.approval_unit AS "approvalOrg",
+        c.approval_unit_id AS "approvalOrgId",
+        c.type AS "type",
+        c.del_flag AS "delFlag",
+        c.create_by AS "createBy.id",
+        c.create_org_id AS "createOrgId",
+        '3' AS "flag",
+        c.type_flag AS "typeFlag",
+        c.date as "date"
+        FROM affair_xc_unit_reward c
+        LEFT JOIN sys_office o ON o.id = c.create_org_id
+        LEFT JOIN sys_user u ON u.id = c.create_by
+        <where>
+            c.del_flag = '0'
+            <if test="title != null and title != ''">
+                AND c.name LIKE '%'||#{title}||'%'
+            </if>
+
+            <if test="name != null and name != ''">
+                AND '' = #{name}
+            </if>
+            <if test="type != null and type != ''">
+                AND c.type = #{type}
+            </if>
+            <if test="unitId != null and unitId != ''">
+                AND c.unit_id = #{unitId}
+            </if>
+            <if test="typeFlag != null and typeFlag != ''">
+                AND c.type_flag = #{typeFlag}
+            </if>
+            <choose>
+                <when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+                    AND date_trunc('day', c.create_date) between  #{startDate} and #{endDate}
+                </when>
+                <when test="startDate != null and startDate != ''">
+                    AND c.create_date >= #{startDate}
+                </when>
+                <when test="endDate != null and endDate != ''">
+                    AND  #{endDate} >= date_trunc('day', c.create_date)
+                </when>
+                <otherwise>
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="userId != null and userId != '' ">
+                    AND ( o.ID = #{userId} OR o.parent_ids LIKE'%,'||#{userId}||',%' OR u.ID = #{userId} or c.unit_id=#{userId} )
+                </when>
+                <otherwise>
+                    AND ( o.ID = #{userId} OR u.ID = #{userId} or c.unit_id=#{userId})
+                </otherwise>
+            </choose>
+        </where>
+        UNION ALL
+        SELECT
+        d.id AS "id",
+        d.name AS "name",
+        d.approval_unit AS "unit",
+        d.approval_unit_id AS "unitId",
+        sd.label AS "title",
+        d.file_no AS "fileNo",
+        d.unit AS "approvalOrg",
+        d.unit_id AS "approvalOrgId",
+        d.type AS "type",
+        d.del_flag AS "delFlag",
+        d.create_by AS "createBy.id",
+        d.create_org_id AS "createOrgId",
+        '4' AS "flag",
+        d.type_flag AS "typeFlag",
+        d.date as "date"
+        FROM affair_personal_reward d
+        LEFT JOIN sys_office o ON o.id = d.create_org_id
+        LEFT JOIN sys_user u ON u.id = d.create_by
+        left join sys_dict sd on d.reward_name = sd."value"
+        <where>
+            d.del_flag = '0'
+            and sd."type" = 'affair_personnel_rewardCode'
+            <if test="title != null and title != ''">
+                AND sd.label LIKE '%'||#{title}||'%'
+            </if>
+            <if test="type != null and type != ''">
+                AND d.type = #{type}
+            </if>
+            <if test="name != null and name != ''">
+                AND d.name LIKE '%'||#{name}||'%'
+            </if>
+            <if test="unitId != null and unitId != ''">
+                AND d.unit_id = #{unitId}
+            </if>
+            <if test="typeFlag != null and typeFlag != ''">
+                AND d.type_flag = #{typeFlag}
+            </if>
+            <choose>
+                <when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+                    AND date_trunc('day', d.create_date) between  #{startDate} and #{endDate}
+                </when>
+                <when test="startDate != null and startDate != ''">
+                    AND d.create_date >= #{startDate}
+                </when>
+                <when test="endDate != null and endDate != ''">
+                    AND  #{endDate} >= date_trunc('day', d.create_date)
+                </when>
+                <otherwise>
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="userId != null and userId != '' ">
+                    AND ( o.ID = #{userId} OR o.parent_ids LIKE'%,'||#{userId}||',%' OR u.ID = #{userId} or d.unit_id=#{userId} )
+                </when>
+                <otherwise>
+                    AND ( o.ID = #{userId} OR u.ID = #{userId} or d.unit_id=#{userId})
+                </otherwise>
+            </choose>
+        </where>
+        UNION ALL
+        SELECT
+        e.id AS "id",
+        '' AS "name",
+        e.unit AS "unit",
+        e.unit_id AS "unitId",
+        e.award_name AS "title",
+        e.file_no AS "fileNo",
+        e.bz_unit AS "approvalOrg",
+        e.bz_unit_id AS "approvalOrgId",
+        e.award_level AS "type",
+        e.del_flag AS "delFlag",
+        e.create_by AS "createBy.id",
+        e.create_org_id AS "createOrgId",
+        '5' AS "flag",
+        e.type_flag AS "typeFlag",
+        e.date as "date"
+        FROM affair_collective_award e
+        LEFT JOIN sys_office o ON o.id = e.create_org_id
+        LEFT JOIN sys_user u ON u.id = e.create_by
+        <where>
+            e.del_flag = '0'
+            <if test="title != null and title != ''">
+                AND e.award_name LIKE '%'||#{title}||'%'
+            </if>
+            <if test="type != null and type != ''">
+                AND e.award_level = #{type}
+            </if>
+            <if test="name != null and name != ''">
+                AND '' = #{name}
+            </if>
+            <if test="unitId != null and unitId != ''">
+                AND e.unit_id = #{unitId}
+            </if>
+            <if test="typeFlag != null and typeFlag != ''">
+                AND e.type_flag = #{typeFlag}
+            </if>
+            <choose>
+                <when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+                    AND date_trunc('day', e.create_date) between  #{startDate} and #{endDate}
+                </when>
+                <when test="startDate != null and startDate != ''">
+                    AND e.create_date >= #{startDate}
+                </when>
+                <when test="endDate != null and endDate != ''">
+                    AND  #{endDate} >= date_trunc('day', e.create_date)
+                </when>
+                <otherwise>
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="userId != null and userId != '' ">
+                    AND ( o.ID = #{userId} OR o.parent_ids LIKE'%,'||#{userId}||',%' OR u.ID = #{userId} or e.unit_id=#{userId} )
+                </when>
+                <otherwise>
+                    AND ( o.ID = #{userId} OR u.ID = #{userId} or e.unit_id=#{userId})
+                </otherwise>
+            </choose>
+        </where>
+        UNION ALL
+        SELECT
+        f.id AS "id",
+        f.police_name AS "name",
+        f.unit AS "unit",
+        f.unit_id AS "unitId",
+        f.award_name AS "title",
+        f.file_no AS "fileNo",
+        f.bz_unit AS "approvalOrg",
+        f.bz_unit_id AS "approvalOrgId",
+        f.award_level AS "type",
+        f.del_flag AS "delFlag",
+        f.create_by AS "createBy.id",
+        f.create_org_id AS "createOrgId",
+        '6' AS "flag",
+        f.type_flag AS "typeFlag",
+        f.date as "date"
+        FROM affair_personal_award f
+        LEFT JOIN sys_office o ON o.id = f.create_org_id
+        LEFT JOIN sys_user u ON u.id = f.create_by
+        <where>
+            f.del_flag = '0'
+            <if test="title != null and title != ''">
+                AND f.award_name LIKE '%'||#{title}||'%'
+            </if>
+            <if test="type != null and type != ''">
+                AND f.award_level = #{type}
+            </if>
+            <if test="name != null and name != ''">
+                AND f.police_name LIKE '%'||#{name}||'%'
+            </if>
+            <if test="unitId != null and unitId != ''">
+                AND f.unit_id = #{unitId}
+            </if>
+            <if test="typeFlag != null and typeFlag != ''">
+                AND f.type_flag = #{typeFlag}
+            </if>
+            <choose>
+                <when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+                    AND date_trunc('day', f.create_date) between  #{startDate} and #{endDate}
+                </when>
+                <when test="startDate != null and startDate != ''">
+                    AND f.create_date >= #{startDate}
+                </when>
+                <when test="endDate != null and endDate != ''">
+                    AND  #{endDate} >= date_trunc('day', f.create_date)
+                </when>
+                <otherwise>
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="userId != null and userId != '' ">
+                    AND ( o.ID = #{userId} OR o.parent_ids LIKE'%,'||#{userId}||',%' OR u.ID = #{userId} or f.unit_id=#{userId} )
+                </when>
+                <otherwise>
+                    AND ( o.ID = #{userId} OR u.ID = #{userId} or f.unit_id=#{userId})
+                </otherwise>
+            </choose>
+        </where>
+        UNION ALL
+        SELECT
+        g.id AS "id",
+        '' AS "name",
+        g.unit AS "unit",
+        g.unit_id AS "unitId",
+        g.name AS "title",
+        g.file_no AS "fileNo",
+        g.approval_unit AS "approvalOrg",
+        g.approvale_unit_id AS "approvalOrgId",
+        g.type AS "type",
+        g.del_flag AS "delFlag",
+        g.create_by AS "createBy.id",
+        g.create_org_id AS "createOrgId",
+        '7' AS "flag",
+        g.type_flag AS "typeFlag",
+        g.date as "date"
+        FROM affair_tw_unit_award g
+        LEFT JOIN sys_office o ON o.id = g.create_org_id
+        LEFT JOIN sys_user u ON u.id = g.create_by
+        <where>
+            g.del_flag = '0'
+            <if test="title != null and title != ''">
+                AND g.name LIKE '%'||#{title}||'%'
+            </if>
+            <if test="type != null and type != ''">
+                AND g.type = #{type}
+            </if>
+            <if test="name != null and name != ''">
+                AND '' = #{name}
+            </if>
+            <if test="unitId != null and unitId != ''">
+                AND g.unit_id = #{unitId}
+            </if>
+            <if test="typeFlag != null and typeFlag != ''">
+                AND g.type_flag = #{typeFlag}
+            </if>
+            <choose>
+                <when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+                    AND date_trunc('day', g.create_date) between  #{startDate} and #{endDate}
+                </when>
+                <when test="startDate != null and startDate != ''">
+                    AND g.create_date >= #{startDate}
+                </when>
+                <when test="endDate != null and endDate != ''">
+                    AND  #{endDate} >= date_trunc('day', g.create_date)
+                </when>
+                <otherwise>
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="userId != null and userId != '' ">
+                    AND ( o.ID = #{userId} OR o.parent_ids LIKE'%,'||#{userId}||',%' OR u.ID = #{userId} or g.unit_id LIKE'%,'||#{userId}||'%' or g.unit_id LIKE'%'||#{userId}||',%' or g.unit_id = #{userId} or u.office_id = #{userId})
+                </when>
+                <otherwise>
+                    AND ( o.ID = #{userId} OR u.ID = #{userId} or g.unit_id=#{userId})
+                </otherwise>
+            </choose>
+        </where>
+        UNION ALL
+        SELECT
+        h.id AS "id",
+        h.name AS "name",
+        h.unit AS "unit",
+        h.unit_id AS "unitId",
+        h.reward_name AS "title",
+        h.file_no AS "fileNo",
+        h.approval_unit AS "approvalOrg",
+        h.approval_unit_id AS "approvalOrgId",
+        h.type AS "type",
+        h.del_flag AS "delFlag",
+        h.create_by AS "createBy.id",
+        h.create_org_id AS "createOrgId",
+        '8' AS "flag",
+        h.type_flag AS "typeFlag",
+        h.date as "date"
+        FROM affair_tw_personal_award h
+        LEFT JOIN sys_office o ON o.id = h.create_org_id
+        LEFT JOIN sys_user u ON u.id = h.create_by
+        <where>
+            h.del_flag = '0'
+            <if test="title != null and title != ''">
+                AND h.reward_name LIKE '%'||#{title}||'%'
+            </if>
+            <if test="type != null and type != ''">
+                AND h.type = #{type}
+            </if>
+            <if test="name != null and name != ''">
+                AND h.name LIKE '%'||#{name}||'%'
+            </if>
+            <if test="unitId != null and unitId != ''">
+                AND h.unit_id = #{unitId}
+            </if>
+            <if test="typeFlag != null and typeFlag != ''">
+                AND h.type_flag = #{typeFlag}
+            </if>
+            <choose>
+                <when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+                    AND date_trunc('day', h.create_date) between  #{startDate} and #{endDate}
+                </when>
+                <when test="startDate != null and startDate != ''">
+                    AND h.create_date >= #{startDate}
+                </when>
+                <when test="endDate != null and endDate != ''">
+                    AND  #{endDate} >= date_trunc('day', h.create_date)
+                </when>
+                <otherwise>
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="userId != null and userId != '' ">
+                    AND ( o.ID = #{userId} OR o.parent_ids LIKE'%,'||#{userId}||',%' OR u.ID = #{userId} or h.unit_id=#{userId} )
+                </when>
+                <otherwise>
+                    AND ( o.ID = #{userId} OR u.ID = #{userId} or h.unit_id=#{userId})
+                </otherwise>
+            </choose>
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+
+            </otherwise>
+        </choose>
+    </select>
+
+</mapper>

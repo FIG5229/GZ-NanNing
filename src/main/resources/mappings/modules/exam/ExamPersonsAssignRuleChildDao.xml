@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.exam.dao.ExamPersonsAssignRuleChildDao">
+    
+	<sql id="examPersonsAssignRuleChildColumns">
+		a.id AS "id",
+		a.rule_id AS "ruleId",
+		a.exam_depart AS "examDepart",
+		a.self_person_ids AS "selfPersonIds",
+		a.self_person_names AS "selfPersonNames",
+		a.exam_person_ids AS "examPersonIds",
+		a.exam_person_names AS "examPersonNames",
+		a.create_by AS "createBy.id",
+		a.del_flag AS "delFlag",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate"
+	</sql>
+	
+	<sql id="examPersonsAssignRuleChildJoins">
+		LEFT JOIN sys_user u4 ON u4.id = a.self_person_ids
+		LEFT JOIN sys_user u5 ON u5.id = a.self_person_names
+		LEFT JOIN sys_user u6 ON u6.id = a.exam_person_ids
+	</sql>
+    
+	<select id="get" resultType="ExamPersonsAssignRuleChild">
+		SELECT 
+			<include refid="examPersonsAssignRuleChildColumns"/>
+		FROM exam_persons_assign_rule_child a
+		<include refid="examPersonsAssignRuleChildJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ExamPersonsAssignRuleChild">
+		SELECT 
+			<include refid="examPersonsAssignRuleChildColumns"/>
+		FROM exam_persons_assign_rule_child a
+		<include refid="examPersonsAssignRuleChildJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="examDepart != null and examDepart != ''">
+				AND a.exam_depart = #{examDepart}
+			</if>
+			<if test="selfPersonIds != null and selfPersonIds != ''">
+				AND a.self_person_ids = #{selfPersonIds}
+			</if>
+			<if test="examPersonIds != null and examPersonIds != ''">
+				AND a.exam_person_ids = #{examPersonIds}
+			</if>
+			<if test="examPersonNames != null and examPersonNames != ''">
+				AND a.exam_person_names = #{examPersonNames}
+			</if>
+			<if test="ruleId != null and ruleId != ''">
+				AND a.rule_id = #{ruleId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ExamPersonsAssignRuleChild">
+		SELECT 
+			<include refid="examPersonsAssignRuleChildColumns"/>
+		FROM exam_persons_assign_rule_child a
+		<include refid="examPersonsAssignRuleChildJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO exam_persons_assign_rule_child(
+			id,
+			rule_id,
+			exam_depart,
+			self_person_ids,
+			self_person_names,
+			exam_person_ids,
+			exam_person_names,
+			create_by,
+			del_flag,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date
+		) VALUES (
+			#{id},
+			#{ruleId},
+			#{examDepart},
+			#{selfPersonIds},
+			#{selfPersonNames},
+			#{examPersonIds},
+			#{examPersonNames},
+			#{createBy.id},
+			#{delFlag},
+			#{createOrgId},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateOrgId},
+			#{updateIdNo},
+			#{updateDate}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE exam_persons_assign_rule_child SET 	
+			exam_depart = #{examDepart},
+			self_person_ids = #{selfPersonIds},
+			self_person_names = #{selfPersonNames},
+			exam_person_ids = #{examPersonIds},
+			exam_person_names = #{examPersonNames}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE exam_persons_assign_rule_child SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

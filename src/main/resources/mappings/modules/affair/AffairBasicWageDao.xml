@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairBasicWageDao">
+    
+	<sql id="affairBasicWageColumns">
+		a.id AS "id",
+		a.level AS "level",
+		a.job_salary AS "jobSalary",
+		a.work_allowance AS "workAllowance",
+		a.living_allowance AS "livingAllowance",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.year AS "year"
+	</sql>
+	
+	<sql id="affairBasicWageJoins">
+	</sql>
+    
+	<select id="get" resultType="AffairBasicWage">
+		SELECT 
+			<include refid="affairBasicWageColumns"/>
+		FROM affair_basic_wage a
+		<include refid="affairBasicWageJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairBasicWage">
+		SELECT 
+			<include refid="affairBasicWageColumns"/>
+		FROM affair_basic_wage a
+		<include refid="affairBasicWageJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="year != null and year != ''">
+				AND a.year = #{year}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairBasicWage">
+		SELECT 
+			<include refid="affairBasicWageColumns"/>
+		FROM affair_basic_wage a
+		<include refid="affairBasicWageJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_basic_wage(
+			id,
+			level,
+			job_salary,
+			work_allowance,
+			living_allowance,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			year
+		) VALUES (
+			#{id},
+			#{level},
+			#{jobSalary},
+			#{workAllowance},
+			#{livingAllowance},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{year}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_basic_wage SET 	
+			level = #{level},
+			job_salary = #{jobSalary},
+			work_allowance = #{workAllowance},
+			living_allowance = #{livingAllowance},
+			year = #{year},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_basic_wage SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_basic_wage SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+</mapper>

@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairGwyDao">
+    
+	<sql id="affairGwyColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.id_number AS "idNumber",
+		a.date AS "date",
+		a.is_will AS "isWill",
+		a.base_wage AS "baseWage",
+		a.last_year AS "lastYear",
+		a.last_doule AS "lastDoule",
+		a.froty_month AS "frotyMonth",
+		a.issuance_ratio AS "issuanceRatio",
+		a.additional_amount AS "additionalAmount",
+		a.sum AS "sum",
+		a.relief AS "relief",
+		a.hard_fee AS "hardFee",
+		a.gong_wu_yuan AS "gongWuYuan",
+		a.people AS "people",
+		a.annex AS "annex",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="affairGwyJoins">
+		LEFT JOIN affair_labor_office o ON o.id = a.create_org_id
+		LEFT JOIN affair_labor_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairGwy">
+		SELECT 
+			<include refid="affairGwyColumns"/>
+		FROM affair_gwy a
+		<include refid="affairGwyJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairGwy">
+		SELECT 
+			<include refid="affairGwyColumns"/>
+		FROM affair_gwy a
+		<include refid="affairGwyJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+			</if>
+			<choose>
+				<when test="beginDate != null and beginDate != '' and endDate != null and endDate != ''">
+					AND a.date between #{beginDate} and #{endDate}
+				</when>
+				<when test="beginDate != null and beginDate != ''">
+					AND a.date >= #{beginDate}
+				</when>
+				<when test="endDate != null and endDate != ''">
+					AND  #{endDate} >= a.date
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			<if test="userId != null and userId != ''">
+				AND ( o.ID = #{userId} OR o.parent_ids LIKE'%,'||#{userId}||',%' OR u.ID = #{userId})
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairGwy">
+		SELECT 
+			<include refid="affairGwyColumns"/>
+		FROM affair_gwy a
+		<include refid="affairGwyJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_gwy(
+			id,
+			name,
+			id_number,
+			date,
+			is_will,
+			base_wage,
+			last_year,
+			last_doule,
+			froty_month,
+			issuance_ratio,
+			additional_amount,
+			sum,
+			relief,
+			hard_fee,
+			gong_wu_yuan,
+			people,
+			annex,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{name},
+			#{idNumber},
+			#{date},
+			#{isWill},
+			#{baseWage},
+			#{lastYear},
+			#{lastDoule},
+			#{frotyMonth},
+			#{issuanceRatio},
+			#{additionalAmount},
+			#{sum},
+			#{relief},
+			#{hardFee},
+			#{gongWuYuan},
+			#{people},
+			#{annex},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_gwy SET 	
+			name = #{name},
+			id_number = #{idNumber},
+			date = #{date},
+			is_will = #{isWill},
+			base_wage = #{baseWage},
+			last_year = #{lastYear},
+			last_doule = #{lastDoule},
+			froty_month = #{frotyMonth},
+			issuance_ratio = #{issuanceRatio},
+			additional_amount = #{additionalAmount},
+			sum = #{sum},
+			relief = #{relief},
+			hard_fee = #{hardFee},
+			gong_wu_yuan = #{gongWuYuan},
+			people = #{people},
+			annex = #{annex},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_gwy SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_gwy SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+	
+</mapper>

@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairLearnPowerYearDao">
+    
+	<sql id="affairLearnPowerYearColumns">
+		a.id AS "id",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.time AS "time",
+		a.name AS "name",
+		a.id_number AS "idNumber",
+		a.last_year_integral AS "lastYearIntegral",
+		a.this_year_statistics AS "thisYearStatistics",
+		a.this_year_integral AS "thisYearIntegral",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="affairLearnPowerYearJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairLearnPowerYear">
+		SELECT 
+			<include refid="affairLearnPowerYearColumns"/>
+		FROM affair_learn_power_year a
+		<include refid="affairLearnPowerYearJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairLearnPowerYear">
+		SELECT 
+			<include refid="affairLearnPowerYearColumns"/>
+		FROM affair_learn_power_year a
+		<include refid="affairLearnPowerYearJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+			</if>
+			<if test="idN != '' and idN != null">
+				AND ( o.ID = #{idN} OR o.parent_ids LIKE'%,'||#{idN}||',%' OR u.ID = #{createBy.id} or a.unit_id = #{idN} or u.office_id = #{idN})
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairLearnPowerYear">
+		SELECT 
+			<include refid="affairLearnPowerYearColumns"/>
+		FROM affair_learn_power_year a
+		<include refid="affairLearnPowerYearJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+    <select id="findListByYear" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairLearnPowerYear">
+		select
+		a.unit as "unit",
+		a.unit_id as "unitId",
+		a.name AS "name",
+		a.id_number AS "idNumber",
+		COALESCE(sum(this_month_integral),0.0)AS "thisYearIntegral"
+		from  affair_learn_power a
+		<include refid="affairLearnPowerYearJoins"/>
+		where
+		a.del_flag = '0'
+		and (a.time != '' and a.time is not null)
+		and (substring(a.time,5,1) = '-'
+		and substring(a.time,6,1)  in ('0','1')
+		and substring(a.time,7,1)  in ('0','1','2','3','4','5','6','7','8','9'))
+		and cast(substr(a.time,1,4) as INTEGER) = #{year}
+		<if test="name != null and name != ''">
+			and a.name = #{name}
+		</if>
+		<if test="unitId != '' and unitId != null">
+			AND ( o.ID = #{unitId} OR o.parent_ids LIKE'%,'||#{unitId}||',%' OR u.ID = #{unitId} or a.unit_id = #{unitId} or u.office_id = #{unitId})
+		</if>
+		GROUP BY a.unit,a.name,a.id_number,a.unit_id
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy} ,COALESCE(sum(this_month_integral),0.0) DESC
+			</when>
+			<otherwise>
+				ORDER BY COALESCE(sum(this_month_integral),0.0) DESC
+			</otherwise>
+		</choose>
+	</select>
+	<select id="findlastYearIntegral" resultType="java.lang.Double">
+		select
+		COALESCE(sum(this_month_integral),0.0)AS "lastYearIntegral"
+		from  affair_learn_power a
+		<include refid="affairLearnPowerYearJoins"/>
+		where
+		a.time != '' and a.time is not null
+		and (substring(a.time,5,1) = '-'
+		and substring(a.time,6,1)  in ('0','1')
+		and substring(a.time,7,1)  in ('0','1','2','3','4','5','6','7','8','9'))
+		and cast(substr(a.time,1,4) as numeric) = #{lastYear}
+		and a.name =#{name}
+		and a.unit =#{unit}
+		and a.id_number =#{idNumber}
+		and a.del_flag = '0'
+		<if test="unitId != '' and unitId != null">
+			AND ( o.ID = #{unitId} OR o.parent_ids LIKE'%,'||#{unitId}||',%' OR u.ID = #{unitId} or a.unit_id = #{unitId} or u.office_id = #{unitId} or a.unit_id = #{unitId})
+		</if>
+		and o.del_flag = '0'
+		and u.del_flag = '0'
+	</select>
+
+	<insert id="insert">
+		INSERT INTO affair_learn_power_year(
+			id,
+			unit,
+			unit_id,
+			time,
+			name,
+			id_number,
+			last_year_integral,
+			this_year_statistics,
+			this_year_integral,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{unit},
+			#{unitId},
+			#{time},
+			#{name},
+			#{idNumber},
+			#{lastYearIntegral},
+			#{thisYearStatistics},
+			#{thisYearIntegral},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_learn_power_year SET 	
+			unit = #{unit},
+			unit_id = #{unitId},
+			time = #{time},
+			name = #{name},
+			id_number = #{idNumber},
+			last_year_integral = #{lastYearIntegral},
+			this_year_statistics = #{thisYearStatistics},
+			this_year_integral = #{thisYearIntegral},
+		update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+
+
+	<insert id="creat">
+		INSERT INTO affair_learn_power_year(
+			id,
+			unit,
+			unit_id,
+			time,
+			name,
+			id_number,
+			last_year_integral,
+			this_year_statistics,
+			this_year_integral,
+			del_flag
+		) VALUES (
+			#{id},
+			#{unit},
+			#{unitId},
+			#{time},
+			#{name},
+			#{idNumber},
+			#{lastYearIntegral},
+			#{thisYearStatistics},
+			#{thisYearIntegral},
+			#{delFlag}
+		)
+	</insert>
+
+
+</mapper>

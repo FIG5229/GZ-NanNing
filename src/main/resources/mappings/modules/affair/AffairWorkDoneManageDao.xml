@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairWorkDoneManageDao">
+    
+	<sql id="affairWorkDoneManageColumns">
+		a.id AS "id",
+		a.title AS "title",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.adjunct AS "adjunct",
+		a.description AS "description",
+		a.party_organization_id AS "partyOrganizationId",
+		a.party_organization AS "partyOrganization",
+		a.status AS "status",
+		a.opinion AS "opinion"
+	</sql>
+	
+	<sql id="affairWorkDoneManageJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairWorkDoneManage">
+		SELECT 
+			<include refid="affairWorkDoneManageColumns"/>
+		FROM affair_work_done_manage a
+		<include refid="affairWorkDoneManageJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairWorkDoneManage">
+		SELECT 
+			<include refid="affairWorkDoneManageColumns"/>
+		FROM affair_work_done_manage a
+		<include refid="affairWorkDoneManageJoins"/>
+		LEFT JOIN affair_general_situation s
+		ON s.id = a.party_organization_id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{title}||'%'</if>
+			</if>
+			<if test="treeId != null and treeId != ''">
+				AND (a.party_organization_id = #{treeId} OR s.parent_ids LIKE CONCAT('%,', #{treeId}, ',%'))
+			</if>
+			<!-- 8.21注释掉不确定会不会影响其他功能 -->
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairWorkDoneManage">
+		SELECT 
+			<include refid="affairWorkDoneManageColumns"/>
+		FROM affair_work_done_manage a
+		<include refid="affairWorkDoneManageJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_work_done_manage(
+			id,
+			title,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			adjunct,
+			description,
+			party_organization_id,
+			party_organization,
+			status,
+			opinion
+		) VALUES (
+			#{id},
+			#{title},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{adjunct},
+			#{description},
+			#{partyOrganizationId},
+			#{partyOrganization},
+			'1',
+			#{opinion}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_work_done_manage SET 	
+			title = #{title},
+			create_org_id = #{createOrgId},
+			create_id_no = #{createIdNo},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			adjunct = #{adjunct},
+			description = #{description},
+			party_organization_id =#{partyOrganizationId},
+			party_organization = #{partyOrganization},
+			status = #{status},
+			opinion = #{opinion}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_work_done_manage SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_work_done_manage SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<update id="shenHeSave">
+		UPDATE affair_work_done_manage SET
+			status = #{affairWorkDoneManage.status},
+			opinion = #{affairWorkDoneManage.opinion},
+			update_date = #{affairWorkDoneManage.updateDate}
+		WHERE id = #{affairWorkDoneManage.id}
+	</update>
+
+	
+</mapper>

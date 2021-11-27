@@ -1,0 +1,381 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairPartyCostDao">
+    
+	<sql id="affairPartyCostColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.id_number AS "idNumber",
+		a.base_num AS "baseNum",
+		a.proportion AS "proportion",
+		a.cost1 AS "cost1",
+		a.cost2 AS "cost2",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.type AS "type",
+		a.year  AS "year",
+		a.month as "month",
+		a.zw_money AS "zwMoney",
+		a.jb_money AS "jbMoney",
+		a.gzjt_money AS "gzjtMoney",
+		a.sds_money AS "sdsMoney",
+		a.yl_money AS  "ylMoney",
+		a.yb_money AS "ybMoney",
+		a.zy_money AS "zyMoney",
+		a.gjj_money AS "gjjMoney",
+		a.jishu AS "jishu",
+		a.bili AS "bili",
+		a.sj_money AS  "sjMoney"
+	</sql>
+
+	<sql id="affairPartyMemberColumns">
+		pm.name AS "affairPartyMember.name",
+		pm.card_num AS "affairPartyMember.cardNum",
+		pm.sex AS "affairPartyMember.sex",
+		pm.party_branch AS "affairPartyMember.partyBranch",
+		pm.party_branch AS "partyBranch",
+		pm.party_branch_id AS "affairPartyMember.partyBranchId",
+		pm.party_branch_id AS "partyBranchId",
+		pm.personnel_category AS "affairPartyMember.personnelCategory",
+		pm.nation AS "affairPartyMember.nation",
+		pm.birthplace AS "affairPartyMember.birthplace",
+		pm.is_taiwan AS "affairPartyMember.isTaiwan",
+		pm.birth AS "affairPartyMember.birth",
+		pm.education AS "affairPartyMember.education",
+		pm.join_date AS "affairPartyMember.joinDate",
+		pm.turn_date AS "affairPartyMember.turnDate",
+		pm.work_place AS "affairPartyMember.workPlace",
+		pm.work_date AS "affairPartyMember.workDate",
+		pm.phone_num AS "affairPartyMember.phoneNum",
+		pm.telephone AS "affairPartyMember.telephone",
+		pm.home_address AS "affairPartyMember.homeAddress",
+		pm.marital_status AS "affairPartyMember.maritalStatus",
+		pm.create_by AS "affairPartyMember.createBy.id",
+		pm.create_org_id AS "affairPartyMember.createOrgId",
+		pm.create_id_no AS "affairPartyMember.createIdNo",
+		pm.create_date AS "affairPartyMember.createDate",
+		pm.update_by AS "affairPartyMember.updateBy.id",
+		pm.update_org_id AS "affairPartyMember.updateOrgId",
+		pm.update_id_no AS "affairPartyMember.updateIdNo",
+		pm.update_date AS "affairPartyMember.updateDate",
+		pm.del_flag AS "affairPartyMember.delFlag",
+		pm.delete_reason AS "affairPartyMember.deleteReason",
+		pm.personnel_category2 AS "affairPartyMember.personnelCategory2",
+		pm.personnel_type AS "affairPartyMember.personnelType"
+
+	</sql>
+	
+	<sql id="affairPartyCostJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+
+	<select id="get" resultType="AffairPartyCost">
+		SELECT 
+			<include refid="affairPartyCostColumns"/>
+			,<include refid="affairPartyMemberColumns"/>
+		FROM affair_party_cost a
+		<include refid="affairPartyCostJoins"/>
+		LEFT JOIN affair_party_member pm ON a.id_number = pm.card_num
+		WHERE a.id = #{id} AND pm.del_flag = '0'
+	</select>
+	
+	<select id="findList" resultType="AffairPartyCost">
+		SELECT 
+			<include refid="affairPartyCostColumns"/>
+			,<include refid="affairPartyMemberColumns"/>
+		FROM affair_party_cost a
+		<!--<include refid="affairPartyCostJoins"/>-->
+        LEFT JOIN affair_party_member pm
+        ON a.id_number = pm.card_num
+        LEFT JOIN affair_general_situation s
+        ON s.id = pm.party_branch_id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL} AND pm.del_flag = '0'
+			<if test="name != null and name != ''">
+				AND a.name LIKE concat('%',#{name},'%')
+			</if>
+			<if test="year != null and year != ''">
+				AND a.year = #{year}
+			</if>
+			<if test="month != null and month != ''">
+				AND a.month = #{month}
+			</if>
+			<if test="treeId != null and treeId != ''">
+				AND (pm.party_branch_id = #{treeId} OR s.parent_ids LIKE CONCAT('%,', #{treeId}, ',%'))
+			</if>
+			<!-- 数据范围过滤 -->
+			<!-- ${sqlMap.dsf} -->
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairPartyCost">
+		SELECT 
+			<include refid="affairPartyCostColumns"/>
+		FROM affair_party_cost a
+		<include refid="affairPartyCostJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+    <insert id="insert">
+		INSERT INTO affair_party_cost(
+			id,
+			name,
+			id_number,
+			base_num,
+			proportion,
+			cost1,
+			cost2,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			type,
+			year,
+			month,
+			zw_money,
+			jb_money,
+			gzjt_money,
+			sds_money,
+			yl_money,
+			yb_money,
+			zy_money,
+			gjj_money,
+			jishu,
+			bili,
+			sj_money
+		) VALUES (
+			#{id},
+			#{name},
+			#{idNumber},
+			#{baseNum},
+			#{proportion},
+			#{cost1},
+			#{cost2},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{type},
+			#{year},
+			#{month},
+			#{zwMoney},
+			#{jbMoney},
+			#{gzjtMoney},
+			#{sdsMoney},
+			#{ylMoney},
+			#{ybMoney},
+			#{zyMoney},
+			#{gjjMoney},
+			#{jishu},
+			#{bili},
+			#{sjMoney}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_party_cost SET 	
+			name = #{name},
+			id_number = #{idNumber},
+			base_num = #{baseNum},
+			proportion = #{proportion},
+			cost1 = #{cost1},
+			cost2 = #{cost2},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			type = #{type},
+			year = #{year},
+			month = #{month},
+			zw_money = #{zwMoney},
+			jb_money = #{jbMoney},
+			gzjt_money = #{gzjtMoney},
+			sds_money = #{sdsMoney},
+			yl_money = #{ylMoney},
+			yb_money = #{ybMoney},
+			zy_money = #{zyMoney},
+			gjj_money = #{gjjMoney},
+			jishu = #{jishu},
+			bili = #{bili},
+			sj_money = #{sjMoney}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_party_cost SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_party_cost SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+			 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<select id="findThisYearDatas" resultType="java.lang.String">
+		SELECT
+		a.id_number
+		FROM affair_party_cost a
+		WHERE a.year = (select to_char(current_date,'yyyy'))
+		AND a.month = (select to_char(current_date,'MM'))
+		AND a.del_flag = '0'
+	</select>
+
+	<delete id="deleteThisYearByIdNumber">
+		DELETE FROM affair_party_cost a
+		WHERE a.year = (select to_char(current_date,'yyyy')) AND a.id_number = #{IdNumber}
+	</delete>
+
+	<select id="findBaseMoney" resultType="java.util.HashMap">
+		select a.id_number,a.jb_salary, a.jb_grade_salary,a.base_yanglao__allowance,a.base_yiliao_allowance,a.buchong_yiliao_allowance,a.zhiye_allowance,a.gongjijin
+		FROM affair_labor a
+		WHERE a.year = #{year}
+		AND a.month = #{month}
+		AND a.del_flag = '0'
+	</select>
+	<select id="findBaseSumMoney" resultType="java.util.HashMap">
+		select a.id_number,SUM(a.working_allowance) AS working_allowance,SUM(a.personal_income_tax) AS personal_income_tax
+		FROM affair_labor a
+		WHERE a.year = #{lastYear}
+		AND a.del_flag = '0'
+		GROUP BY a.id_number
+	</select>
+
+	<select id="findTreeNameByTreeId" resultType="java.lang.String">
+		select
+		a.party_organization
+		from affair_general_situation a
+		where a.del_flag = '0'
+		and a.id = #{treeId}
+	</select>
+
+	<select id="findSumMoney" resultType="java.lang.String">
+		select
+		SUM(a.cost2)
+		from affair_party_cost a
+		LEFT JOIN affair_party_member pm
+		ON a.id_number = pm.card_num
+		LEFT JOIN affair_general_situation s
+		ON s.id = pm.party_branch_id
+		WHERE a.del_flag = '0'
+		<if test="year != null and year != ''">
+			AND a.year = #{year}
+		</if>
+		<if test="month != null and month != ''">
+			AND a.month = #{month}
+		</if>
+		<if test="treeId != null and treeId != ''">
+			AND (pm.party_branch_id = #{treeId} OR s.parent_ids LIKE CONCAT('%,', #{treeId}, ',%'))
+		</if>
+	</select>
+
+	<select id="findInfo" resultType="AffairPartyCost">
+		SELECT
+		<include refid="affairPartyCostColumns"/>
+		,<include refid="affairPartyMemberColumns"/>
+		FROM affair_party_cost a
+		<!--<include refid="affairPartyCostJoins"/>-->
+		LEFT JOIN affair_party_member pm
+		ON a.id_number = pm.card_num
+		LEFT JOIN affair_general_situation s
+		ON s.id = pm.party_branch_id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL} AND pm.del_flag = '0'
+			<if test="name != null and name != ''">
+				AND a.name LIKE concat('%',#{name},'%')
+			</if>
+			<if test="year != null and year != ''">
+				AND a.year = #{year}
+			</if>
+			<if test="month != null and month != ''">
+				AND a.month = #{month}
+			</if>
+			<if test="treeId != null and treeId != ''">
+				AND (pm.party_branch_id = #{treeId} OR s.parent_ids LIKE CONCAT('%,', #{treeId}, ',%'))
+			</if>
+			<!-- 数据范围过滤 -->
+			<!-- ${sqlMap.dsf} -->
+		</where>
+		ORDER BY a.update_date DESC
+	</select>
+
+	<delete id="deleteOldInfo">
+		delete
+		FROM affair_party_cost a
+		WHERE a.year = #{year} AND a.id_number = #{idNumber} AND a.month = #{month}
+	</delete>
+
+	<select id="countNumber" resultType="java.lang.Integer">
+		select
+		count(1)
+		from  affair_party_cost a
+		WHERE a.year = #{year} AND a.id_number = #{idNumber} AND a.month = #{month}
+	</select>
+	<select id="findSelYearMonthDatas" resultType="java.lang.String">
+		SELECT
+		a.id_number
+		FROM affair_party_cost a
+		left join affair_party_member pm on a.id_number = pm.card_num
+		WHERE a.year = #{year}
+		AND a.month = #{month}
+		AND pm.party_branch_id =#{partBranchId}
+		AND pm.del_flag = '0'
+		AND a.del_flag = '0'
+	</select>
+
+	<select id="findPersonLastYearBaseSumMoney" resultType="java.util.Map">
+		select a.id_number,SUM(a.working_allowance) AS working_allowance,SUM(a.personal_income_tax) AS personal_income_tax
+		FROM affair_labor a
+		WHERE a.year = #{lastYear}
+		AND a.del_flag = '0'
+		AND a.id_number = #{idNumber}
+		GROUP BY a.id_number
+	</select>
+
+	<select id="findPersonBaseMoney" resultType="java.util.Map">
+		select a.id_number,a.jb_salary, a.jb_grade_salary,a.living_allowance,a.base_yanglao__allowance,a.base_yiliao_allowance,a.buchong_yiliao_allowance,a.zhiye_allowance,a.gongjijin
+		FROM affair_labor a
+		WHERE a.year = #{year}
+		AND a.month = #{month}
+		AND a.id_number = #{idNumber}
+		AND a.del_flag = '0'
+	</select>
+</mapper>

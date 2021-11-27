@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairNewsChildDao">
+    
+	<sql id="affairNewsChildColumns">
+		a.id AS "id",
+		a.news_author AS "newsAuthor",
+		a.news_id AS "newsId",
+		a.news_name AS "newsName",
+		a.news_id_number AS "newsIdNumber",
+		a.news_unit AS "newsUnit",
+		a.news_unit_id AS "newsUnitId",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="affairNewsChildJoins">
+	</sql>
+    
+	<select id="get" resultType="AffairNewsChild">
+		SELECT 
+			<include refid="affairNewsChildColumns"/>
+		FROM affair_news_child a
+		<include refid="affairNewsChildJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairNewsChild">
+		SELECT 
+			<include refid="affairNewsChildColumns"/>
+		FROM affair_news_child a
+		<include refid="affairNewsChildJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="newsAuthor != null and newsAuthor != ''">
+				AND a.news_author = #{newsAuthor}
+			</if>
+			<if test="newsId != null and newsId != ''">
+				AND a.news_id = #{newsId}
+			</if>
+			<if test="newsName != null and newsName != ''">
+				AND a.news_name = #{newsName}
+			</if>
+			<if test="newsIdNumber != null and newsIdNumber != ''">
+				AND a.news_id_number = #{newsIdNumber}
+			</if>
+			<if test="newsUnit != null and newsUnit != ''">
+				AND a.news_unit = #{newsUnit}
+			</if>
+			<if test="newsUnitId != null and newsUnitId != ''">
+				AND a.news_unit_id = #{newsUnitId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairNewsChild">
+		SELECT 
+			<include refid="affairNewsChildColumns"/>
+		FROM affair_news_child a
+		<include refid="affairNewsChildJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_news_child(
+			id,
+			news_author,
+			news_id,
+			news_name,
+			news_id_number,
+			news_unit,
+			news_unit_id,
+			del_flag
+		) VALUES (
+			#{id},
+			#{newsAuthor},
+			#{newsId},
+			#{newsName},
+			#{newsIdNumber},
+			#{newsUnit},
+			#{newsUnitId},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_news_child SET 	
+			news_author = #{newsAuthor},
+			news_id = #{newsId},
+			news_name = #{newsName},
+			news_id_number = #{newsIdNumber},
+			news_unit = #{newsUnit},
+			news_unit_id = #{newsUnitId}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_news_child SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

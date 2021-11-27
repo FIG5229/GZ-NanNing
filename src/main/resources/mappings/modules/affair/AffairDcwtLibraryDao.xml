@@ -1,0 +1,2917 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairDcwtLibraryDao">
+    
+	<sql id="affairDcwtLibraryColumns">
+		a.id AS "id",
+		a.time AS "time",
+		a.responsible_unit AS "responsibleUnit",
+		a.responsible_unit_id AS "responsibleUnitId",
+		a.problem_category AS "problemCategory",
+		a.found_problem AS "foundProblem",
+		a.processing_situation AS "processingSituation",
+		a.rectification AS "rectification",
+		a.supervisory_unit AS "supervisoryUnit",
+		a.remark AS "remark",
+		a.annex AS "annex",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.finish_date AS "finishDate",
+		a.dc_type AS "dcType"
+	</sql>
+	
+	<sql id="affairDcwtLibraryJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairDcwtLibrary">
+		SELECT 
+			<include refid="affairDcwtLibraryColumns"/>
+		FROM affair_dcwt_library a
+		<include refid="affairDcwtLibraryJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairDcwtLibrary">
+		SELECT 
+			<include refid="affairDcwtLibraryColumns"/>
+		FROM affair_dcwt_library a
+		<include refid="affairDcwtLibraryJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<choose>
+				<when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+					AND a.time between #{startDate} and #{endDate}
+				</when>
+				<when test="startDate != null and startDate != ''">
+					AND a.time >= #{startDate}
+				</when>
+				<when test="endDate != null and endDate != ''">
+					AND  #{endDate} >= a.time
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			<if test="responsibleUnitId != null and responsibleUnitId != ''">
+				AND a.responsible_unit_id = #{responsibleUnitId}
+			</if>
+			<if test="problemCategory != null and problemCategory != ''">
+				AND a.problem_category LIKE '%'||#{problemCategory}||'%'
+			</if>
+			<if test="rectification != null and rectification != ''">
+				AND a.rectification = #{rectification}
+			</if>
+			<if test="supervisoryUnit != null and supervisoryUnit != ''">
+				AND a.supervisory_unit = #{supervisoryUnit}
+			</if>
+			<if test="remark != null and remark != ''">
+				AND a.remark = #{remark}
+			</if>
+			<if test="dcType != null and dcType != ''">
+				AND a.dc_type = #{dcType}
+			</if>
+			<if test="userId != null and userId != ''">
+				AND ( o.ID = #{userId} OR o.parent_ids LIKE'%,'||#{userId}||',%' OR u.ID = #{createBy.id} or a.responsible_unit_id=#{userId} or a.supervisory_unit=#{userId})
+			</if>
+
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY a.time DESC, ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.time DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findListBy" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairDcwtLibrary">
+		SELECT
+		<include refid="affairDcwtLibraryColumns"/>
+		FROM affair_dcwt_library a
+		<include refid="affairDcwtLibraryJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<choose>
+				<when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+					AND a.time between #{startDate} and #{endDate}
+				</when>
+				<when test="startDate != null and startDate != ''">
+					AND a.time >= #{startDate}
+				</when>
+				<when test="endDate != null and endDate != ''">
+					AND  #{endDate} >= a.time
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			<!--<if test="responsibleUnitId != null and responsibleUnitId != ''">
+				AND a.responsible_unit_id = #{responsibleUnitId}
+			</if>-->
+			<if test="problemCategory != null and problemCategory != ''">
+				AND a.problem_category LIKE '%'||#{problemCategory}||'%'
+			</if>
+			<if test="rectification != null and rectification != ''">
+				AND a.rectification = #{rectification}
+			</if>
+			<if test="supervisoryUnit != null and supervisoryUnit != ''">
+				AND a.supervisory_unit = #{supervisoryUnit}
+			</if>
+			<if test="remark != null and remark != ''">
+				AND a.remark = #{remark}
+			</if>
+			<if test="dcType != null and dcType != ''">
+				AND a.dc_type = #{dcType}
+			</if>
+			<if test="responsibleUnitId != null and responsibleUnitId != ''">
+				AND ( o.ID = #{responsibleUnitId} OR o.parent_ids LIKE'%,'||#{responsibleUnitId}||',%' OR u.ID = #{createBy.id} or a.responsible_unit_id=#{responsibleUnitId} or a.supervisory_unit=#{responsibleUnitId})
+			</if>
+			-- 			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY a.update_date DESC,${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairDcwtLibrary">
+		SELECT 
+			<include refid="affairDcwtLibraryColumns"/>
+		FROM affair_dcwt_library a
+		<include refid="affairDcwtLibraryJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.time DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_dcwt_library(
+			id,
+			time,
+			responsible_unit,
+			responsible_unit_id,
+			problem_category,
+			found_problem,
+			processing_situation,
+			rectification,
+			supervisory_unit,
+			remark,
+			annex,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			finish_date,
+			dc_type
+		) VALUES (
+			#{id},
+			#{time},
+			#{responsibleUnit},
+			#{responsibleUnitId},
+			#{problemCategory},
+			#{foundProblem},
+			#{processingSituation},
+			#{rectification},
+			#{supervisoryUnit},
+			#{remark},
+			#{annex},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{finishDate},
+			#{dcType}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_dcwt_library SET 	
+			time = #{time},
+			responsible_unit = #{responsibleUnit},
+			responsible_unit_id = #{responsibleUnitId},
+			problem_category = #{problemCategory},
+			found_problem = #{foundProblem},
+			processing_situation = #{processingSituation},
+			rectification = #{rectification},
+			supervisory_unit = #{supervisoryUnit},
+			remark = #{remark},
+			annex = #{annex},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			finish_date = #{finishDate},
+			dc_type = #{dcType}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_dcwt_library SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	<update id="deleteByIds">
+		UPDATE affair_dcwt_library SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<select id="findAllTotalInfos" resultType="java.util.HashMap">
+		SELECT
+		sd.label,
+		count( adl.problem_category )
+		FROM
+		affair_dcwt_library adl
+		LEFT JOIN sys_dict sd ON adl.problem_category = sd.VALUE
+		WHERE
+		adl.del_flag = '0'
+		AND	sd.type = 'affair_wtlb' AND sd.del_flag = '0'
+		<if test="id != null and id != ''">
+			AND adl.responsible_unit_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from adl.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(adl.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND adl.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND adl.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= adl.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		adl.problem_category,
+		sd.label
+	</select>
+
+	<select id="findAllCompleteInfos" resultType="java.util.HashMap">
+		SELECT
+		sd.label,
+		count( adl.problem_category )
+		FROM
+		affair_dcwt_library adl
+		LEFT JOIN sys_dict sd ON adl.problem_category = sd.VALUE
+		WHERE
+		adl.del_flag = '0'
+		AND	sd.type = 'affair_wtlb'
+		AND adl.rectification = '1' AND sd.del_flag = '0'
+		<if test="id != null and id != ''">
+			AND adl.responsible_unit_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from adl.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(adl.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND adl.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND adl.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= adl.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		adl.problem_category,
+		sd.label
+	</select>
+
+	<select id="findAllMultiTotalInfos" resultType="java.util.HashMap">
+		SELECT
+		sd.label,
+		count( adl.problem_category )
+		FROM
+		affair_dcwt_library adl
+		LEFT JOIN sys_dict sd ON adl.problem_category = sd.VALUE
+		WHERE
+		adl.del_flag = '0'
+		AND	sd.type = 'affair_wtlb' AND sd.del_flag = '0'
+		AND adl.responsible_unit_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from adl.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(adl.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND adl.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND adl.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= adl.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		adl.problem_category,
+		sd.label
+	</select>
+
+	<select id="findAllMultiCompleteInfos" resultType="java.util.HashMap">
+		SELECT
+		sd.label,
+		count( adl.problem_category )
+		FROM
+		affair_dcwt_library adl
+		LEFT JOIN sys_dict sd ON adl.problem_category = sd.VALUE
+		WHERE
+		adl.del_flag = '0'
+		AND	sd.type = 'affair_wtlb'
+		AND adl.rectification = '1' AND sd.del_flag = '0'
+		AND adl.responsible_unit_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from adl.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(adl.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND adl.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND adl.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= adl.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		adl.problem_category,
+		sd.label
+	</select>
+
+	<select id="findAllPieInfoByCreateOrgId" resultType="java.util.HashMap">
+		SELECT
+		sd.label,
+		count( adl.problem_category )
+		FROM
+		affair_dcwt_library adl
+		LEFT JOIN sys_dict sd ON adl.problem_category = sd.VALUE
+		WHERE
+		adl.del_flag = '0'
+		AND	sd.type = 'affair_wtlb' AND sd.del_flag = '0'
+		<if test="id != null and id != ''">
+			AND adl.responsible_unit_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from adl.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(adl.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND adl.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND adl.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= adl.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		adl.problem_category,
+		sd.label
+	</select>
+
+	<select id="findAllPieInfoByCreateOrgIds" resultType="java.util.HashMap">
+		SELECT
+		sd.label,
+		count( adl.problem_category )
+		FROM
+		affair_dcwt_library adl
+		LEFT JOIN sys_dict sd ON adl.problem_category = sd.VALUE
+		WHERE
+		adl.del_flag = '0'
+		AND	sd.type = 'affair_wtlb' AND sd.del_flag = '0'
+		AND adl.responsible_unit_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from adl.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(adl.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND adl.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND adl.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= adl.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		adl.problem_category,
+		sd.label
+	</select>
+
+	<select id="findJuTotalInfos" resultType="java.util.HashMap">
+		SELECT
+		sd.label,
+		count( adl.problem_category )
+		FROM
+		affair_dcwt_library adl
+		LEFT JOIN sys_dict sd ON adl.problem_category = sd.VALUE
+		WHERE
+		adl.del_flag = '0'
+		AND	sd.type = 'affair_wtlb' AND sd.del_flag = '0'
+		AND adl.supervisory_unit = '18'
+		<if test="id != null and id != ''">
+			AND adl.responsible_unit_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from adl.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(adl.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND adl.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND adl.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= adl.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		adl.problem_category,
+		sd.label
+	</select>
+
+	<select id="findJuCompleteInfos" resultType="java.util.HashMap">
+		SELECT
+		sd.label,
+		count( adl.problem_category )
+		FROM
+		affair_dcwt_library adl
+		LEFT JOIN sys_dict sd ON adl.problem_category = sd.VALUE
+		WHERE
+		adl.del_flag = '0'
+		AND	sd.type = 'affair_wtlb'
+		AND adl.rectification = '1' AND sd.del_flag = '0'
+		AND adl.supervisory_unit = '18'
+		<if test="id != null and id != ''">
+			AND adl.responsible_unit_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from adl.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(adl.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND adl.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND adl.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= adl.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		adl.problem_category,
+		sd.label
+	</select>
+
+	<select id="findJuMultiTotalInfos" resultType="java.util.HashMap">
+		SELECT
+		sd.label,
+		count( adl.problem_category )
+		FROM
+		affair_dcwt_library adl
+		LEFT JOIN sys_dict sd ON adl.problem_category = sd.VALUE
+		WHERE
+		adl.del_flag = '0'
+		AND	sd.type = 'affair_wtlb' AND sd.del_flag = '0'
+		AND adl.responsible_unit_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+		AND adl.supervisory_unit = '18'
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from adl.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(adl.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND adl.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND adl.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= adl.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		adl.problem_category,
+		sd.label
+	</select>
+
+	<select id="findJuMultiCompleteInfos" resultType="java.util.HashMap">
+		SELECT
+		sd.label,
+		count( adl.problem_category )
+		FROM
+		affair_dcwt_library adl
+		LEFT JOIN sys_dict sd ON adl.problem_category = sd.VALUE
+		WHERE
+		adl.del_flag = '0'
+		AND	sd.type = 'affair_wtlb'
+		AND adl.rectification = '1' AND sd.del_flag = '0'
+		AND adl.responsible_unit_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+		AND adl.supervisory_unit = '18'
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from adl.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(adl.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND adl.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND adl.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= adl.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		adl.problem_category,
+		sd.label
+	</select>
+
+	<select id="findJuPieInfoByCreateOrgId" resultType="java.util.HashMap">
+		SELECT
+		sd.label,
+		count( adl.problem_category )
+		FROM
+		affair_dcwt_library adl
+		LEFT JOIN sys_dict sd ON adl.problem_category = sd.VALUE
+		WHERE
+		adl.del_flag = '0'
+		AND	sd.type = 'affair_wtlb' AND sd.del_flag = '0'
+		AND adl.supervisory_unit = '18'
+		<if test="id != null and id != ''">
+			AND adl.responsible_unit_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from adl.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(adl.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND adl.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND adl.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= adl.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		adl.problem_category,
+		sd.label
+	</select>
+
+	<select id="findJuPieInfoByCreateOrgIds" resultType="java.util.HashMap">
+		SELECT
+		sd.label,
+		count( adl.problem_category )
+		FROM
+		affair_dcwt_library adl
+		LEFT JOIN sys_dict sd ON adl.problem_category = sd.VALUE
+		WHERE
+		adl.del_flag = '0'
+		AND	sd.type = 'affair_wtlb' AND sd.del_flag = '0'
+		AND adl.responsible_unit_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+		AND adl.supervisory_unit = '18'
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from adl.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(adl.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND adl.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND adl.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= adl.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		adl.problem_category,
+		sd.label
+	</select>
+
+	<select id="findNncTotalInfos" resultType="java.util.HashMap">
+		SELECT
+		sd.label,
+		count( adl.problem_category )
+		FROM
+		affair_dcwt_library adl
+		LEFT JOIN sys_dict sd ON adl.problem_category = sd.VALUE
+		WHERE
+		adl.del_flag = '0'
+		AND	sd.type = 'affair_wtlb' AND sd.del_flag = '0'
+		AND adl.supervisory_unit = '68'
+		<if test="id != null and id != ''">
+			AND adl.responsible_unit_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from adl.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(adl.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND adl.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND adl.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= adl.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		adl.problem_category,
+		sd.label
+	</select>
+
+	<select id="findNncCompleteInfos" resultType="java.util.HashMap">
+		SELECT
+		sd.label,
+		count( adl.problem_category )
+		FROM
+		affair_dcwt_library adl
+		LEFT JOIN sys_dict sd ON adl.problem_category = sd.VALUE
+		WHERE
+		adl.del_flag = '0'
+		AND	sd.type = 'affair_wtlb'
+		AND adl.rectification = '1' AND sd.del_flag = '0'
+		AND adl.supervisory_unit = '68'
+		<if test="id != null and id != ''">
+			AND adl.responsible_unit_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from adl.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(adl.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND adl.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND adl.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= adl.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		adl.problem_category,
+		sd.label
+	</select>
+
+	<select id="findNncMultiTotalInfos" resultType="java.util.HashMap">
+		SELECT
+		sd.label,
+		count( adl.problem_category )
+		FROM
+		affair_dcwt_library adl
+		LEFT JOIN sys_dict sd ON adl.problem_category = sd.VALUE
+		WHERE
+		adl.del_flag = '0'
+		AND	sd.type = 'affair_wtlb' AND sd.del_flag = '0'
+		AND adl.responsible_unit_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+		AND adl.supervisory_unit = '68'
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from adl.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(adl.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND adl.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND adl.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= adl.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		adl.problem_category,
+		sd.label
+	</select>
+
+	<select id="findNncMultiCompleteInfos" resultType="java.util.HashMap">
+		SELECT
+		sd.label,
+		count( adl.problem_category )
+		FROM
+		affair_dcwt_library adl
+		LEFT JOIN sys_dict sd ON adl.problem_category = sd.VALUE
+		WHERE
+		adl.del_flag = '0'
+		AND	sd.type = 'affair_wtlb'
+		AND adl.rectification = '1' AND sd.del_flag = '0'
+		AND adl.responsible_unit_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+		AND adl.supervisory_unit = '68'
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from adl.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(adl.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND adl.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND adl.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= adl.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		adl.problem_category,
+		sd.label
+	</select>
+
+	<select id="findNncPieInfoByCreateOrgId" resultType="java.util.HashMap">
+		SELECT
+		sd.label,
+		count( adl.problem_category )
+		FROM
+		affair_dcwt_library adl
+		LEFT JOIN sys_dict sd ON adl.problem_category = sd.VALUE
+		WHERE
+		adl.del_flag = '0'
+		AND	sd.type = 'affair_wtlb' AND sd.del_flag = '0'
+		AND adl.supervisory_unit = '68'
+		<if test="id != null and id != ''">
+			AND adl.responsible_unit_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from adl.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(adl.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND adl.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND adl.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= adl.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		adl.problem_category,
+		sd.label
+	</select>
+
+	<select id="findNncPieInfoByCreateOrgIds" resultType="java.util.HashMap">
+		SELECT
+		sd.label,
+		count( adl.problem_category )
+		FROM
+		affair_dcwt_library adl
+		LEFT JOIN sys_dict sd ON adl.problem_category = sd.VALUE
+		WHERE
+		adl.del_flag = '0'
+		AND	sd.type = 'affair_wtlb' AND sd.del_flag = '0'
+		AND adl.responsible_unit_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+		AND adl.supervisory_unit = '68'
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from adl.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(adl.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND adl.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND adl.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= adl.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		adl.problem_category,
+		sd.label
+	</select>
+
+	<select id="findLzcTotalInfos" resultType="java.util.HashMap">
+		SELECT
+		sd.label,
+		count( adl.problem_category )
+		FROM
+		affair_dcwt_library adl
+		LEFT JOIN sys_dict sd ON adl.problem_category = sd.VALUE
+		WHERE
+		adl.del_flag = '0'
+		AND	sd.type = 'affair_wtlb' AND sd.del_flag = '0'
+		AND adl.supervisory_unit = '183'
+		<if test="id != null and id != ''">
+			AND adl.responsible_unit_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from adl.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(adl.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND adl.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND adl.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= adl.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		adl.problem_category,
+		sd.label
+	</select>
+
+	<select id="findLzcCompleteInfos" resultType="java.util.HashMap">
+		SELECT
+		sd.label,
+		count( adl.problem_category )
+		FROM
+		affair_dcwt_library adl
+		LEFT JOIN sys_dict sd ON adl.problem_category = sd.VALUE
+		WHERE
+		adl.del_flag = '0'
+		AND	sd.type = 'affair_wtlb'
+		AND adl.rectification = '1' AND sd.del_flag = '0'
+		AND adl.supervisory_unit = '183'
+		<if test="id != null and id != ''">
+			AND adl.responsible_unit_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from adl.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(adl.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND adl.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND adl.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= adl.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		adl.problem_category,
+		sd.label
+	</select>
+
+	<select id="findLzcMultiTotalInfos" resultType="java.util.HashMap">
+		SELECT
+		sd.label,
+		count( adl.problem_category )
+		FROM
+		affair_dcwt_library adl
+		LEFT JOIN sys_dict sd ON adl.problem_category = sd.VALUE
+		WHERE
+		adl.del_flag = '0'
+		AND	sd.type = 'affair_wtlb' AND sd.del_flag = '0'
+		AND adl.responsible_unit_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+		AND adl.supervisory_unit = '183'
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from adl.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(adl.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND adl.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND adl.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= adl.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		adl.problem_category,
+		sd.label
+	</select>
+
+	<select id="findLzcMultiCompleteInfos" resultType="java.util.HashMap">
+		SELECT
+		sd.label,
+		count( adl.problem_category )
+		FROM
+		affair_dcwt_library adl
+		LEFT JOIN sys_dict sd ON adl.problem_category = sd.VALUE
+		WHERE
+		adl.del_flag = '0'
+		AND	sd.type = 'affair_wtlb'
+		AND adl.rectification = '1' AND sd.del_flag = '0'
+		AND adl.responsible_unit_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+		AND adl.supervisory_unit = '183'
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from adl.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(adl.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND adl.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND adl.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= adl.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		adl.problem_category,
+		sd.label
+	</select>
+
+	<select id="findLzcPieInfoByCreateOrgId" resultType="java.util.HashMap">
+		SELECT
+		sd.label,
+		count( adl.problem_category )
+		FROM
+		affair_dcwt_library adl
+		LEFT JOIN sys_dict sd ON adl.problem_category = sd.VALUE
+		WHERE
+		adl.del_flag = '0'
+		AND	sd.type = 'affair_wtlb' AND sd.del_flag = '0'
+		AND adl.supervisory_unit = '183'
+		<if test="id != null and id != ''">
+			AND adl.responsible_unit_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from adl.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(adl.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND adl.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND adl.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= adl.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		adl.problem_category,
+		sd.label
+	</select>
+
+	<select id="findLzcPieInfoByCreateOrgIds" resultType="java.util.HashMap">
+		SELECT
+		sd.label,
+		count( adl.problem_category )
+		FROM
+		affair_dcwt_library adl
+		LEFT JOIN sys_dict sd ON adl.problem_category = sd.VALUE
+		WHERE
+		adl.del_flag = '0'
+		AND	sd.type = 'affair_wtlb' AND sd.del_flag = '0'
+		AND adl.responsible_unit_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+		AND adl.supervisory_unit = '183'
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from adl.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(adl.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND adl.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND adl.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= adl.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		adl.problem_category,
+		sd.label
+	</select>
+
+	<select id="findBhcTotalInfos" resultType="java.util.HashMap">
+		SELECT
+		sd.label,
+		count( adl.problem_category )
+		FROM
+		affair_dcwt_library adl
+		LEFT JOIN sys_dict sd ON adl.problem_category = sd.VALUE
+		WHERE
+		adl.del_flag = '0'
+		AND	sd.type = 'affair_wtlb' AND sd.del_flag = '0'
+		AND adl.supervisory_unit = '284'
+		<if test="id != null and id != ''">
+			AND adl.responsible_unit_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from adl.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(adl.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND adl.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND adl.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= adl.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		adl.problem_category,
+		sd.label
+	</select>
+
+	<select id="findBhcCompleteInfos" resultType="java.util.HashMap">
+		SELECT
+		sd.label,
+		count( adl.problem_category )
+		FROM
+		affair_dcwt_library adl
+		LEFT JOIN sys_dict sd ON adl.problem_category = sd.VALUE
+		WHERE
+		adl.del_flag = '0'
+		AND	sd.type = 'affair_wtlb'
+		AND adl.rectification = '1' AND sd.del_flag = '0'
+		AND adl.supervisory_unit = '284'
+		<if test="id != null and id != ''">
+			AND adl.responsible_unit_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from adl.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(adl.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND adl.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND adl.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= adl.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		adl.problem_category,
+		sd.label
+	</select>
+
+	<select id="findBhcMultiTotalInfos" resultType="java.util.HashMap">
+		SELECT
+		sd.label,
+		count( adl.problem_category )
+		FROM
+		affair_dcwt_library adl
+		LEFT JOIN sys_dict sd ON adl.problem_category = sd.VALUE
+		WHERE
+		adl.del_flag = '0'
+		AND	sd.type = 'affair_wtlb' AND sd.del_flag = '0'
+		AND adl.responsible_unit_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+		AND adl.supervisory_unit = '284'
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from adl.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(adl.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND adl.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND adl.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= adl.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		adl.problem_category,
+		sd.label
+	</select>
+
+	<select id="findBhcMultiCompleteInfos" resultType="java.util.HashMap">
+		SELECT
+		sd.label,
+		count( adl.problem_category )
+		FROM
+		affair_dcwt_library adl
+		LEFT JOIN sys_dict sd ON adl.problem_category = sd.VALUE
+		WHERE
+		adl.del_flag = '0'
+		AND	sd.type = 'affair_wtlb'
+		AND adl.rectification = '1' AND sd.del_flag = '0'
+		AND adl.responsible_unit_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+		AND adl.supervisory_unit = '284'
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from adl.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(adl.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND adl.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND adl.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= adl.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		adl.problem_category,
+		sd.label
+	</select>
+
+	<select id="findBhcPieInfoByCreateOrgId" resultType="java.util.HashMap">
+		SELECT
+		sd.label,
+		count( adl.problem_category )
+		FROM
+		affair_dcwt_library adl
+		LEFT JOIN sys_dict sd ON adl.problem_category = sd.VALUE
+		WHERE
+		adl.del_flag = '0'
+		AND	sd.type = 'affair_wtlb' AND sd.del_flag = '0'
+		AND adl.supervisory_unit = '284'
+		<if test="id != null and id != ''">
+			AND adl.responsible_unit_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from adl.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(adl.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND adl.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND adl.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= adl.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		adl.problem_category,
+		sd.label
+	</select>
+
+	<select id="findLBhcPieInfoByCreateOrgIds" resultType="java.util.HashMap">
+		SELECT
+		sd.label,
+		count( adl.problem_category )
+		FROM
+		affair_dcwt_library adl
+		LEFT JOIN sys_dict sd ON adl.problem_category = sd.VALUE
+		WHERE
+		adl.del_flag = '0'
+		AND	sd.type = 'affair_wtlb' AND sd.del_flag = '0'
+		AND adl.responsible_unit_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+		AND adl.supervisory_unit = '284'
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from adl.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(adl.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND adl.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND adl.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= adl.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		adl.problem_category,
+		sd.label
+	</select>
+
+	<select id="findAllSupervisoryUnitByCreateOrgId" resultType="java.util.Map">
+		SELECT
+		count( adl.id )
+		FROM
+		affair_dcwt_library adl
+		LEFT JOIN sys_dict sd ON adl.supervisory_unit = sd.VALUE
+		WHERE
+		adl.del_flag = '0'
+		AND	sd.type = 'affair_jdunit' AND sd.del_flag = '0'
+		<if test="id != null and id != ''">
+			AND adl.responsible_unit_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from adl.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(adl.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND adl.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND adl.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= adl.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findAllSupervisoryUnitByCreateOrgIds" resultType="java.util.Map">
+		SELECT
+		count( adl.id )
+		FROM
+		affair_dcwt_library adl
+		LEFT JOIN sys_dict sd ON adl.supervisory_unit = sd.VALUE
+		WHERE
+		adl.del_flag = '0'
+		AND	sd.type = 'affair_jdunit' AND sd.del_flag = '0'
+		AND adl.responsible_unit_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from adl.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(adl.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND adl.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND adl.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= adl.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findSupervisoryUnitByCreateOrgId" resultType="java.util.Map">
+		SELECT
+		sd.label,
+		count( adl.id )
+		FROM
+		affair_dcwt_library adl
+		LEFT JOIN sys_dict sd ON adl.supervisory_unit = sd.VALUE
+		WHERE
+		adl.del_flag = '0'
+		AND	sd.type = 'affair_jdunit' AND sd.del_flag = '0'
+		<if test="id != null and id != ''">
+			AND adl.responsible_unit_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from adl.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(adl.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND adl.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND adl.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= adl.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		sd.label
+	</select>
+
+	<select id="findSupervisoryUnitByCreateOrgIds" resultType="java.util.Map">
+		SELECT
+		sd.label,
+		count( adl.id )
+		FROM
+		affair_dcwt_library adl
+		LEFT JOIN sys_dict sd ON adl.supervisory_unit = sd.VALUE
+		WHERE
+		adl.del_flag = '0'
+		AND	sd.type = 'affair_jdunit' AND sd.del_flag = '0'
+		AND adl.responsible_unit_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from adl.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(adl.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND adl.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND adl.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= adl.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		sd.label
+	</select>
+
+	<select id="findAllInfoList" resultType="AffairDcwtLibrary">
+		SELECT
+		<include refid="affairDcwtLibraryColumns"/>
+		FROM affair_dcwt_library a
+		<include refid="affairDcwtLibraryJoins"/>
+		WHERE
+		a.del_flag = '0'
+		${sqlMap.dsf}
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.time DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findAllPieInfoList" resultType="AffairDcwtLibrary">
+		SELECT
+		<include refid="affairDcwtLibraryColumns"/>
+		FROM affair_dcwt_library a
+		<include refid="affairDcwtLibraryJoins"/>
+		WHERE
+		a.del_flag = '0'
+		${sqlMap.dsf}
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.time DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findAllDetailPieInfoList" resultType="AffairDcwtLibrary">
+		SELECT
+		<include refid="affairDcwtLibraryColumns"/>
+		FROM affair_dcwt_library a
+		WHERE
+		a.del_flag = '0'
+		<if test="flag != null and flag != ''">
+			AND a.problem_category LIKE '%'||#{flag}||'%'
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.time DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findAllDetailInfoList" resultType="AffairDcwtLibrary">
+		SELECT
+		<include refid="affairDcwtLibraryColumns"/>
+		FROM affair_dcwt_library a
+		WHERE
+		a.del_flag = '0'
+		<if test="zgType != null and zgType != ''">
+			AND a.rectification = #{zgType}
+		</if>
+		<if test="flag != null and flag != ''">
+			AND a.problem_category LIKE '%'||#{flag}||'%'
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.time DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findAllPieDetailInfoList" resultType="AffairDcwtLibrary">
+		SELECT
+		<include refid="affairDcwtLibraryColumns"/>
+		FROM affair_dcwt_library a
+		WHERE
+		a.del_flag = '0'
+		<if test="flag != null and flag != ''">
+			AND a.problem_category LIKE '%'||#{flag}||'%'
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.time DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findJuInfoList" resultType="AffairDcwtLibrary">
+		SELECT
+		<include refid="affairDcwtLibraryColumns"/>
+		FROM affair_dcwt_library a
+		<include refid="affairDcwtLibraryJoins"/>
+		WHERE
+		a.del_flag = '0'
+		${sqlMap.dsf}
+		AND a.supervisory_unit = '18'
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.time DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findJuPieInfoList" resultType="AffairDcwtLibrary">
+		SELECT
+		<include refid="affairDcwtLibraryColumns"/>
+		FROM affair_dcwt_library a
+		<include refid="affairDcwtLibraryJoins"/>
+		WHERE
+		a.del_flag = '0'
+		${sqlMap.dsf}
+		AND a.supervisory_unit = '18'
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.time DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findJuDetailPieInfoList" resultType="AffairDcwtLibrary">
+		SELECT
+		<include refid="affairDcwtLibraryColumns"/>
+		FROM affair_dcwt_library a
+		WHERE
+		a.del_flag = '0'
+		AND a.supervisory_unit = '18'
+		<if test="flag != null and flag != ''">
+			AND a.problem_category LIKE '%'||#{flag}||'%'
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.time DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findJuDetailInfoList" resultType="AffairDcwtLibrary">
+		SELECT
+		<include refid="affairDcwtLibraryColumns"/>
+		FROM affair_dcwt_library a
+		WHERE
+		a.del_flag = '0'
+		AND a.supervisory_unit = '18'
+		<if test="zgType != null and zgType != ''">
+			AND a.rectification = #{zgType}
+		</if>
+		<if test="flag != null and flag != ''">
+			AND a.problem_category LIKE '%'||#{flag}||'%'
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.time DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findJuPieDetailInfoList" resultType="AffairDcwtLibrary">
+		SELECT
+		<include refid="affairDcwtLibraryColumns"/>
+		FROM affair_dcwt_library a
+		WHERE
+		a.del_flag = '0'
+		AND a.supervisory_unit = '18'
+		<if test="flag != null and flag != ''">
+			AND a.problem_category LIKE '%'||#{flag}||'%'
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.time DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findNncInfoList" resultType="AffairDcwtLibrary">
+		SELECT
+		<include refid="affairDcwtLibraryColumns"/>
+		FROM affair_dcwt_library a
+		<include refid="affairDcwtLibraryJoins"/>
+		WHERE
+		a.del_flag = '0'
+		${sqlMap.dsf}
+		AND a.supervisory_unit = '68'
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.time DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findNncPieInfoList" resultType="AffairDcwtLibrary">
+		SELECT
+		<include refid="affairDcwtLibraryColumns"/>
+		FROM affair_dcwt_library a
+		<include refid="affairDcwtLibraryJoins"/>
+		WHERE
+		a.del_flag = '0'
+		${sqlMap.dsf}
+		AND a.supervisory_unit = '68'
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.time DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findNncDetailPieInfoList" resultType="AffairDcwtLibrary">
+		SELECT
+		<include refid="affairDcwtLibraryColumns"/>
+		FROM affair_dcwt_library a
+		WHERE
+		a.del_flag = '0'
+		AND a.supervisory_unit = '68'
+		<if test="flag != null and flag != ''">
+			AND a.problem_category LIKE '%'||#{flag}||'%'
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.time DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findNncDetailInfoList" resultType="AffairDcwtLibrary">
+		SELECT
+		<include refid="affairDcwtLibraryColumns"/>
+		FROM affair_dcwt_library a
+		WHERE
+		a.del_flag = '0'
+		AND a.supervisory_unit = '68'
+		<if test="zgType != null and zgType != ''">
+			AND a.rectification = #{zgType}
+		</if>
+		<if test="flag != null and flag != ''">
+			AND a.problem_category LIKE '%'||#{flag}||'%'
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.time DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findNncPieDetailInfoList" resultType="AffairDcwtLibrary">
+		SELECT
+		<include refid="affairDcwtLibraryColumns"/>
+		FROM affair_dcwt_library a
+		WHERE
+		a.del_flag = '0'
+		AND a.supervisory_unit = '68'
+		<if test="flag != null and flag != ''">
+			AND a.problem_category LIKE '%'||#{flag}||'%'
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.time DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findLzcInfoList" resultType="AffairDcwtLibrary">
+		SELECT
+		<include refid="affairDcwtLibraryColumns"/>
+		FROM affair_dcwt_library a
+		<include refid="affairDcwtLibraryJoins"/>
+		WHERE
+		a.del_flag = '0'
+		${sqlMap.dsf}
+		AND a.supervisory_unit = '183'
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.time DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findLzcPieInfoList" resultType="AffairDcwtLibrary">
+		SELECT
+		<include refid="affairDcwtLibraryColumns"/>
+		FROM affair_dcwt_library a
+		<include refid="affairDcwtLibraryJoins"/>
+		WHERE
+		a.del_flag = '0'
+		${sqlMap.dsf}
+		AND a.supervisory_unit = '183'
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.time DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findLzcDetailPieInfoList" resultType="AffairDcwtLibrary">
+		SELECT
+		<include refid="affairDcwtLibraryColumns"/>
+		FROM affair_dcwt_library a
+		WHERE
+		a.del_flag = '0'
+		AND a.supervisory_unit = '183'
+		<if test="flag != null and flag != ''">
+			AND a.problem_category LIKE '%'||#{flag}||'%'
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.time DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findLzcDetailInfoList" resultType="AffairDcwtLibrary">
+		SELECT
+		<include refid="affairDcwtLibraryColumns"/>
+		FROM affair_dcwt_library a
+		WHERE
+		a.del_flag = '0'
+		AND a.supervisory_unit = '183'
+		<if test="zgType != null and zgType != ''">
+			AND a.rectification = #{zgType}
+		</if>
+		<if test="flag != null and flag != ''">
+			AND a.problem_category LIKE '%'||#{flag}||'%'
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.time DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findLzcPieDetailInfoList" resultType="AffairDcwtLibrary">
+		SELECT
+		<include refid="affairDcwtLibraryColumns"/>
+		FROM affair_dcwt_library a
+		WHERE
+		a.del_flag = '0'
+		AND a.supervisory_unit = '183'
+		<if test="flag != null and flag != ''">
+			AND a.problem_category LIKE '%'||#{flag}||'%'
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.time DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findBhcInfoList" resultType="AffairDcwtLibrary">
+		SELECT
+		<include refid="affairDcwtLibraryColumns"/>
+		FROM affair_dcwt_library a
+		<include refid="affairDcwtLibraryJoins"/>
+		WHERE
+		a.del_flag = '0'
+		${sqlMap.dsf}
+		AND a.supervisory_unit = '284'
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.time DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findBhcPieInfoList" resultType="AffairDcwtLibrary">
+		SELECT
+		<include refid="affairDcwtLibraryColumns"/>
+		FROM affair_dcwt_library a
+		<include refid="affairDcwtLibraryJoins"/>
+		WHERE
+		a.del_flag = '0'
+		${sqlMap.dsf}
+		AND a.supervisory_unit = '284'
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.time DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findBhcDetailPieInfoList" resultType="AffairDcwtLibrary">
+		SELECT
+		<include refid="affairDcwtLibraryColumns"/>
+		FROM affair_dcwt_library a
+		WHERE
+		a.del_flag = '0'
+		AND a.supervisory_unit = '284'
+		<if test="flag != null and flag != ''">
+			AND a.problem_category LIKE '%'||#{flag}||'%'
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.time DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findBhcDetailInfoList" resultType="AffairDcwtLibrary">
+		SELECT
+		<include refid="affairDcwtLibraryColumns"/>
+		FROM affair_dcwt_library a
+		WHERE
+		a.del_flag = '0'
+		AND a.supervisory_unit = '284'
+		<if test="zgType != null and zgType != ''">
+			AND a.rectification = #{zgType}
+		</if>
+		<if test="flag != null and flag != ''">
+			AND a.problem_category LIKE '%'||#{flag}||'%'
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.time DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findBhcPieDetailInfoList" resultType="AffairDcwtLibrary">
+		SELECT
+		<include refid="affairDcwtLibraryColumns"/>
+		FROM affair_dcwt_library a
+		WHERE
+		a.del_flag = '0'
+		AND a.supervisory_unit = '284'
+		<if test="flag != null and flag != ''">
+			AND a.problem_category LIKE '%'||#{flag}||'%'
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.time DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findAllDcLibrary" resultType="AffairDcwtLibrary">
+		SELECT
+		<include refid="affairDcwtLibraryColumns"/>
+		FROM affair_dcwt_library a
+		WHERE
+		a.del_flag = '0'
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.time DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findAllDcLibraryByJdUnit" resultType="AffairDcwtLibrary">
+		SELECT
+		<include refid="affairDcwtLibraryColumns"/>
+		FROM affair_dcwt_library a
+		WHERE
+		a.del_flag = '0'
+		<if test="jdUnit != null and jdUnit != ''">
+			AND a.supervisory_unit = #{jdUnit}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.time DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<!--<select id="findTotalInfos" resultType="java.util.HashMap">
+		SELECT
+		sd.label,
+		count( adl.problem_category )
+		FROM
+		affair_dcwt_library adl
+		LEFT JOIN sys_dict sd ON adl.problem_category = sd.VALUE
+		WHERE
+		adl.del_flag = '0'
+		AND	sd.type = 'affair_wtlb' AND sd.del_flag = '0'
+		<if test="id != null and id != ''">
+			AND adl.responsible_unit_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from adl.time) = #{year}
+			</when>
+            <when test="month != null and month !=''">
+				AND TO_CHAR(adl.time, 'yyyy-mm') = #{month}
+            </when>
+			<when test="startDate != null and endDate != null">
+				AND adl.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND adl.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= adl.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		adl.problem_category,
+		sd.label
+	</select>
+
+	<select id="findCompleteInfos" resultType="java.util.HashMap">
+		SELECT
+		sd.label,
+		count( adl.problem_category )
+		FROM
+		affair_dcwt_library adl
+		LEFT JOIN sys_dict sd ON adl.problem_category = sd.VALUE
+		WHERE
+		adl.del_flag = '0'
+		AND	sd.type = 'affair_wtlb'
+		AND adl.rectification = '1' AND sd.del_flag = '0'
+		<if test="id != null and id != ''">
+			AND adl.responsible_unit_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from adl.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(adl.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND adl.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND adl.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= adl.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		adl.problem_category,
+		sd.label
+	</select>
+
+	<select id="findMultiTotalInfos" resultType="java.util.HashMap">
+		SELECT
+		sd.label,
+		count( adl.problem_category )
+		FROM
+		affair_dcwt_library adl
+		LEFT JOIN sys_dict sd ON adl.problem_category = sd.VALUE
+		WHERE
+		adl.del_flag = '0'
+		AND	sd.type = 'affair_wtlb' AND sd.del_flag = '0'
+		AND adl.responsible_unit_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from adl.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(adl.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND adl.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND adl.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= adl.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		adl.problem_category,
+		sd.label
+	</select>
+
+	<select id="findMultiCompleteInfos" resultType="java.util.HashMap">
+		SELECT
+		sd.label,
+		count( adl.problem_category )
+		FROM
+		affair_dcwt_library adl
+		LEFT JOIN sys_dict sd ON adl.problem_category = sd.VALUE
+		WHERE
+		adl.del_flag = '0'
+		AND	sd.type = 'affair_wtlb'
+		AND adl.rectification = '1' AND sd.del_flag = '0'
+		AND adl.responsible_unit_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from adl.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(adl.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND adl.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND adl.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= adl.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		adl.problem_category,
+		sd.label
+	</select>-->
+
+	<!--<select id="findPieInfoByCreateOrgId" resultType="java.util.HashMap">
+		SELECT
+		sd.label,
+		count( adl.problem_category )
+		FROM
+		affair_dcwt_library adl
+		LEFT JOIN sys_dict sd ON adl.problem_category = sd.VALUE
+		WHERE
+		adl.del_flag = '0'
+		AND	sd.type = 'affair_wtlb' AND sd.del_flag = '0'
+		<if test="id != null and id != ''">
+			AND adl.responsible_unit_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from adl.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(adl.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND adl.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND adl.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= adl.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		adl.problem_category,
+		sd.label
+	</select>
+
+	<select id="findPieInfoByCreateOrgIds" resultType="java.util.HashMap">
+		SELECT
+		sd.label,
+		count( adl.problem_category )
+		FROM
+		affair_dcwt_library adl
+		LEFT JOIN sys_dict sd ON adl.problem_category = sd.VALUE
+		WHERE
+		adl.del_flag = '0'
+		AND	sd.type = 'affair_wtlb' AND sd.del_flag = '0'
+		AND adl.responsible_unit_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from adl.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(adl.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND adl.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND adl.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= adl.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		adl.problem_category,
+		sd.label
+	</select>-->
+
+   <!-- <select id="findSupervisoryUnitByCreateOrgId" resultType="java.util.Map">
+		SELECT
+		sd.label,
+		count( adl.id )
+		FROM
+		affair_dcwt_library adl
+		LEFT JOIN sys_dict sd ON adl.supervisory_unit = sd.VALUE
+		WHERE
+		adl.del_flag = '0'
+		AND	sd.type = 'affair_jdunit' AND sd.del_flag = '0'
+		<if test="id != null and id != ''">
+			AND adl.responsible_unit_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from adl.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(adl.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND adl.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND adl.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= adl.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		sd.label
+	</select>
+
+	<select id="findSupervisoryUnitByCreateOrgIds" resultType="java.util.Map">
+		SELECT
+		sd.label,
+		count( adl.id )
+		FROM
+		affair_dcwt_library adl
+		LEFT JOIN sys_dict sd ON adl.supervisory_unit = sd.VALUE
+		WHERE
+		adl.del_flag = '0'
+		AND	sd.type = 'affair_jdunit' AND sd.del_flag = '0'
+		AND adl.responsible_unit_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from adl.time) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(adl.time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND adl.time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND adl.time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= adl.time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY
+		sd.label
+	</select>-->
+</mapper>

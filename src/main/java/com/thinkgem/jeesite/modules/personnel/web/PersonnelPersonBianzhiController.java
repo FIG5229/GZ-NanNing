@@ -1,0 +1,245 @@
+/**
+ * Copyright &copy; 2012-2016 <a href="https://github.com/thinkgem/jeesite">JeeSite</a> All rights reserved.
+ */
+package com.thinkgem.jeesite.modules.personnel.web;
+
+import com.thinkgem.jeesite.common.beanvalidator.BeanValidators;
+import com.thinkgem.jeesite.common.config.Global;
+import com.thinkgem.jeesite.common.persistence.Page;
+import com.thinkgem.jeesite.common.utils.Encodes;
+import com.thinkgem.jeesite.common.utils.StringUtils;
+import com.thinkgem.jeesite.common.utils.excel.ExportExcelNew;
+import com.thinkgem.jeesite.common.utils.excel.ImportExcel;
+import com.thinkgem.jeesite.common.vo.Result;
+import com.thinkgem.jeesite.common.web.BaseController;
+import com.thinkgem.jeesite.modules.personnel.entity.PersonnelPersonBianzhi;
+import com.thinkgem.jeesite.modules.personnel.service.PersonnelPersonBianzhiService;
+import org.apache.poi.hssf.usermodel.HSSFFormulaEvaluator;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.ConstraintViolationException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * 人员编制信息集Controller
+ * @author cecil.li
+ * @version 2019-11-12
+ */
+@Controller
+@RequestMapping(value = "${adminPath}/personnel/personnelPersonBianzhi")
+public class PersonnelPersonBianzhiController extends BaseController {
+
+	@Autowired
+	private PersonnelPersonBianzhiService personnelPersonBianzhiService;
+	
+	@ModelAttribute
+	public PersonnelPersonBianzhi get(@RequestParam(required=false) String id) {
+		PersonnelPersonBianzhi entity = null;
+		if (StringUtils.isNotBlank(id)){
+			entity = personnelPersonBianzhiService.get(id);
+		}
+		if (entity == null){
+			entity = new PersonnelPersonBianzhi();
+		}
+		return entity;
+	}
+	
+	@RequiresPermissions("personnel:personnelPersonBianzhi:view")
+	@RequestMapping(value = {"list", ""})
+	public String list(PersonnelPersonBianzhi personnelPersonBianzhi, HttpServletRequest request, HttpServletResponse response, Model model) {
+		if(request.getParameter("idNumber")!=null && !"".equals(request.getParameter("idNumber"))){
+			personnelPersonBianzhi.setIdNumber(request.getParameter("idNumber").toString());
+		}
+		Page<PersonnelPersonBianzhi> page = personnelPersonBianzhiService.findPage(new Page<PersonnelPersonBianzhi>(request, response), personnelPersonBianzhi);
+		if(request.getParameter("mType")!=null && !"".equals(request.getParameter("mType"))){
+			request.setAttribute("mType",request.getParameter("mType").toString());
+		}
+		model.addAttribute("page", page);
+		return "modules/personnel/personnelPersonBianzhiList";
+	}
+
+	@RequiresPermissions("personnel:personnelPersonBianzhi:view")
+	@RequestMapping(value = "form")
+	public String form(PersonnelPersonBianzhi personnelPersonBianzhi, Model model, HttpServletRequest request) {
+		model.addAttribute("personnelPersonBianzhi", personnelPersonBianzhi);
+		if(request.getParameter("idNumber")!=null && !"".equals(request.getParameter("idNumber"))){
+			personnelPersonBianzhi.setIdNumber(request.getParameter("idNumber").toString());
+		}
+		return "modules/personnel/personnelPersonBianzhiForm";
+	}
+
+	@RequiresPermissions("personnel:personnelPersonBianzhi:edit")
+	@RequestMapping(value = "save")
+	public String save(PersonnelPersonBianzhi personnelPersonBianzhi, Model model, RedirectAttributes redirectAttributes,HttpServletRequest request) {
+		if (!beanValidator(model, personnelPersonBianzhi)){
+			return form(personnelPersonBianzhi, model, request);
+		}
+		personnelPersonBianzhiService.save(personnelPersonBianzhi);
+		addMessage(redirectAttributes, "保存人员编制信息成功");
+		request.setAttribute("saveResult","success");
+		return "modules/personnel/personnelPersonBianzhiForm";
+	}
+	
+	@RequiresPermissions("personnel:personnelPersonBianzhi:edit")
+	@RequestMapping(value = "delete")
+	public String delete(PersonnelPersonBianzhi personnelPersonBianzhi, RedirectAttributes redirectAttributes, HttpServletRequest request) {
+		String url = "redirect:"+Global.getAdminPath()+"/personnel/personnelPersonBianzhi/?repage&idNumber="+personnelPersonBianzhi.getIdNumber();
+
+		if(request.getParameter("mType")!=null && !"".equals(request.getParameter("mType"))){
+			request.setAttribute("mType",request.getParameter("mType").toString());
+			url = "redirect:"+Global.getAdminPath()+"/personnel/personnelPersonBianzhi/?repage&mType="+request.getParameter("mType").toString();
+
+		}
+		personnelPersonBianzhiService.delete(personnelPersonBianzhi);
+		addMessage(redirectAttributes, "删除人员编制信息成功");
+		return url;
+	}
+
+	/**
+	 * 详情
+	 * @param personnelPersonBianzhi
+	 * @param model
+	 * @return
+	 */
+	@RequiresPermissions("personnel:personnelPersonBianzhi:view")
+	@RequestMapping(value = "formDetail")
+	public String formDetail(PersonnelPersonBianzhi personnelPersonBianzhi, Model model) {
+		model.addAttribute("personnelPersonBianzhi", personnelPersonBianzhi);
+		return "modules/personnel/personnelPersonBianzhiFormDetail";
+	}
+
+	@ResponseBody
+	@RequiresPermissions("personnel:personnelPersonBianzhi:view")
+	@RequestMapping(value = {"deleteByIds"})
+	public Result deleteByIds(@RequestParam("ids[]") List<String> ids){
+		Result result = new Result();
+		if(ids != null && ids.size() > 0){
+			personnelPersonBianzhiService.deleteByIds(ids);
+			result.setSuccess(true);
+			result.setMessage("删除成功");
+		}else{
+			result.setSuccess(false);
+			result.setMessage("请先选择要删除的内容");
+		}
+		return result;
+	}
+	/**
+	 * 导出excel格式数据
+	 * @param
+	 * @param request
+	 * @param response
+	 * @param redirectAttributes
+	 * @return
+	 */
+	@RequestMapping(value = "export", method= RequestMethod.POST)
+	public String exportExcelByTemplate(PersonnelPersonBianzhi personnelPersonBianzhi, HttpServletRequest request, HttpServletResponse response, RedirectAttributes redirectAttributes,boolean flag) {
+		XSSFWorkbook wb = null;
+		try
+		{
+			String fileName = "";
+			if(request.getParameter("fileName")!=null && !"".equals(request.getParameter("fileName"))){
+				fileName= request.getParameter("fileName").toString();
+			}
+			Page<PersonnelPersonBianzhi> page = null;
+			if(flag == true){
+				page = personnelPersonBianzhiService.findPage(new Page<PersonnelPersonBianzhi>(request, response), personnelPersonBianzhi);
+			}else{
+				page = personnelPersonBianzhiService.findPage(new Page<PersonnelPersonBianzhi>(request, response,-1), personnelPersonBianzhi);
+			}
+			String fileSeperator = File.separator;
+			String filePath= Global.getUserfilesBaseDir()+fileSeperator+"userfiles"+fileSeperator+"template"+fileSeperator;
+			InputStream inputStream = new FileInputStream(filePath+fileName);
+			if (null != inputStream)
+			{
+				try
+				{
+					wb = new  XSSFWorkbook(inputStream);
+				}
+				catch (IOException e)
+				{
+					e.printStackTrace();
+				}
+			}
+			ExportExcelNew exportExcelNew = new ExportExcelNew(0, PersonnelPersonBianzhi.class);
+			exportExcelNew.setWb(wb);
+			List<PersonnelPersonBianzhi> list =page.getList();
+			exportExcelNew.setDataList(list);
+			HSSFFormulaEvaluator.evaluateAllFormulaCells(wb);
+			response.reset();
+			response.setContentType("application/octet-stream; charset=utf-8");
+			response.setHeader("Content-Disposition", "attachment; filename="+ Encodes.urlEncode(fileName));
+			ServletOutputStream fout = response.getOutputStream();
+			wb.write(fout);
+			fout.close();
+			return null;
+		}
+		catch (Exception ex)
+		{
+			ex.printStackTrace();
+			addMessage(redirectAttributes, "导出用户失败！失败信息："+ex);
+		}
+		return "redirect:" + adminPath + "/personnel/personnelPersonBianzhi?repage";
+	}
+	@RequestMapping(value = "import", method=RequestMethod.POST)
+	public String importFile(MultipartFile file, RedirectAttributes redirectAttributes,HttpServletRequest request) {
+		String isCover = request.getParameter("isCover");
+		try {
+			int successNum = 0;
+			int failureNum = 0;
+			StringBuilder failureMsg = new StringBuilder();
+			ImportExcel ei = new ImportExcel(file, 0, 0);
+			List<PersonnelPersonBianzhi> list = ei.getDataList(PersonnelPersonBianzhi.class);
+			//选择覆盖模式，须先将改身份证下相关履历信息删除
+			if(StringUtils.isNotBlank(isCover) && "1".equals(isCover)){
+				List<String> idNumbers = new ArrayList<>();
+				list.stream().forEach(personnelPersonBianzhi -> {
+					if(personnelPersonBianzhi.getIdNumber()!=null){
+						idNumbers.add(personnelPersonBianzhi.getIdNumber());
+					}
+				});
+				if(idNumbers.size()>0&&idNumbers!=null)
+					personnelPersonBianzhiService.deleteByIdNumbers(idNumbers);
+			}
+			for (PersonnelPersonBianzhi personnelPersonBianzhi : list){
+				try{
+					BeanValidators.validateWithException(validator, personnelPersonBianzhi);
+					personnelPersonBianzhiService.save(personnelPersonBianzhi);
+					successNum++;
+				}catch(ConstraintViolationException ex){
+					List<String> messageList = BeanValidators.extractPropertyAndMessageAsList(ex, ": ");
+					for (String message : messageList){
+						failureMsg.append(message+"; ");
+						failureNum++;
+					}
+				}catch (Exception ex) {
+					failureMsg.append("(身份证号码:"+personnelPersonBianzhi.getIdNumber()+")"+" 导入失败："+ex.getMessage());
+				}
+			}
+			if (failureNum>0){
+				failureMsg.insert(0, "，失败 "+failureNum+" 条，导入信息如下：");
+			}
+			addMessage(redirectAttributes, "已成功导入 "+successNum+" 条"+failureMsg);
+		} catch (Exception e) {
+			addMessage(redirectAttributes, "导入失败！失败信息："+e.getMessage());
+		}
+//		redirectAttributes.addFlashAttribute("result","success");
+//		return "redirect:" + adminPath + "/file/template/download/view";
+		return "redirect:" + adminPath + "/file/template/personnelBasesdownload/view?id=personnel_personnelPersonBianzhi&isCover="+isCover;
+	}
+
+}

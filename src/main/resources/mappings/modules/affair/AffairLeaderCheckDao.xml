@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairLeaderCheckDao">
+
+	<sql id="affairLeaderCheckColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.date AS "date",
+		a.num AS "num",
+		a.grade AS "grade",
+		a.material_path AS "materialPath",
+		a.status AS "status",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.opinion AS "opinion",
+		a.sh_person AS "shPerson",
+		a.grade_date AS "gradeDate"
+	</sql>
+
+	<sql id="affairLeaderCheckJoins">
+		LEFT JOIN sys_office o3 ON o3.id = a.unit
+	</sql>
+
+	<select id="get" resultType="AffairLeaderCheck">
+		SELECT
+			<include refid="affairLeaderCheckColumns"/>
+		FROM affair_leader_check a
+		<include refid="affairLeaderCheckJoins"/>
+		WHERE a.id = #{id}
+	</select>
+
+	<select id="findList" resultType="AffairLeaderCheck">
+		SELECT
+			<include refid="affairLeaderCheckColumns"/>
+		FROM affair_leader_check a
+		<include refid="affairLeaderCheckJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE '%'||#{name}||'%'
+			</if>
+			<if test="date != null and date != ''">
+				AND a.date = #{date}
+			</if>
+			<if test="grade != null and grade != ''">
+				AND a.grade = #{grade}
+			</if>
+			<if test="hasAuth != null and hasAuth != ''">
+				AND a.status  &lt;&gt; '0'
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findAllList" resultType="AffairLeaderCheck">
+		SELECT
+			<include refid="affairLeaderCheckColumns"/>
+		FROM affair_leader_check a
+		<include refid="affairLeaderCheckJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<insert id="insert">
+		INSERT INTO affair_leader_check(
+			id,
+			name,
+			unit,
+			unit_id,
+			date,
+			num,
+			grade,
+			material_path,
+			status,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			opinion,
+			sh_person,
+			grade_date
+		) VALUES (
+			#{id},
+			#{name},
+			#{unit},
+			#{unitId},
+			#{date},
+			#{num},
+			#{grade},
+			#{materialPath},
+			#{status},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{opinion},
+			#{shPerson},
+			#{gradeDate}
+		)
+	</insert>
+
+	<update id="update">
+		UPDATE affair_leader_check SET
+			name = #{name},
+			unit = #{unit},
+			date = #{date},
+			num = #{num},
+			grade = #{grade},
+			material_path = #{materialPath},
+			status = #{status},
+			opinion = #{opinion},
+			sh_person = #{shPerson},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			grade_date = #{gradeDate}
+		WHERE id = #{id}
+	</update>
+
+	<update id="delete">
+		UPDATE affair_leader_check SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_leader_check SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<update id="shenHe">
+		UPDATE affair_leader_check SET
+			status = #{affairLeaderCheck.status},
+			sh_person = #{affairLeaderCheck.shPerson}, opinion = #{affairLeaderCheck.opinion},
+			update_date = #{affairLeaderCheck.updateDate}
+			where id = #{affairLeaderCheck.id}
+	</update>
+
+	<select id="findByIds" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairLeaderCheck">
+		select <include refid="affairLeaderCheckColumns"/>
+		from affair_leader_check a where id in <foreach collection="ids" item="item" index="index"
+													open="(" separator="," close=")">#{item}</foreach>
+	</select>
+</mapper>

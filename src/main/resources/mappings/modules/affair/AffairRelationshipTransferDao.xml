@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairRelationshipTransferDao">
+    
+	<sql id="affairRelationshipTransferColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.police_no AS "policeNo",
+		a.id_number AS "idNumber",
+		a.old_organization AS "oldOrganization",
+		a.now_organization AS "nowOrganization",
+		a.old_organization_id AS "oldOrganizationId",
+		a.now_organization_id AS "nowOrganizationId",
+		a.apply_date AS "applyDate",
+		a.transfer_type AS "transferType",
+		a.handle_time AS "handleTime",
+		a.status AS "status",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.status_flag AS "statusFlag"
+	</sql>
+	
+	<sql id="affairRelationshipTransferJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairRelationshipTransfer">
+		SELECT 
+			<include refid="affairRelationshipTransferColumns"/>
+		FROM affair_relationship_transfer a
+		<include refid="affairRelationshipTransferJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairRelationshipTransfer">
+		<choose>
+			<when test="hasManageAuth == true">/*具有审批权限*/
+				<choose>
+					<when test="role == 'ju'">
+						/*局级审核*/
+						SELECT
+						<include refid="affairRelationshipTransferColumns"/>
+						FROM affair_relationship_transfer a
+						<include refid="affairRelationshipTransferJoins"/>
+						LEFT JOIN affair_general_situation s1
+						ON s1.id = a.old_organization_id
+						LEFT JOIN affair_general_situation s2
+						ON s2.id = a.now_organization_id
+						where a.del_flag = #{DEL_FLAG_NORMAL}
+						and (( a.transfer_type = '2' and (SELECT count(1) from affair_relationship_transfer r LEFT JOIN affair_transfer_sh  s on r.id = s.transfer_id where a.id = s.transfer_id and s.status = '1' ) >= 1 )
+						or a.transfer_type in ('3','4') )
+					</when>
+					<otherwise>
+						/*处级审核*/
+						SELECT
+						<include refid="affairRelationshipTransferColumns"/>
+						FROM affair_relationship_transfer a
+						<include refid="affairRelationshipTransferJoins"/>
+						LEFT JOIN affair_general_situation s1
+						ON s1.id = a.old_organization_id
+						LEFT JOIN affair_general_situation s2
+						ON s2.id = a.now_organization_id
+						where  a.del_flag = #{DEL_FLAG_NORMAL} and a.transfer_type in('1','2')
+						and (a.transfer_type = '1' or (a.transfer_type = '2' and #{createBy.office.id} = (SELECT g.parent_id from affair_general_situation g where  g.id = a.old_organization_id ))  )
+					</otherwise>
+				</choose>
+			</when>
+			<otherwise>
+				SELECT
+				<include refid="affairRelationshipTransferColumns"/>
+				FROM affair_relationship_transfer a
+				<include refid="affairRelationshipTransferJoins"/>
+				LEFT JOIN affair_general_situation s1
+				ON s1.id = a.old_organization_id
+				LEFT JOIN affair_general_situation s2
+				ON s2.id = a.now_organization_id
+				where  a.del_flag = #{DEL_FLAG_NORMAL}
+			</otherwise>
+		</choose>
+		<if test="name != null and name != ''">
+			AND a.name LIKE concat('%',#{name},'%')
+		</if>
+		<choose>
+			<when test="handleStartTime != null and handleStartTime != '' and handleEndTime != null and handleEndTime != ''">
+				AND date_trunc('day',  a.handle_time) between  #{handleStartTime} and #{handleEndTime}
+			</when>
+			<when test="handleStartTime != null and handleStartTime != ''">
+				AND a.handle_time >= #{handleStartTime}
+			</when>
+			<when test="handleEndTime != null and handleEndTime != ''">
+				AND  #{handleEndTime} >= date_trunc('day',  a.handle_time)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<if test="treeId != null and treeId != ''">
+			AND ( ( a.status_flag = '1' and a.now_organization_id = #{treeId} OR s2.parent_ids LIKE CONCAT('%,', #{treeId}, ',%') ) or ( a.status_flag != '1' and a.old_organization_id = #{treeId} OR s1.parent_ids LIKE CONCAT('%,', #{treeId}, ',%') ) )
+		</if>
+		<if test="idNumber != null and idNumber != ''">
+			AND a.id_number = #{idNumber}
+		</if>
+		<!-- 数据范围过滤 -->
+		${sqlMap.dsf}
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findAllList" resultType="AffairRelationshipTransfer">
+		SELECT 
+			<include refid="affairRelationshipTransferColumns"/>
+		FROM affair_relationship_transfer a
+		<include refid="affairRelationshipTransferJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_relationship_transfer(
+			id,
+			name,
+			police_no,
+			id_number,
+			old_organization,
+			now_organization,
+			old_organization_id,
+			now_organization_id,
+			apply_date,
+			transfer_type,
+			handle_time,
+			status,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			status_flag
+		) VALUES (
+			#{id},
+			#{name},
+			#{policeNo},
+			#{idNumber},
+			#{oldOrganization},
+			#{nowOrganization},
+			#{oldOrganizationId},
+			#{nowOrganizationId},
+			#{applyDate},
+			#{transferType},
+			#{handleTime},
+			#{status},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{statusFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_relationship_transfer SET 	
+			name = #{name},
+			police_no = #{policeNo},
+			id_number = #{idNumber},
+			old_organization = #{oldOrganization},
+			now_organization = #{nowOrganization},
+			old_organization_id = #{oldOrganizationId},
+			now_organization_id = #{nowOrganizationId},
+			apply_date = #{applyDate},
+			transfer_type = #{transferType},
+			handle_time = #{handleTime},
+			status = #{status},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			status_flag =#{statusFlag}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_relationship_transfer SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_relationship_transfer SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+			 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<select id="findLastByIdNumber" resultType="java.lang.String">
+		SELECT a.id AS id
+		FROM affair_relationship_transfer a
+		<where>
+			a.del_flag = '0' AND a.id_number = #{idNumber}
+		</where>
+		ORDER BY a.update_date DESC LIMIT 1
+	</select>
+
+	<update id="updateInfo">
+		update
+		affair_party_member a
+		set
+		party_branch = #{affairRelationshipTransfer.nowOrganization},
+		party_branch_id = #{affairRelationshipTransfer.nowOrganizationId}
+		from affair_relationship_transfer b
+		where  b.id_number = #{affairRelationshipTransfer.idNumber}
+		AND a.card_num = #{affairRelationshipTransfer.idNumber}
+	</update>
+</mapper>

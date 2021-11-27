@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.sys.dao.SysOfficesDao">
+    
+	<sql id="sysOfficesColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.party_id AS "partyId",
+		a.party_name AS "partyName",
+		a.group_id AS "groupId",
+		a.group_name AS "groupName",
+		a.union_id AS "unionId",
+		a.union_name AS "unionName"
+	</sql>
+	
+	<sql id="sysOfficesJoins">
+		LEFT JOIN sys_office o1 ON o1.id = a.id
+	</sql>
+
+	<delete id="deleteById">
+		DELETE
+		FROM
+			sys_offices
+		WHERE
+			id = #{id}
+	</delete>
+
+	<select id="get" resultType="SysOffices">
+		SELECT 
+			<include refid="sysOfficesColumns"/>
+		FROM sys_offices a
+		<include refid="sysOfficesJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="SysOffices">
+		SELECT 
+			<include refid="sysOfficesColumns"/>
+		FROM sys_offices a
+		<include refid="sysOfficesJoins"/>
+		<where>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+			</if>
+			<if test="partyName != null and partyName != ''">
+				AND a.party_name LIKE
+					<if test="dbName == 'oracle'">'%'||#{partyName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{partyName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{partyName},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{partyName}||'%'</if>
+			</if>
+			<if test="groupName != null and groupName != ''">
+				AND a.group_name LIKE
+					<if test="dbName == 'oracle'">'%'||#{groupName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{groupName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{groupName},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{groupName}||'%'</if>
+			</if>
+			<if test="unionName != null and unionName != ''">
+				AND a.union_name LIKE
+					<if test="dbName == 'oracle'">'%'||#{unionName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{unionName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{unionName},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{unionName}||'%'</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="SysOffices">
+		SELECT 
+			<include refid="sysOfficesColumns"/>
+		FROM sys_offices a
+		<include refid="sysOfficesJoins"/>
+		<where>
+			<if test="partyName != null and partyName != ''">
+				AND a.party_name = #{partyName}
+			</if>
+			<if test="groupName != null and groupName != ''">
+				AND a.group_name = #{groupName}
+			</if>
+			<if test="unionName != null and unionName != ''">
+				AND a.union_name = #{unionName}
+			</if>
+			<if test="partyId != null and partyId != ''">
+				AND a.party_id = #{partyId}
+			</if>
+			<if test="groupId != null and groupId != ''">
+				AND a.group_id = #{groupId}
+			</if>
+			<if test="unionId != null and unionId != ''">
+				AND a.union_id = #{unionId}
+			</if>
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO sys_offices(
+			id,
+			name,
+			party_id,
+			party_name,
+			group_id,
+			group_name,
+			union_id,
+			union_name
+		) VALUES (
+			#{id},
+			#{name},
+			#{partyId},
+			#{partyName},
+			#{groupId},
+			#{groupName},
+			#{unionId},
+			#{unionName}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE sys_offices SET
+			name = #{name},
+			party_id = #{partyId},
+			party_name = #{partyName},
+			group_id = #{groupId},
+			group_name = #{groupName},
+			union_id = #{unionId},
+			union_name = #{unionName}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM sys_offices
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE sys_offices SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+	<update id="saveById">
+		UPDATE sys_offices SET
+			id = #{id},
+			name = #{name},
+			party_id = #{partyId},
+			party_name = #{partyName},
+			group_id = #{groupId},
+			group_name = #{groupName},
+			union_id = #{unionId},
+			union_name = #{unionName}
+		WHERE id = #{id}
+	</update>
+	<insert id="saveNew">
+		INSERT INTO sys_offices(
+			id,
+			name,
+			party_id,
+			party_name,
+			group_id,
+			group_name,
+			union_id,
+			union_name
+		) VALUES (
+			#{id},
+			#{name},
+			#{partyId},
+			#{partyName},
+			#{groupId},
+			#{groupName},
+			#{unionId},
+			#{unionName}
+		)
+	</insert>
+
+
+	<select id="findGroupIdById" resultType="java.lang.String">
+		select
+		a.group_id
+		from sys_offices a
+		where
+		a.id = #{id}
+	</select>
+
+	<select id="findByGroupName" resultType="java.lang.String">
+		select
+		a.id
+		from
+		affair_tw_base a
+		where
+		a.name = #{groupName}
+	</select>
+	<select id="selectBeanById" resultType="com.thinkgem.jeesite.modules.sys.entity.SysOffices">
+		select
+			*
+		from sys_offices a
+		where
+		a.id = #{Id}
+	</select>
+
+</mapper>

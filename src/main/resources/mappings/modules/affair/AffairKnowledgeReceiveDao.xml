@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairKnowledgeReceiveDao">
+    
+	<sql id="affairKnowledgeReceiveColumns">
+		a.id AS "id",
+		a.notice_id AS "noticeId",
+		a.org_id AS "orgId"
+	</sql>
+	
+	<sql id="affairKnowledgeReceiveJoins">
+	</sql>
+    
+	<select id="get" resultType="AffairKnowledgeReceive">
+		SELECT 
+			<include refid="affairKnowledgeReceiveColumns"/>
+		FROM affair_knowledge_receive a
+		<include refid="affairKnowledgeReceiveJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairKnowledgeReceive">
+		SELECT 
+			<include refid="affairKnowledgeReceiveColumns"/>
+		FROM affair_knowledge_receive a
+		<include refid="affairKnowledgeReceiveJoins"/>
+		<where>
+			
+			<if test="noticeId != null and noticeId != ''">
+				AND a.notice_id = #{noticeId}
+			</if>
+			<if test="orgId != null and orgId != ''">
+				AND a.org_id = #{orgId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairKnowledgeReceive">
+		SELECT 
+			<include refid="affairKnowledgeReceiveColumns"/>
+		FROM affair_knowledge_receive a
+		<include refid="affairKnowledgeReceiveJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_knowledge_receive(
+			id,
+			notice_id,
+			org_id
+		) VALUES (
+			#{id},
+			#{noticeId},
+			#{orgId}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_knowledge_receive SET 	
+			notice_id = #{noticeId},
+			org_id = #{orgId}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM affair_knowledge_receive
+		WHERE id = #{id}
+	</update>
+
+	<select id="deleteByNoticeId">
+		DELETE FROM affair_knowledge_receive
+		WHERE notice_id = #{noticeId}
+	</select>
+</mapper>

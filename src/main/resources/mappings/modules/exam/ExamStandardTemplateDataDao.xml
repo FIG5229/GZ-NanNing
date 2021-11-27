@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.exam.dao.ExamStandardTemplateDataDao">
+    
+	<sql id="examStandardTemplateDataColumns">
+		a.id AS "id",
+		a.item_id AS "itemId",
+		a.item_value AS "itemValue",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.row_num AS "rowNum"
+	</sql>
+	
+	<sql id="examStandardTemplateDataJoins">
+	</sql>
+    
+	<select id="get" resultType="ExamStandardTemplateData">
+		SELECT 
+			<include refid="examStandardTemplateDataColumns"/>
+		FROM exam_standard_template_data a
+		<include refid="examStandardTemplateDataJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ExamStandardTemplateData">
+		SELECT 
+			<include refid="examStandardTemplateDataColumns"/>
+		FROM exam_standard_template_data a
+		<include refid="examStandardTemplateDataJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="itemId != null and itemId != ''">
+				AND a.item_id = #{itemId}
+			</if>
+			<!--具体考评标准改为模糊查询，方便自动考评中查询行号-->
+			<if test="itemValue != null and itemValue != ''">
+				AND a.item_value like '%${itemValue}%'
+			</if>
+				<if test="rowNum != null and rowNum != ''">
+				AND a.row_num = #{rowNum}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ExamStandardTemplateData">
+		SELECT 
+			<include refid="examStandardTemplateDataColumns"/>
+		FROM exam_standard_template_data a
+		<include refid="examStandardTemplateDataJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findExamItemNumList" resultType="Map">
+		SELECT COUNT( 1 ) AS "number"
+			FROM
+				exam_standard_template_data d
+				LEFT JOIN exam_standard_template_item_define i ON d.item_id = i.
+				ID LEFT JOIN exam_standard_template_define T ON i.template_id = T.ID
+			WHERE
+				T.exam_stardard_id IN
+				<foreach collection="standardIds" item="id" index="index" open="(" close=")" separator=",">
+					#{id}
+				</foreach>
+			GROUP BY
+				T.exam_stardard_id,
+				d.row_num
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO exam_standard_template_data(
+			id,
+			item_id,
+			item_value,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag,
+			row_num
+		) VALUES (
+			#{id},
+			#{itemId},
+			#{itemValue},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag},
+			#{rowNum}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE exam_standard_template_data SET 	
+			item_id = #{itemId},
+			item_value = #{itemValue},
+			update_date = #{updateDate},
+			row_num = #{rowNum}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE exam_standard_template_data SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<select id="findWorkTypeByStandardId" resultType="java.util.Map">
+		select estd.item_value as item, estd.row_num as row  from exam_standard_template_data estd where estd.item_id = (
+			select id from exam_standard_template_item_define estid where estid.template_id = (
+				select td.id from exam_standard_template_define td where td.exam_stardard_id = #{str} ) and estid.column_type = '1'
+			)
+		 GROUP BY estd.item_value , estd.id
+	</select>
+	<update id="deleteByExamStandardId">
+    delete  from exam_standard_template_data d
+		WHERE
+		d.item_id IN (
+			SELECT ID
+			FROM
+				exam_standard_template_item_define i
+			WHERE
+				i.template_id in ( SELECT ID FROM exam_standard_template_define T WHERE T.exam_stardard_id = #{examStandId} ));
+				<!--删除所有的数据-->
+	</update>
+
+	<select id="findRowList" resultType="map">
+		SELECT d.id,d.row_num, d.item_id,f."column_name", f.column_type, f.column_order, d.item_value
+		FROM exam_standard_template_data d
+		LEFT JOIN exam_standard_template_item_define f ON d.item_id = f.ID
+		LEFT JOIN exam_standard_template_define T ON f.template_id = T.ID
+		WHERE T.exam_stardard_id = #{itemId} and d.row_num = #{rowNum}
+		ORDER BY d.row_num asc, f.column_order asc
+	</select>
+
+	<delete id="deleteLine">
+		delete from exam_standard_template_data
+		WHERE id in(
+		SELECT d.id
+		FROM exam_standard_template_data d
+		LEFT JOIN exam_standard_template_item_define f ON d.item_id = f.ID
+		LEFT JOIN exam_standard_template_define T ON f.template_id = T.ID
+		WHERE T.exam_stardard_id = #{itemId} and d.row_num = #{rowNum}
+		)
+	</delete>
+
+	<select id="getMaxRowNum" resultType="java.lang.Integer">
+		SELECT MAX(row_num) FROM "exam_standard_template_data"
+		where item_id =#{itemId}
+	</select>
+
+	<select id="findInfoByStandardBaseIdRowId"
+			resultType="com.thinkgem.jeesite.modules.exam.entity.ExamStandardTemplateData">
+		select * from exam_standard_template_data
+        where item_id in (
+        	select id from exam_standard_template_item_define
+            where template_id in (
+                 select id from exam_standard_template_define
+                 where exam_stardard_id = #{id}
+                 and column_type = '1'
+                )
+       )
+       AND row_num = #{rowId}
+	</select>
+
+    <select id="selectRowById" resultType="java.lang.String">
+		select
+			row_num
+		from
+			exam_standard_template_data
+		where
+			id = #{optionId}
+
+	</select>
+
+	<select id="findStandardOptionList" resultType="com.thinkgem.jeesite.modules.exam.entity.ExamStandardTemplateData">
+		select <include refid="examStandardTemplateDataColumns"/> ,d.column_type as "columnType"
+		from exam_standard_template_data a
+		left join exam_standard_template_item_define d on a.item_id = d."id"
+		where a.item_id in (
+			select id from exam_standard_template_item_define where template_id = #{standard}
+ 		)
+ 		and row_num = ${rowNum}
+	</select>
+</mapper>

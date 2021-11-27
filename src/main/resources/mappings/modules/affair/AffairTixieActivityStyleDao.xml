@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairTixieActivityStyleDao">
+    
+	<sql id="affairTixieActivityStyleColumns">
+		a.id AS "id",
+		a.title AS "title",
+		a.category AS "category",
+		a.own_group_organization AS "ownGroupOrganization",
+		a.release_time AS "releaseTime",
+		a.main_content AS "mainContent",
+		a.annex AS "annex",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.own_group_organization_id AS "ownGroupOrganizationId"
+	</sql>
+	
+	<sql id="affairTixieActivityStyleJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairTixieActivityStyle">
+		SELECT 
+			<include refid="affairTixieActivityStyleColumns"/>
+		FROM affair_tixie_activity_style a
+		<include refid="affairTixieActivityStyleJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairTixieActivityStyle">
+		SELECT 
+			<include refid="affairTixieActivityStyleColumns"/>
+		FROM affair_tixie_activity_style a
+		<include refid="affairTixieActivityStyleJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="title != null and title != ''">
+				AND a.title LIKE '%'||#{title}||'%'
+			</if>
+			<if test="category != null and category != ''">
+				AND a.category = #{category}
+			</if>
+			<if test="ownGroupOrganizationId != null and ownGroupOrganizationId != ''">
+				AND a.own_group_organization_id = #{ownGroupOrganizationId}
+			</if>
+			<choose>
+				<when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+					AND a.release_time between #{startDate} and #{endDate}
+				</when>
+				<when test="startDate != null and startDate != ''">
+					AND a.release_time >= #{startDate}
+				</when>
+				<when test="endDate != null and endDate != ''">
+					AND  #{endDate} >= a.release_time
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairTixieActivityStyle">
+		SELECT 
+			<include refid="affairTixieActivityStyleColumns"/>
+		FROM affair_tixie_activity_style a
+		<include refid="affairTixieActivityStyleJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_tixie_activity_style(
+			id,
+			title,
+			category,
+			own_group_organization,
+			release_time,
+			main_content,
+			annex,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			own_group_organization_id
+		) VALUES (
+			#{id},
+			#{title},
+			#{category},
+			#{ownGroupOrganization},
+			#{releaseTime},
+			#{mainContent},
+			#{annex},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{ownGroupOrganizationId}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_tixie_activity_style SET 	
+			title = #{title},
+			category = #{category},
+			own_group_organization = #{ownGroupOrganization},
+			release_time = #{releaseTime},
+			main_content = #{mainContent},
+			annex = #{annex},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			own_group_organization_id = #{ownGroupOrganizationId}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_tixie_activity_style SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_tixie_activity_style SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<select id="findInfoByCreateOrgId" resultType="java.util.HashMap">
+		SELECT count(id)
+		from affair_tixie_activity_style atas
+		WHERE
+		atas.del_flag != '1'
+		<if test="id != null and id != ''">
+			AND create_org_id = #{id} AND atas.del_flag = '0'
+		</if>
+	</select>
+
+	<select id="findInfoByCreateOrgIds" resultType="java.util.HashMap">
+		SELECT count(id)
+		from affair_tixie_activity_style atas
+		WHERE
+		atas.del_flag != '1'
+		AND	create_org_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+			#{id}
+		</foreach>
+		)
+	</select>
+
+</mapper>

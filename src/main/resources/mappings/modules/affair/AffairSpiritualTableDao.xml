@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairSpiritualTableDao">
+    
+	<sql id="affairSpiritualTableColumns">
+		a.id AS "id",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.phone AS "phone",
+		a.unit_place AS "unitPlace",
+		a.number AS "number",
+		a.random_number AS "randomNumber",
+		a.description AS "description",
+		a.problem AS "problem",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.suggest AS "suggest",
+		a.year AS "year",
+		a.ratify AS "ratify",
+		a.time AS "time",
+		a.adjunct AS "adjunct"
+	</sql>
+	
+	<sql id="affairSpiritualTableJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairSpiritualTable">
+		SELECT 
+			<include refid="affairSpiritualTableColumns"/>
+		FROM affair_spiritual_table a
+		<include refid="affairSpiritualTableJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairSpiritualTable">
+		SELECT 
+			<include refid="affairSpiritualTableColumns"/>
+		FROM affair_spiritual_table a
+		<include refid="affairSpiritualTableJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="year != null and year != ''">
+				AND a.year LIKE
+				<if test="dbName == 'oracle'">'%'||#{year}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{year}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{year},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{year}||'%'</if>
+			</if>
+			<if test="unit != null and unit != ''">
+				AND a.unit LIKE
+				<if test="dbName == 'oracle'">'%'||#{unit}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{unit}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{unit},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{unit}||'%'</if>
+			</if>
+			<if test="ratify != null and ratify != ''">
+				AND a.ratify LIKE
+				<if test="dbName == 'oracle'">'%'||#{ratify}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{ratify}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{ratify},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{ratify}||'%'</if>
+			</if>
+			<choose>
+				<when test="beginTime != null and endTime != null and beginTime != '' and endTime != ''">
+					AND a.time BETWEEN #{beginTime} AND #{endTime}
+				</when>
+				<when test="beginTime != null and beginTime != ''">
+					AND a.time &gt;= #{beginTime}
+				</when>
+				<when test="endTime != null and endTime != ''">
+					AND a.time &lt;= #{endTime}
+				</when>
+				<otherwise></otherwise>
+			</choose>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairSpiritualTable">
+		SELECT 
+			<include refid="affairSpiritualTableColumns"/>
+		FROM affair_spiritual_table a
+		<include refid="affairSpiritualTableJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_spiritual_table(
+			id,
+			unit,
+			unit_id,
+			phone,
+			unit_place,
+			number,
+			random_number,
+			description,
+			problem,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			suggest,
+			year,
+			ratify,
+			time,
+			adjunct
+		) VALUES (
+			#{id},
+			#{unit},
+			#{unitId},
+			#{phone},
+			#{unitPlace},
+			#{number},
+			#{randomNumber},
+			#{description},
+			#{problem},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{suggest},
+			#{year},
+			#{ratify},
+			#{time},
+			#{adjunct}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_spiritual_table SET 	
+			unit = #{unit},
+			unit_id = #{unitId},
+			phone = #{phone},
+			unit_place = #{unitPlace},
+			number = #{number},
+			random_number = #{randomNumber},
+			description = #{description},
+			problem = #{problem},
+			create_id_no = #{createIdNo},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			suggest = #{suggest},
+			year = #{year},
+			ratify = #{ratify},
+			time = #{time},
+			adjunct = #{adjunct}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_spiritual_table SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+
+	<update id="deleteByIds">
+		UPDATE affair_spiritual_table SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+</mapper>

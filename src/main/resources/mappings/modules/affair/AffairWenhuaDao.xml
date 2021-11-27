@@ -1,0 +1,680 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairWenhuaDao">
+
+	<sql id="affairWenhuaColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.specialty AS "specialty",
+		a.join_type AS "joinType",
+		a.reward AS "reward",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.work_situation AS "workSituation",
+		a.ju_check_man AS "juCheckMan",
+		a.chu_check_man AS "chuCheckMan",
+		a.submit_man AS "submitMan",
+		a.check_type AS "checkType",
+		a.ju_check_id AS "juCheckId",
+		a.chu_check_id AS "chuCheckId",
+		a.submit_id AS "submitId",
+		a.opinion AS "opinion"
+	</sql>
+	
+	<sql id="affairWenhuaJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairWenhua">
+		SELECT 
+			<include refid="affairWenhuaColumns"/>
+		FROM affair_wenhua a
+		<include refid="affairWenhuaJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairWenhua">
+		SELECT 
+			<include refid="affairWenhuaColumns"/>
+		FROM affair_wenhua a
+		<include refid="affairWenhuaJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE '%'||#{name}||'%'
+			</if>
+			<if test="unitId != null and unitId != ''">
+				AND a.unit_id = #{unitId}
+			</if>
+			<if test="specialty != null and specialty != ''">
+				AND a.specialty = #{specialty}
+			</if>
+			<if test="joinType != null and joinType != ''">
+				AND a.join_type = #{joinType}
+			</if>
+			<if test="reward != null and reward != ''">
+				AND a.reward = #{reward}
+			</if>
+			<!--审核特殊查询-->
+			<!--
+			<choose>
+				<when test="officeId != null and (officeId == 5 or officeId == 144 or officeId == 265 or officeId == 29)">
+					AND (
+					(a.create_by = #{userId} or a.submit_id = #{userId})
+					OR
+					((a.check_type = '2' or a.check_type = '4') and (a.ju_check_id = #{userId} or a.chu_check_id = #{userId}))
+					OR
+					(a.check_type = '3' and (a.ju_check_id = #{userId}))
+					)
+				</when>
+				<otherwise>
+					AND (a.create_by = #{userId} or a.submit_id = #{userId})
+				</otherwise>
+			</choose>
+			-->
+			<choose>
+				<when test="officeId != null and officeId != '' ">
+					AND ( o.ID = #{officeId} OR o.parent_ids LIKE'%,'||#{officeId}||',%' OR u.ID = #{userId} or a.unit_id = #{officeId} or u.office_id = #{officeId})
+				</when>
+				<otherwise>
+					AND ( o.ID = #{officeId} OR u.ID = #{userId} or a.create_by = #{userId} or a.unit_id=#{officeId})
+				</otherwise>
+			</choose>
+		</where>
+		<!--不知道为啥注释掉-->
+/*		${sqlMap.dsf}
+*/		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairWenhua">
+		SELECT 
+			<include refid="affairWenhuaColumns"/>
+		FROM affair_wenhua a
+		<include refid="affairWenhuaJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_wenhua(
+			id,
+			name,
+			unit,
+			unit_id,
+			specialty,
+			join_type,
+			reward,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			work_situation,
+			ju_check_man,
+			chu_check_man,
+			submit_man,
+			check_type,
+			ju_check_id,
+			chu_check_id,
+			submit_id,
+			opinion
+		) VALUES (
+			#{id},
+			#{name},
+			#{unit},
+			#{unitId},
+			#{specialty},
+			#{joinType},
+			#{reward},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{workSituation},
+			#{juCheckMan},
+			#{chuCheckMan},
+			#{submitMan},
+			#{checkType},
+			#{juCheckId},
+			#{chuCheckId},
+			#{submitId},
+			#{opinion}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_wenhua SET 	
+			name = #{name},
+			unit = #{unit},
+			unit_id = #{unitId},
+			specialty = #{specialty},
+			join_type = #{joinType},
+			reward = #{reward},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			work_situation = #{workSituation},
+			ju_check_man = #{juCheckMan},
+			chu_check_man = #{chuCheckMan},
+			submit_man = #{submitMan},
+			check_type = #{checkType},
+			ju_check_id = #{juCheckId},
+			chu_check_id = #{chuCheckId},
+			submit_id = #{submitId},
+			opinion = #{opinion}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_wenhua SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_wenhua SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<select id="findusernameList" resultType="String">
+		select  DISTINCT b.pro_name from affair_wenyi b where b."peo_name" = #{name}
+	</select>
+
+	<select id="fingproductionList" resultType="String">
+
+		select  DISTINCT b.award_name from affair_wenyi b where b."pro_name" =  #{workSituation};
+	</select>
+
+	<select id="findManuscriptList" resultType="String">
+		SELECT
+			COUNT(b.name)
+		FROM
+			affair_news b
+		INNER JOIN
+			affair_wenhua a
+		ON
+			b.name = a.name
+		WHERE
+			a.name =#{name}
+	</select>
+
+	<select id="findByIds" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairWenhua">
+		select <include refid="affairWenhuaColumns"/>
+		from affair_wenhua a where id in <foreach collection="ids" item="item" index="index"
+														 open="(" separator="," close=")">#{item}</foreach>
+	</select>
+
+	<select id="countJuLiteraryTalent" resultType="map">
+		select
+		count(case when (a.specialty = '1') then a.specialty end) as literature,
+		count(case when (a.specialty = '2') then a.specialty end) as photography,
+		count(case when (a.specialty = '3') then a.specialty end) as arts,
+		count(case when (a.specialty = '4') then a.specialty end) as calligraphy,
+		count(case when (a.specialty = '5') then a.specialty end) as cutting,
+		count(case when (a.specialty = '6') then a.specialty end) as movies,
+		count(case when (a.specialty = '7') then a.specialty end) as other,
+		'南宁处' as label
+		from affair_wenhua a
+		left join sys_office o on o.id = a.unit_id
+		where a.del_flag = '0' and (o."id" = '34' or o."parent_id" ='34' or o.parent_ids like '%34%')
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.create_date) = #{year}
+			</when>
+			<when test="beginTime != null and endTime != null">
+				AND a.create_date between  #{beginTime,jdbcType=DATE} and #{endTime,jdbcType=DATE}
+			</when>
+			<when test="beginTime != null">
+				AND a.create_date >= #{beginTime,jdbcType=DATE}
+			</when>
+			<when test="endTime != null">
+				AND  #{endTime,jdbcType=DATE} >= a.create_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		union all
+		select
+		count(case when (a.specialty = '1') then a.specialty end) as literature,
+		count(case when (a.specialty = '2') then a.specialty end) as photography,
+		count(case when (a.specialty = '3') then a.specialty end) as arts,
+		count(case when (a.specialty = '4') then a.specialty end) as calligraphy,
+		count(case when (a.specialty = '5') then a.specialty end) as cutting,
+		count(case when (a.specialty = '6') then a.specialty end) as movies,
+		count(case when (a.specialty = '7') then a.specialty end) as other,
+		'北海处' as label
+		from affair_wenhua a
+		left join sys_office o on o.id = a.unit_id
+		where a.del_flag = '0' and (o."id" = '156' or o."parent_id" ='156' or o.parent_ids like '%156%')
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.create_date) = #{year}
+			</when>
+			<when test="beginTime != null and endTime != null">
+				AND a.create_date between  #{beginTime,jdbcType=DATE} and #{endTime,jdbcType=DATE}
+			</when>
+			<when test="beginTime != null">
+				AND a.create_date >= #{beginTime,jdbcType=DATE}
+			</when>
+			<when test="endTime != null">
+				AND  #{endTime,jdbcType=DATE} >= a.create_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		union all
+		select
+		count(case when (a.specialty = '1') then a.specialty end) as literature,
+		count(case when (a.specialty = '2') then a.specialty end) as photography,
+		count(case when (a.specialty = '3') then a.specialty end) as arts,
+		count(case when (a.specialty = '4') then a.specialty end) as calligraphy,
+		count(case when (a.specialty = '5') then a.specialty end) as cutting,
+		count(case when (a.specialty = '6') then a.specialty end) as movies,
+		count(case when (a.specialty = '7') then a.specialty end) as other,
+		'柳州处' as label
+		from affair_wenhua a
+		left join sys_office o on o.id = a.unit_id
+		where a.del_flag = '0' and (o."id" = '95' or o."parent_id" ='95' or o.parent_ids like '%95%')
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.create_date) = #{year}
+			</when>
+			<when test="beginTime != null and endTime != null">
+				AND a.create_date between  #{beginTime,jdbcType=DATE} and #{endTime,jdbcType=DATE}
+			</when>
+			<when test="beginTime != null">
+				AND a.create_date >= #{beginTime,jdbcType=DATE}
+			</when>
+			<when test="endTime != null">
+				AND  #{endTime,jdbcType=DATE} >= a.create_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		union all
+		select
+		count(case when (a.specialty = '1') then a.specialty end) as literature,
+		count(case when (a.specialty = '2') then a.specialty end) as photography,
+		count(case when (a.specialty = '3') then a.specialty end) as arts,
+		count(case when (a.specialty = '4') then a.specialty end) as calligraphy,
+		count(case when (a.specialty = '5') then a.specialty end) as cutting,
+		count(case when (a.specialty = '6') then a.specialty end) as movies,
+		count(case when (a.specialty = '7') then a.specialty end) as other,
+		'公安局' as label
+		from affair_wenhua a
+		left join sys_office o on o.id = a.unit_id
+		where a.del_flag = '0' and (o.id = '0' or o.id = '1' or o.parent_id in ('1','307','312','316') or o.parent_id like '0')
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.create_date) = #{year}
+			</when>
+			<when test="beginTime != null and endTime != null">
+				AND a.create_date between  #{beginTime,jdbcType=DATE} and #{endTime,jdbcType=DATE}
+			</when>
+			<when test="beginTime != null">
+				AND a.create_date >= #{beginTime,jdbcType=DATE}
+			</when>
+			<when test="endTime != null">
+				AND  #{endTime,jdbcType=DATE} >= a.create_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="countChuLiteraryTalent" resultType="map">
+		select
+		count(case when (a.specialty = '1') then a.specialty end) as literature,
+		count(case when (a.specialty = '2') then a.specialty end) as photography,
+		count(case when (a.specialty = '3') then a.specialty end) as arts,
+		count(case when (a.specialty = '4') then a.specialty end) as calligraphy,
+		count(case when (a.specialty = '5') then a.specialty end) as cutting,
+		count(case when (a.specialty = '6') then a.specialty end) as movies,
+		count(case when (a.specialty = '7') then a.specialty end) as other,
+		o.name as label
+		from affair_wenhua a
+		left join sys_office o on o.id = a.unit_id
+		where a.del_flag = '0' and (o."id" = #{parentId} or o."parent_id" =#{parentId} or o.parent_ids like '%${parentId}%')
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.create_date) = #{year}
+			</when>
+			<when test="beginTime != null and endTime != null">
+				AND a.create_date between  #{beginTime,jdbcType=DATE} and #{endTime,jdbcType=DATE}
+			</when>
+			<when test="beginTime != null">
+				AND a.create_date >= #{beginTime,jdbcType=DATE}
+			</when>
+			<when test="endTime != null">
+				AND  #{endTime,jdbcType=DATE} >= a.create_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		group by o.name
+	</select>
+
+	<!--zg:中国文联 qggn：全国公安文联	zgtl：中国铁路文联	gx：广西文联	gxga：广西公安文联	jtgs：集团公司文联-->
+	<select id="countJuTalentJoin" resultType="map">
+		select
+		count(case when (a.specialty = '1') then a.specialty end) as zg,
+		count(case when (a.specialty = '2') then a.specialty end) as qggn,
+		count(case when (a.specialty = '3') then a.specialty end) as zgtl,
+		count(case when (a.specialty = '4') then a.specialty end) as gx,
+		count(case when (a.specialty = '5') then a.specialty end) as gxga,
+		count(case when (a.specialty = '6') then a.specialty end) as jtgs,
+		'南宁处' as label
+		from affair_wenhua a
+		left join sys_office o on o.id = a.unit_id
+		where a.del_flag = '0' and (o."id" = '34' or o."parent_id" ='34' or o.parent_ids like '%34%')
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.create_date) = #{year}
+			</when>
+			<when test="beginTime != null and endTime != null">
+				AND a.create_date between  #{beginTime,jdbcType=DATE} and #{endTime,jdbcType=DATE}
+			</when>
+			<when test="beginTime != null">
+				AND a.create_date >= #{beginTime,jdbcType=DATE}
+			</when>
+			<when test="endTime != null">
+				AND  #{endTime,jdbcType=DATE} >= a.create_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		union all
+		select
+		count(case when (a.specialty = '1') then a.specialty end) as zg,
+		count(case when (a.specialty = '2') then a.specialty end) as qggn,
+		count(case when (a.specialty = '3') then a.specialty end) as zgtl,
+		count(case when (a.specialty = '4') then a.specialty end) as gx,
+		count(case when (a.specialty = '5') then a.specialty end) as gxga,
+		count(case when (a.specialty = '6') then a.specialty end) as jtgs,
+		'北海处' as label
+		from affair_wenhua a
+		left join sys_office o on o.id = a.unit_id
+		where a.del_flag = '0' and (o."id" = '156' or o."parent_id" ='156' or o.parent_ids like '%156%')
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.create_date) = #{year}
+			</when>
+			<when test="beginTime != null and endTime != null">
+				AND a.create_date between  #{beginTime,jdbcType=DATE} and #{endTime,jdbcType=DATE}
+			</when>
+			<when test="beginTime != null">
+				AND a.create_date >= #{beginTime,jdbcType=DATE}
+			</when>
+			<when test="endTime != null">
+				AND  #{endTime,jdbcType=DATE} >= a.create_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		union all
+		select
+		count(case when (a.specialty = '1') then a.specialty end) as zg,
+		count(case when (a.specialty = '2') then a.specialty end) as qggn,
+		count(case when (a.specialty = '3') then a.specialty end) as zgtl,
+		count(case when (a.specialty = '4') then a.specialty end) as gx,
+		count(case when (a.specialty = '5') then a.specialty end) as gxga,
+		count(case when (a.specialty = '6') then a.specialty end) as jtgs,
+		'柳州处' as label
+		from affair_wenhua a
+		left join sys_office o on o.id = a.unit_id
+		where a.del_flag = '0' and (o."id" = '95' or o."parent_id" ='95' or o.parent_ids like '%95%')
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.create_date) = #{year}
+			</when>
+			<when test="beginTime != null and endTime != null">
+				AND a.create_date between  #{beginTime,jdbcType=DATE} and #{endTime,jdbcType=DATE}
+			</when>
+			<when test="beginTime != null">
+				AND a.create_date >= #{beginTime,jdbcType=DATE}
+			</when>
+			<when test="endTime != null">
+				AND  #{endTime,jdbcType=DATE} >= a.create_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		union all
+		select
+		count(case when (a.specialty = '1') then a.specialty end) as zg,
+		count(case when (a.specialty = '2') then a.specialty end) as qggn,
+		count(case when (a.specialty = '3') then a.specialty end) as zgtl,
+		count(case when (a.specialty = '4') then a.specialty end) as gx,
+		count(case when (a.specialty = '5') then a.specialty end) as gxga,
+		count(case when (a.specialty = '6') then a.specialty end) as jtgs,
+		'公安局' as label
+		from affair_wenhua a
+		left join sys_office o on o.id = a.unit_id
+		where a.del_flag = '0' and (o.id = '0' or o.id = '1' or o.parent_id in ('1','307','312','316') or o.parent_id like '0')
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.create_date) = #{year}
+			</when>
+			<when test="beginTime != null and endTime != null">
+				AND a.create_date between  #{beginTime,jdbcType=DATE} and #{endTime,jdbcType=DATE}
+			</when>
+			<when test="beginTime != null">
+				AND a.create_date >= #{beginTime,jdbcType=DATE}
+			</when>
+			<when test="endTime != null">
+				AND  #{endTime,jdbcType=DATE} >= a.create_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+
+	<select id="countChuTalentJoin" resultType="map">
+		select
+		count(case when (a.specialty = '1') then a.specialty end) as zg,
+		count(case when (a.specialty = '2') then a.specialty end) as qggn,
+		count(case when (a.specialty = '3') then a.specialty end) as zgtl,
+		count(case when (a.specialty = '4') then a.specialty end) as gx,
+		count(case when (a.specialty = '5') then a.specialty end) as gxga,
+		count(case when (a.specialty = '6') then a.specialty end) as jtgs,
+		o.name as label
+		from affair_wenhua a
+		left join sys_office o on o.id = a.unit_id
+		where a.del_flag = '0' and (o."id" = #{parentId} or o."parent_id" =#{parentId} or o.parent_ids like '%${parentId}%')
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.create_date) = #{year}
+			</when>
+			<when test="beginTime != null and endTime != null">
+				AND a.create_date between  #{beginTime,jdbcType=DATE} and #{endTime,jdbcType=DATE}
+			</when>
+			<when test="beginTime != null">
+				AND a.create_date >= #{beginTime,jdbcType=DATE}
+			</when>
+			<when test="endTime != null">
+				AND  #{endTime,jdbcType=DATE} >= a.create_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		group by o.name
+	</select>
+
+	<select id="findLiteraryTalentList" resultType="AffairWenhua">
+		select <include refid="affairWenhuaColumns"/>
+		from affair_wenhua a
+		left join sys_dict sd on sd."value" = a.specialty
+		left join sys_office o on o.id = a.unit_id
+		where a.del_flag = '0' and sd."type" = 'affair_wenyi_specialty'
+		and sd.label = #{label}
+		<choose>
+			<when test="unit != null and unit != 'top'">
+				and (o."id" = #{unitId} or o."parent_id" =#{unitId} or o.parent_ids like '%${unitId}%')
+			</when>
+			<otherwise>
+				and (o.id = '0' or o.id = '1' or o.parent_id in ('1','307','312','316') or o.parent_id like '0')
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.create_date) = #{year}
+			</when>
+			<when test="beginTime != null and endTime != null">
+				AND a.create_date between  #{beginTime,jdbcType=DATE} and #{endTime,jdbcType=DATE}
+			</when>
+			<when test="beginTime != null">
+				AND a.create_date >= #{beginTime,jdbcType=DATE}
+			</when>
+			<when test="endTime != null">
+				AND  #{endTime,jdbcType=DATE} >= a.create_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findTalentJoinList" resultType="AffairWenhua">
+		select <include refid="affairWenhuaColumns"/>
+		from affair_wenhua a
+		left join sys_dict sd on sd."value" = a.specialty
+		left join sys_office o on o.id = a.unit_id
+		where a.del_flag = '0' and sd."type" = 'affair_ruhui'
+		and sd.label = #{label}
+		<choose>
+			<when test="unit != null and unit != 'top'">
+				and (o."id" = #{unitId} or o."parent_id" =#{unitId} or o.parent_ids like '%${unitId}%')
+			</when>
+			<otherwise>
+				and (o.id = '0' or o.id = '1' or o.parent_id in ('1','307','312','316') or o.parent_id like '0')
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.create_date) = #{year}
+			</when>
+			<when test="beginTime != null and endTime != null">
+				AND a.create_date between  #{beginTime,jdbcType=DATE} and #{endTime,jdbcType=DATE}
+			</when>
+			<when test="beginTime != null">
+				AND a.create_date >= #{beginTime,jdbcType=DATE}
+			</when>
+			<when test="endTime != null">
+				AND  #{endTime,jdbcType=DATE} >= a.create_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+    <select id="selectSpeciality" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairWenhua">
+		SELECT
+			specialty
+		FROM
+			affair_wenhua
+		WHERE
+			del_flag = '0'
+			AND NAME = #{name}
+	</select>
+<select id="selectName" resultType="String">
+		SELECT
+			name
+		FROM
+			affair_wenhua
+		WHERE
+			del_flag = '0'
+			AND id = #{id}
+	</select>
+
+
+</mapper>

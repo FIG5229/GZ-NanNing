@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.exam.dao.ExamPersonsAssignRuleDao">
+    
+	<sql id="examPersonsAssignRuleColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.abbreviation AS "abbreviation",
+		a.obj_type AS "objType",
+		a.kp_type AS "kpType",
+		a.cycle AS "cycle",
+		a.is_enable AS "isEnable",
+		a.unit_id AS "unitId",
+		a.unit_name AS "unitName",
+		a.create_by AS "createBy.id",
+		a.del_flag AS "delFlag",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate"
+	</sql>
+	
+	<sql id="examPersonsAssignRuleJoins">
+	</sql>
+    
+	<select id="get" resultType="ExamPersonsAssignRule">
+		SELECT 
+			<include refid="examPersonsAssignRuleColumns"/>
+		FROM exam_persons_assign_rule a
+		<include refid="examPersonsAssignRuleJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ExamPersonsAssignRule">
+		SELECT 
+			<include refid="examPersonsAssignRuleColumns"/>
+		FROM exam_persons_assign_rule a
+		<include refid="examPersonsAssignRuleJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+			</if>
+			<if test="abbreviation != null and abbreviation != ''">
+				AND a.abbreviation = #{abbreviation}
+			</if>
+			<if test="objType != null and objType != ''">
+				AND a.obj_type = #{objType}
+			</if>
+			<if test="kpType != null and kpType != ''">
+				AND a.kp_type = #{kpType}
+			</if>
+			<if test="cycle != null and cycle != ''">
+				AND a.cycle = #{cycle}
+			</if>
+			<if test="isEnable != null and isEnable != ''">
+				AND a.is_enable = #{isEnable}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ExamPersonsAssignRule">
+		SELECT 
+			<include refid="examPersonsAssignRuleColumns"/>
+		FROM exam_persons_assign_rule a
+		<include refid="examPersonsAssignRuleJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO exam_persons_assign_rule(
+			id,
+			name,
+			abbreviation,
+			obj_type,
+			kp_type,
+			cycle,
+			is_enable,
+			unit_id,
+			unit_name,
+			create_by,
+			del_flag,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date
+		) VALUES (
+			#{id},
+			#{name},
+			#{abbreviation},
+			#{objType},
+			#{kpType},
+			#{cycle},
+			#{isEnable},
+			#{unitId},
+			#{unitName},
+			#{createBy.id},
+			#{delFlag},
+			#{createOrgId},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateOrgId},
+			#{updateIdNo},
+			#{updateDate}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE exam_persons_assign_rule SET 	
+			name = #{name},
+			abbreviation = #{abbreviation},
+			obj_type = #{objType},
+			kp_type = #{kpType},
+			cycle = #{cycle},
+			is_enable = #{isEnable},
+			unit_id = #{unitId},
+			unit_name = #{unitName},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE exam_persons_assign_rule SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

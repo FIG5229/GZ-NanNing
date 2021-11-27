@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairTrainOutsourceDao">
+
+    <sql id="affairTrainOutsourceColumns">
+		a.id AS "id",
+		a.user_name AS "userName",
+		a.number AS "number",
+		a.name AS "name",
+		a.id_number AS "idNumber",
+		a.external_name AS "externalName",
+		a.external_type AS "externalType",
+		a.completion AS "completion",
+		a.institution_code AS "institutionCode",
+		a.police_classification AS "policeClassification",
+		a.police_rank AS "policeRank",
+		a.person_type AS "personType",
+		a.management_type AS "managementType",
+		a.post AS "post",
+		a.post_level AS "postLevel",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.region AS "region",
+		a.region_id AS "regionId",
+		a.unit_level AS "unitLevel",
+		a.began_date AS "beganDate",
+		a.result_date AS "resultDate",
+		a.quit_status AS "quitStatus",
+		a.unit_name AS "unitName",
+		a.train_site AS "trainSite",
+		a.certificate_code AS "certificateCode",
+		a.unit_job AS "unitJob",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.name_id AS "nameId"
+	</sql>
+
+    <sql id="affairTrainOutsourceJoins">
+		LEFT JOIN sys_office o ON o.id = a.unit_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+
+	<sql id="affairTrainOutsourceJoinsTwo">
+		LEFT JOIN personnel_base P ON P.id_number = A.id_number
+		LEFT JOIN sys_office o ON o.ID = P.workunit_id
+		LEFT JOIN sys_user u ON u.ID = A.create_by
+	</sql>
+
+
+    <select id="get" resultType="AffairTrainOutsource">
+        SELECT
+        <include refid="affairTrainOutsourceColumns"/>
+        FROM affair_train_outsource a
+        <include refid="affairTrainOutsourceJoins"/>
+        WHERE a.id = #{id}
+    </select>
+
+    <select id="findList" resultType="AffairTrainOutsource">
+        SELECT
+        <include refid="affairTrainOutsourceColumns"/>
+        FROM affair_train_outsource a
+        <include refid="affairTrainOutsourceJoinsTwo"/>
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="userName != null and userName != ''">
+                AND a.user_name LIKE
+				<if test="dbName == 'oracle'">'%'||#{userName}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{userName}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{userName},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{userName}||'%'</if>
+            </if>
+            <if test="number != null and number != ''">
+                AND a.number LIKE
+				<if test="dbName == 'oracle'">'%'||#{number}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{number}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{number},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{number}||'%'</if>
+            </if>
+            <if test="name != null and name != ''">
+                AND a.name LIKE
+                <if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+                <if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+            </if>
+            <if test="idNumber != null and idNumber != ''">
+                AND a.id_number LIKE
+				<if test="dbName == 'oracle'">'%'||#{idNumber}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{idNumber}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{idNumber},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{idNumber}||'%'</if>
+            </if>
+            <if test="externalName != null and externalName != ''">
+                AND a.external_name LIKE
+				<if test="dbName == 'oracle'">'%'||#{externalName}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{externalName}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{externalName},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{externalName}||'%'</if>
+            </if>
+            <if test="externalType != null and externalType != ''">
+                AND a.external_type = #{externalType}
+            </if>
+            <if test="policeClassification != null and policeClassification != ''">
+                AND a.police_classification = #{policeClassification}
+            </if>
+            <if test="policeRank != null and policeRank != ''">
+                AND a.police_rank = #{policeRank}
+            </if>
+            <if test="personType != null and personType != ''">
+                AND a.person_type = #{personType}
+            </if>
+            <if test="managementType != null and managementType != ''">
+                AND a.management_type = #{managementType}
+            </if>
+            <if test="post != null and post != ''">
+                AND a.post = #{post}
+            </if>
+            <if test="postLevel != null and postLevel != ''">
+                AND a.post_level = #{postLevel}
+            </if>
+			<if test="unitId != null and unitId != ''">
+				AND (P.workunit_id = #{unitId} or o.parent_ids like '%,'||#{unitId}||',%')
+			</if>
+            <if test="region != null and region != ''">
+                AND a.region = #{region}
+            </if>
+			${sqlMap.dsf}
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="findAllList" resultType="AffairTrainOutsource">
+        SELECT
+        <include refid="affairTrainOutsourceColumns"/>
+        FROM affair_train_outsource a
+        <include refid="affairTrainOutsourceJoins"/>
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <insert id="insert">
+		INSERT INTO affair_train_outsource(
+			id,
+			user_name,
+			number,
+			name,
+			id_number,
+			external_name,
+			external_type,
+			completion,
+			institution_code,
+			police_classification,
+			police_rank,
+			person_type,
+			management_type,
+			post,
+			post_level,
+			unit,
+			unit_id,
+			region,
+			region_id,
+			unit_level,
+			began_date,
+			result_date,
+			quit_status,
+			unit_name,
+			train_site,
+			certificate_code,
+			unit_job,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			name_id
+		) VALUES (
+			#{id},
+			#{userName},
+			#{number},
+			#{name},
+			#{idNumber},
+			#{externalName},
+			#{externalType},
+			#{completion},
+			#{institutionCode},
+			#{policeClassification},
+			#{policeRank},
+			#{personType},
+			#{managementType},
+			#{post},
+			#{postLevel},
+			#{unit},
+			#{unitId},
+			#{region},
+			#{regionId},
+			#{unitLevel},
+			#{beganDate},
+			#{resultDate},
+			#{quitStatus},
+			#{unitName},
+			#{trainSite},
+			#{certificateCode},
+			#{unitJob},
+			#{createBy.id},
+			#{createOrgId},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateOrgId},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{nameId}
+		)
+	</insert>
+
+    <update id="update">
+		UPDATE affair_train_outsource SET 	
+			user_name = #{userName},
+			number = #{number},
+			name = #{name},
+			id_number = #{idNumber},
+			external_name = #{externalName},
+			external_type = #{externalType},
+			completion = #{completion},
+			institution_code = #{institutionCode},
+			police_classification = #{policeClassification},
+			police_rank = #{policeRank},
+			person_type = #{personType},
+			management_type = #{managementType},
+			post = #{post},
+			post_level = #{postLevel},
+			unit = #{unit},
+			unit_id = #{unitId},
+			region = #{region},
+			region_id = #{regionId},
+			unit_level = #{unitLevel},
+			began_date = #{beganDate},
+			result_date = #{resultDate},
+			quit_status = #{quitStatus},
+			unit_name = #{unitName},
+			train_site = #{trainSite},
+			certificate_code = #{certificateCode},
+			unit_job = #{unitJob},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateOrgId},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			name_id = #{nameId}
+		WHERE id = #{id}
+	</update>
+
+    <update id="delete">
+		UPDATE affair_train_outsource SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_train_outsource SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+    <select id="findByIds" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairTrainOutsource">
+        select
+        <include refid="affairTrainOutsourceColumns"/>
+        from affair_train_outsource a where id in
+        <foreach collection="ids" item="item" index="index"
+                 open="(" separator="," close=")">#{item}
+        </foreach>
+    </select>
+
+    <select id="selectBeanByUnit" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairTrainOutsource">
+
+	</select>
+
+	<select id="selectAllId" resultType="java.lang.String">
+		select
+			DISTINCT(a.unit_id)
+		from affair_train_outsource a
+		where
+			del_flag = '0'
+	</select>
+
+	<select id="selectPeople" resultType="java.lang.String">
+		select
+			count (a.id_number)
+		from affair_train_outsource a
+		where
+			a.unit_id = #{id}
+			and a.del_flag = '0'
+	</select>
+
+
+	<select id="selectOffJob" resultType="java.lang.String">
+		select
+			count (a.id_number)
+		from affair_train_outsource a
+		where
+			a.unit_id = #{id}
+			and a.del_flag = '0'
+		 	and a.quit_status = #{num}
+	</select>
+
+	<select id="selecthq" resultType="java.lang.String">
+		select
+			count (a.id_number)
+		from affair_train_outsource a
+		where
+			a.unit_id = #{id}
+			and a.del_flag = '0'
+		 	and a.unit_level = #{num}
+	</select>
+
+    <select id="selectUnit" resultType="java.lang.String">
+		SELECT DISTINCT
+			( unit )
+		FROM
+			affair_train_outsource
+		WHERE
+			unit_id = #{id}
+	</select>
+    <select id="findofficeId" resultType="java.lang.String">
+		select id from sys_office where name = #{unit}
+	</select>
+
+
+</mapper>

@@ -1,0 +1,745 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairXcUnitRewardDao">
+    
+	<sql id="affairXcUnitRewardColumns">
+		a.id AS "id",
+		a.date AS "date",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.approval_unit AS "approvalUnit",
+		a.approval_unit_id AS "approvalUnitId",
+		a.name AS "name",
+		a.file_no AS "fileNo",
+		a.remark AS "remark",
+		a.file_path AS "filePath",
+		a.opinion AS "opinion",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.reward_type AS "rewardType",
+		a.status AS "status",
+		a.push_type AS "pushType",
+		a.type AS "type",
+		a.jl_type AS "jlType",
+		a.wj_name AS "wjName",
+		a.collective AS "collective",
+		a.unit_code AS "unitCode",
+		a.flag AS "flag",
+		a.name_code AS "nameCode",
+		a.level AS "level",
+		a.unit_police AS "unitPolice",
+		a.approval_unit_level AS "approvalUnitLevel",
+		a.file_name AS "fileName",
+		a.approval_unit_type AS "approvalUnitType",
+		a.deeds_material AS "deedsMaterial",
+		a.re_date AS "reDate",
+		a.re_unit AS "reUnit",
+		a.re_unit_id AS "reUnitId",
+		a.unit_name AS "unitName",
+		a.type_flag AS "typeFlag"
+	</sql>
+	
+	<sql id="affairXcUnitRewardJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairXcUnitReward">
+		SELECT 
+			<include refid="affairXcUnitRewardColumns"/>
+		FROM affair_xc_unit_reward a
+		<include refid="affairXcUnitRewardJoins"/>
+		WHERE a.id = #{id}
+			<!--<if test="rewardType != null and rewardType != ''">
+				AND a.reward_type = #{rewardType}
+			</if>-->
+	</select>
+	
+	<select id="findList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairXcUnitReward">
+		SELECT 
+			<include refid="affairXcUnitRewardColumns"/>
+		FROM affair_xc_unit_reward a
+		<include refid="affairXcUnitRewardJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+
+			<choose>
+				<when test="startDate != null and endDate != null and startDate != '' and endDate != ''">
+					AND a.date BETWEEN #{startDate} AND #{endDate}
+				</when>
+				<when test="startDate != null and startDate != ''">
+					AND a.date &gt;= #{startDate}
+				</when>
+				<when test="endDate != null and endDate != ''">
+					AND a.date &lt;= #{endDate}
+				</when>
+				<otherwise></otherwise>
+			</choose>
+			<!--<if test="unitId != null and unitId != ''">
+				AND a.unit_id = #{unitId}
+			</if>-->
+			<if test="approvalUnit != null and approvalUnit != ''">
+				AND a.approval_unit = #{approvalUnit}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE '%'||#{name}||'%'
+			</if>
+			<if test="fileNo != null and fileNo != ''">
+				AND a.file_no LIKE '%'||#{fileNo}||'%'
+			</if>
+			<if test="nameCode != null and nameCode != ''">
+				AND a.name_code = #{nameCode}
+			</if>
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+			<if test="level != null and level != ''">
+				AND a.level = #{level}
+			</if>
+			<!--<if test="unitId != null and unitId != ''">
+				AND ( o.ID = #{unitId} OR o.parent_ids LIKE'%,'||#{unitId}||',%' OR u.ID = #{createBy.id} or a.unit_id=#{unitId})
+			</if>-->
+			<choose>
+				<when test="unitId != null and unitId != '' ">
+					AND ( o.ID = #{unitId} OR o.parent_ids LIKE'%,'||#{unitId}||',%' OR u.ID = #{createBy.id} or a.unit_id=#{unitId})
+				</when>
+				<otherwise>
+					AND ( o.ID = #{unitId} OR u.ID = #{createBy.id} or a.unit_id=#{unitId})
+				</otherwise>
+			</choose>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairXcUnitReward">
+		SELECT 
+			<include refid="affairXcUnitRewardColumns"/>
+		FROM affair_xc_unit_reward a
+		<include refid="affairXcUnitRewardJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="rewardType != null and rewardType != ''">
+				AND a.reward_type = #{rewardType}
+			</if>
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_xc_unit_reward(
+			id,
+			date,
+			unit,
+			unit_id,
+			approval_unit,
+			approval_unit_id,
+			name,
+			file_no,
+			remark,
+			file_path,
+			opinion,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			reward_type,
+			status,
+			push_type,
+			type,
+			jl_type,
+			wj_name,
+			collective,
+			unit_code,
+			flag,
+			name_code,
+			level,
+			unit_police,
+			approval_unit_level,
+			file_name,
+			approval_unit_type,
+			deeds_material,
+			re_date,
+			re_unit,
+			re_unit_id,
+			unit_name,
+			type_flag
+		) VALUES (
+			#{id},
+			#{date},
+			#{unit},
+			#{unitId},
+			#{approvalUnit},
+			#{approvalUnitId},
+			#{name},
+			#{fileNo},
+			#{remark},
+			#{filePath},
+			#{opinion},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{rewardType},
+			#{status},
+			#{pushType},
+			#{type},
+			#{jlType},
+			#{wjName},
+			#{collective},
+			#{unitCode},
+			#{flag},
+			#{nameCode},
+			#{level},
+			#{unitPolice},
+			#{approvalUnitLevel},
+			#{fileName},
+			#{approvalUnitType},
+			#{deedsMaterial},
+			#{reDate},
+			#{reUnit},
+			#{reUnitId},
+			#{unitName},
+			'1'
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_xc_unit_reward SET 	
+			date = #{date},
+			unit = #{unit},
+			unit_id = #{unitId},
+			approval_unit = #{approvalUnit},
+			approval_unit_id = #{approvalUnitId},
+			name = #{name},
+			file_no = #{fileNo},
+			remark = #{remark},
+			file_path = #{filePath},
+			opinion = #{opinion},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			push_type = #{pushType},
+			type = #{type},
+			jl_type = #{jlType},
+			wj_name = #{wjName},
+			collective = #{collective},
+			unit_code = #{unitCode},
+			flag = #{flag},
+			name_code = #{nameCode},
+			level = #{level},
+			unit_police = #{unitPolice},
+			approval_unit_level = #{approvalUnitLevel},
+			file_name = #{fileName},
+			approval_unit_type = #{approvalUnitType},
+			deeds_material = #{deedsMaterial},
+			re_date = #{reDate},
+			re_unit = #{reUnit},
+			re_unit_id = #{reUnitId},
+			unit_name = #{unitName}
+		WHERE id = #{id}
+		<!--<if test="rewardType != null and rewardType != ''">
+			AND a.reward_type = #{rewardType}
+		</if>-->
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_xc_unit_reward SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	<update id="deleteByIds">
+		UPDATE affair_xc_unit_reward SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<select id="findInfoByRewardName" resultType="java.util.HashMap">
+		SELECT COUNT ( 1 ) num, '集体一等功' nameCode
+		FROM
+		"affair_xc_unit_reward" T
+		WHERE
+		(
+		SELECT COUNT ( 1 )
+		FROM
+		sys_dict sd
+		WHERE
+		T.name_code = sd.value
+		AND sd.value = '1'
+		AND t.del_flag = '0'
+		AND sd.type = 'affair_reward_code' AND sd.del_flag = '0'
+		<if test="id != null and id != ''">
+			AND t.unit_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from t.date) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(t.date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND date_trunc('day', t.date) between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND t.date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= date_trunc('day', t.date)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		) > 0
+		UNION ALL
+		SELECT COUNT
+		( 1 ) num,
+		'集体二等功' nameCode
+		FROM
+		"affair_xc_unit_reward" T
+		WHERE
+		(
+		SELECT COUNT ( 1 )
+		FROM
+		sys_dict sd
+		WHERE
+		T.name_code = sd.value
+		AND sd.value = '2'
+		AND t.del_flag = '0'
+		AND sd.type = 'affair_reward_code' AND sd.del_flag = '0'
+		<if test="id != null and id != ''">
+			AND t.unit_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from t.date) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(t.date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND date_trunc('day', t.date) between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND t.date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= date_trunc('day', t.date)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		) > 0
+		UNION ALL
+		SELECT COUNT
+		( 1 ) num,
+		'集体三等功' nameCode
+		FROM
+		"affair_xc_unit_reward" T
+		WHERE
+		(
+		SELECT COUNT ( 1 )
+		FROM
+		sys_dict sd
+		WHERE
+		T.name_code = sd.value
+		AND sd.value = '3'
+		AND t.del_flag = '0'
+		AND sd.type = 'affair_reward_code' AND sd.del_flag = '0'
+		<if test="id != null and id != ''">
+			AND t.unit_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from t.create_date) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(t.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND date_trunc('day', t.create_date) between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND t.create_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= date_trunc('day', t.create_date)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		) > 0
+		UNION ALL
+		SELECT COUNT
+		( 1 ) num,
+		'嘉奖' nameCode
+		FROM
+		"affair_xc_unit_reward" T
+		WHERE
+		(
+		SELECT COUNT ( 1 )
+		FROM
+		sys_dict sd
+		WHERE
+		T.name_code = sd.value
+		AND sd.value IN ('4','5','6','7','8','9','10','11','12')
+		AND t.del_flag = '0'
+		AND sd.type = 'affair_reward_code' AND sd.del_flag = '0'
+		<if test="id != null and id != ''">
+			AND t.unit_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from t.date) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(t.date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND date_trunc('day', t.date) between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND t.date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= date_trunc('day', t.date)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		) > 0
+	</select>
+
+	<select id="findDetailInfoByRewardName" resultType="AffairXcUnitReward">
+		SELECT
+		<include refid="affairXcUnitRewardColumns"/>
+		FROM affair_xc_unit_reward a
+		LEFT JOIN sys_office o ON o.id = a.unit_id
+		where
+		a.del_flag = '0'
+		<choose>
+			<when test="unitId != 'top'">
+				and (o."id" = #{unitId} or o."parent_id" =#{unitId} or o.parent_ids like '%${unitId}%')
+			</when>
+			<otherwise>
+				and (o.id = '0' or o.id = '1' or o.parent_id in ('1','307','312','316') or parent_id like '0')
+			</otherwise>
+		</choose>
+		<if test="nameCodeType != null and nameCodeType != ''">
+			AND a.name_code IN (#{nameCodeType})
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.date) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND date_trunc('day', a.date) between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= date_trunc('day', a.date)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		ORDER BY a.date
+	</select>
+
+	<select id="findOtherDetailInfoByRewardName" resultType="AffairXcUnitReward">
+		SELECT
+		<include refid="affairXcUnitRewardColumns"/>
+		FROM affair_xc_unit_reward a
+		LEFT JOIN sys_office o ON o.id = a.unit_id
+		where
+		a.del_flag = '0'
+		<choose>
+			<when test="unitId != 'top'">
+				and (o."id" = #{unitId} or o."parent_id" =#{unitId} or o.parent_ids like '%${unitId}%')
+			</when>
+			<otherwise>
+				and (o.id = '0' or o.id = '1' or o.parent_id in ('1','307','312','316') or parent_id like '0')
+			</otherwise>
+		</choose>
+		AND a.name_code IN ('4','5','6','7','8','9','10','11','12')
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from a.date) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND date_trunc('day', a.date) between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= date_trunc('day', a.date)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		ORDER BY a.date
+	</select>
+
+	<select id="findChuInfoByRewardName" resultType="java.util.HashMap">
+		SELECT COUNT ( 1 ) num, '集体一等功' nameCode
+		FROM
+		"affair_xc_unit_reward" T
+		LEFT JOIN sys_office o ON o.id=t.unit_id
+		WHERE
+		(
+		SELECT COUNT ( 1 )
+		FROM
+		sys_dict sd
+		WHERE
+		T.name_code = sd.value
+		AND sd.value = '1'
+		AND t.del_flag = '0'
+		AND sd.type = 'affair_reward_code' AND sd.del_flag = '0'
+		and (o."id" = #{officeId} or o."parent_id" =#{officeId} or o.parent_ids like '%${officeId}%')
+		<if test="id != null and id != ''">
+			AND t.unit_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from t.date) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(t.date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND date_trunc('day', t.date) between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND t.date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= date_trunc('day', t.date)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		) > 0
+		UNION ALL
+		SELECT COUNT
+		( 1 ) num,
+		'集体二等功' nameCode
+		FROM
+		"affair_xc_unit_reward" T
+		LEFT JOIN sys_office o ON o.id = t.unit_id
+		WHERE
+		(
+		SELECT COUNT ( 1 )
+		FROM
+		sys_dict sd
+		WHERE
+		T.name_code = sd.value
+		AND sd.value = '2'
+		AND t.del_flag = '0'
+		AND sd.type = 'affair_reward_code' AND sd.del_flag = '0'
+		and (o."id" = #{officeId} or o."parent_id" =#{officeId} or o.parent_ids like '%${officeId}%')
+		<if test="id != null and id != ''">
+			AND t.unit_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from t.date) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(t.date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND date_trunc('day', t.date) between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND t.date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= date_trunc('day', t.date)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		) > 0
+		UNION ALL
+		SELECT COUNT
+		( 1 ) num,
+		'集体三等功' nameCode
+		FROM
+		"affair_xc_unit_reward" T
+		LEFT JOIN sys_office o ON o.id = t.unit_id
+		WHERE
+		(
+		SELECT COUNT ( 1 )
+		FROM
+		sys_dict sd
+		WHERE
+		T.name_code = sd.value
+		AND sd.value = '3'
+		AND t.del_flag = '0'
+		AND sd.type = 'affair_reward_code' AND sd.del_flag = '0'
+		and (o."id" = #{officeId} or o."parent_id" =#{officeId} or o.parent_ids like '%${officeId}%')
+		<if test="id != null and id != ''">
+			AND t.unit_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from t.create_date) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(t.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND date_trunc('day', t.create_date) between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND t.create_date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= date_trunc('day', t.create_date)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		) > 0
+		UNION ALL
+		SELECT COUNT
+		( 1 ) num,
+		'嘉奖' nameCode
+		FROM
+		"affair_xc_unit_reward" T
+		LEFT JOIN sys_office o ON o.id = t.unit_id
+		WHERE
+		(
+		SELECT COUNT ( 1 )
+		FROM
+		sys_dict sd
+		WHERE
+		T.name_code = sd.value
+		AND sd.value IN ('4','5','6','7','8','9','10','11','12')
+		AND t.del_flag = '0'
+		AND sd.type = 'affair_reward_code' AND sd.del_flag = '0'
+		and (o."id" = #{officeId} or o."parent_id" =#{officeId} or o.parent_ids like '%${officeId}%')
+		<if test="id != null and id != ''">
+			AND t.unit_id = #{id}
+		</if>
+		<choose>
+			<when test="year != null and year !=''">
+				AND extract(year from t.date) = #{year}
+			</when>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(t.date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND date_trunc('day', t.date) between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND t.date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= date_trunc('day', t.date)
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		) > 0
+	</select>
+
+	<select id="findCodeName" resultType="AffairXcUnitReward">
+		SELECT distinct(name) FROM "affair_xc_unit_reward" where name_code = #{nameCode}
+	</select>
+
+    <select id="selectUnitReward" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairXcUnitReward">
+		SELECT
+			*
+		FROM
+			affair_xc_unit_reward
+		WHERE
+			del_flag = '0'
+			AND unit_id = #{unitId}
+	</select>
+
+    <select id="selectBean" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairXcUnitReward">
+		SELECT
+			*
+		FROM
+			affair_xc_unit_reward
+		WHERE
+			del_flag = '0'
+			AND id = #{id}
+	</select>
+
+    <select id="selectNumber" resultType="java.lang.Integer">
+		SELECT COUNT
+			( * )
+		FROM
+			affair_xc_unit_reward
+		WHERE
+			del_flag = '0'
+			AND unit_id = #{unitId}
+			AND "level" = #{level}
+			AND status = '1'
+			AND to_char ( "create_date", 'yyyy-mm-dd HH24:mi:ss:ff' ) = #{checkTime}
+	</select>
+
+    <select id="selectAllReward" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairXcUnitReward">
+		SELECT
+			*
+		FROM
+			"affair_xc_unit_reward"
+		WHERE
+			to_char( "date", 'yyyy-mm-DD' ) between  #{yearL} and #{yearT}
+			AND unit_id = #{idN}
+			AND del_flag = '0'
+	</select>
+    <select id="selectAllRewardYear" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairXcUnitReward">
+		SELECT
+			*
+		FROM
+			"affair_xc_unit_reward"
+		WHERE
+			to_char( "date", 'yyyy' ) = #{year}
+			AND unit_id = #{idN}
+			AND del_flag = '0'
+	</select>
+
+</mapper>

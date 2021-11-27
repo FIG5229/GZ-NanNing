@@ -1,0 +1,432 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairZyInfoDao">
+    
+	<sql id="affairZyInfoColumns">
+		a.id AS "id",
+		a.date AS "date",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.name AS "name",
+		a.id_number AS "idNumber",
+		a.sex AS "sex",
+		a.type AS "type",
+		a.money AS "money",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.finish_date AS "finishDate",
+		a.application AS "application",
+		a.bz_jigou AS "bzJigou"
+	</sql>
+	
+	<sql id="affairZyInfoJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairZyInfo">
+		SELECT 
+			<include refid="affairZyInfoColumns"/>
+		FROM affair_zy_info a
+		<include refid="affairZyInfoJoins"/>
+		WHERE a.id = #{id}
+	</select>
+
+	<select id="getSumMoney" resultType="java.lang.Float">
+		SELECT
+		SUM(a.money) AS "sumMoney"
+		FROM affair_zy_info a
+		<include refid="affairZyInfoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<choose>
+				<when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+					AND a.date between #{startDate} and #{endDate}
+				</when>
+				<when test="startDate != null and startDate != ''">
+					AND a.date >= #{startDate}
+				</when>
+				<when test="endDate != null and endDate != ''">
+					AND  #{endDate} >= a.date
+				</when>
+				<otherwise>
+					<if test="date != null and date != ''">
+						AND a.date = #{date}
+					</if>
+				</otherwise>
+			</choose>
+			<if test="name != null and name != ''">
+				AND a.name LIKE '%'||#{name}||'%'
+			</if>
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+			<if test="bzJigou != null and bzJigou != ''">
+				AND a.bz_jigou = #{bzJigou}
+			</if>
+			<if test="officeIds != null and officeIds.size() > 0">
+				AND a.unit_id  in <foreach collection="officeIds" item="item" index="index"
+				  open="(" separator="," close=")">#{item}</foreach>
+			</if>
+			<!--${sqlMap.dsf}-->
+			<choose>
+				<when test="userId != null and userId != '' ">
+					AND ( o.ID = #{userId} OR o.parent_ids LIKE'%,'||#{userId}||',%' OR u.ID = #{createBy.id} or a.unit_id=#{userId} or a.id_number=#{cardNum})
+				</when>
+				<otherwise>
+					AND ( o.ID = #{userId} OR u.ID = #{createBy.id} or a.unit_id=#{userId})
+				</otherwise>
+			</choose>
+		</where>
+	</select>
+	
+	<select id="findList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairZyInfo">
+		SELECT 
+			<include refid="affairZyInfoColumns"/>
+		FROM affair_zy_info a
+		<include refid="affairZyInfoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<choose>
+				<when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+					AND a.date between #{startDate} and #{endDate}
+				</when>
+				<when test="startDate != null and startDate != ''">
+					AND a.date >= #{startDate}
+				</when>
+				<when test="endDate != null and endDate != ''">
+					AND  #{endDate} >= a.date
+				</when>
+				<otherwise>
+					<if test="date != null and date != ''">
+						AND a.date = #{date}
+					</if>
+				</otherwise>
+			</choose>
+			<if test="name != null and name != ''">
+				AND a.name LIKE '%'||#{name}||'%'
+			</if>
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+			<if test="bzJigou != null and bzJigou != ''">
+				AND a.bz_jigou = #{bzJigou}
+			</if>
+			<!--<if test="officeIds != null and officeIds.size() > 0">
+				AND a.unit_id  in <foreach collection="officeIds" item="item" index="index"
+					  open="(" separator="," close=")">#{item}</foreach>
+			</if>-->
+			<!--${sqlMap.dsf}-->
+			<!--<if test="userId != null and userId != ''">
+				or (a.unit_id = #{userId} AND a.del_flag = #{DEL_FLAG_NORMAL})
+			</if>-->
+			<choose>
+				<when test="createBy.id == '4c40b4dd2aee459286a37538978e6261'">
+					<if test="officeIds != null and officeIds.size() > 0">
+						AND a.unit_id  in <foreach collection="officeIds" item="item" index="index"
+												   open="(" separator="," close=")">#{item}</foreach>
+					</if>
+				</when>
+				<otherwise>
+					<if test="userId != '' and userId != null">
+						<!--AND ( o.ID = #{userId} OR o.parent_ids LIKE'%,'||#{userId}||',%' OR u.ID = #{createBy.id} OR u.ID = #{userId} or a.unit_id=#{userId} )-->
+						AND ( o.ID = #{userId} OR o.parent_ids LIKE'%,'||#{userId}||',%' OR u.ID = #{createBy.id} or a.unit_id = #{userId} or u.office_id = #{userId})
+					</if>
+				</otherwise>
+			</choose>
+			AND a.del_flag = #{DEL_FLAG_NORMAL}
+			<!--${sqlMap.dsf}
+			<if test="userId != null and userId != ''">
+				or (a.unit_id = #{userId} AND a.del_flag = #{DEL_FLAG_NORMAL})
+			</if>-->
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairZyInfo">
+		SELECT 
+			<include refid="affairZyInfoColumns"/>
+		FROM affair_zy_info a
+		<include refid="affairZyInfoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+
+			${sqlMap.dsf}
+
+			<if test="userId != null and userId != ''">
+				or (a.unit_id = #{userId} AND a.del_flag = #{DEL_FLAG_NORMAL})
+			</if>
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_zy_info(
+			id,
+			date,
+			unit,
+			unit_id,
+			name,
+			id_number,
+			sex,
+			type,
+			money,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			finish_date,
+			application,
+			bz_jigou
+		) VALUES (
+			#{id},
+			#{date},
+			#{unit},
+			#{unitId},
+			#{name},
+			#{idNumber},
+			#{sex},
+			#{type},
+			#{money},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{finishDate},
+			#{application},
+			#{bzJigou}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_zy_info SET 	
+			date = #{date},
+			unit = #{unit},
+			unit_id = #{unitId},
+			name = #{name},
+			id_number = #{idNumber},
+			sex = #{sex},
+			type = #{type},
+			money = #{money},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			finish_date = #{finishDate},
+			application = #{application},
+			bz_jigou = #{bzJigou}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_zy_info SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_zy_info SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<select id="findInfoByCreateOrgId" resultType="java.util.HashMap">
+		SELECT case when(SUM(azi.money) ISNULL) then 0 ELSE SUM(azi.money) end as sum , sd.label as label, count(azi.id) AS count
+		from affair_zy_info azi LEFT JOIN sys_dict sd on azi.type =  sd.value
+		LEFT JOIN sys_office o ON o.id = azi.create_org_id
+		LEFT JOIN sys_user u ON u.id = azi.create_by
+		WHERE
+		azi.del_flag = '0' and sd.type = 'affair_zybuzhu' and sd.del_flag = '0'
+		<if test="id != null and id != ''">
+			${id}
+		</if>
+		<!--
+		<if test="id != null and id != ''">
+		AND create_org_id = #{id}
+		</if>
+		-->
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(azi.date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from azi.date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND azi.date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND azi.date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= azi.date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY sd.label
+	</select>
+	
+	<select id="findInfoByCreateOrgIds" resultType="java.util.HashMap">
+		SELECT case when(SUM(money) ISNULL) then 0 ELSE SUM(money) end as sum , sd.label as label, count(azi.id) AS count
+		from affair_zy_info azi LEFT JOIN sys_dict sd on azi.type =  sd.value
+		WHERE
+		azi.del_flag = '0' and sd.type = 'affair_zybuzhu' and sd.del_flag = '0'
+		AND	create_org_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+		 	#{id}
+		 </foreach>		
+		)
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(azi.date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from azi.date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND azi.date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND azi.date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= azi.date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		GROUP BY sd.label
+	</select>
+
+	<!--这是List页面专用查询,当建设时间，所属单位，小家建设名称，建设项目相同时，只取一条id最大的字段-->
+	<sql id="affairZyInfoList">
+        MAX(a.id) AS "id",
+		a.date AS "date",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.type AS "type",
+		a.bz_jigou AS "bzJigou"
+	</sql>
+	<!--这是List页面专用查询,当建设时间，所属单位，小家建设名称，建设项目相同时，只取一条id最大的字段-->
+	<select id="findInList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairZyInfo">
+		SELECT
+		<include refid="affairZyInfoList"/>
+		FROM affair_zy_info a
+		<include refid="affairZyInfoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<choose>
+				<when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+					AND a.date between #{startDate} and #{endDate}
+				</when>
+				<when test="startDate != null and startDate != ''">
+					AND a.date >= #{startDate}
+				</when>
+				<when test="endDate != null and endDate != ''">
+					AND  #{endDate} >= a.date
+				</when>
+				<otherwise>
+					<if test="date != null and date != ''">
+						AND a.date = #{date}
+					</if>
+				</otherwise>
+			</choose>
+			<if test="unit != null and unit != ''">
+				AND a.unit = #{unit}
+			</if>
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+			<if test="bzJigou != null and bzJigou != ''">
+				AND a.bz_jigou = #{bzJigou}
+			</if>
+			${sqlMap.dsf}
+			<if test="userId != null and userId != ''">
+				or (a.unit_id = #{userId} AND a.del_flag = #{DEL_FLAG_NORMAL})
+			</if>
+		</where>
+		group by
+		a.date,
+		a.unit,
+		a.unit_id,
+		a.type,
+		a.bz_jigou
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+		</choose>
+	</select>
+
+	<select id="findMedicalAidList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairZyInfo">
+		select <include refid="affairZyInfoColumns"/>
+		from affair_zy_info a
+		left join sys_dict sd on sd.value= a.type
+		<include refid="affairZyInfoJoins"/>
+		where
+		a.del_flag = '0' and sd.type = 'affair_zybuzhu' and sd.del_flag = '0'
+		and sd.label = #{label}
+		${sqlMap.dsf}
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.date, 'yyyy-mm')  = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+</mapper>

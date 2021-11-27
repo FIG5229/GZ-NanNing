@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairGunTheoryDao">
+    
+	<sql id="affairGunTheoryColumns">
+		a.id AS "id",
+		a.exam AS "exam",
+		a.police_no AS "policeNo",
+		a.name AS "name",
+		a.id_number AS "idNumber",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.enter_time AS "enterTime",
+		a.handover_time AS "handoverTime",
+		a.objective_results AS "objectiveResults",
+		a.subjective_performance AS "subjectivePerformance",
+		a.final_result AS "finalResult",
+		a.status AS "status",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.number AS "number",
+		a.year_month AS "yearMonth"
+	</sql>
+	
+	<sql id="affairGunTheoryJoins">
+	LEFT JOIN sys_office o ON o.id = a.unit_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairGunTheory">
+		SELECT 
+			<include refid="affairGunTheoryColumns"/>
+		FROM affair_gun_theory a
+		<include refid="affairGunTheoryJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairGunTheory">
+		SELECT 
+			<include refid="affairGunTheoryColumns"/>
+		FROM affair_gun_theory a
+		<include refid="affairGunTheoryJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="yearMonth != '' and yearMonth != null">
+				AND a.year_month = #{yearMonth}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE '%'||#{name}||'%'
+			</if>
+			<if test="policeNo != null and policeNo != ''">
+				AND a.police_no LIKE '%'||#{policeNo}||'%'
+			</if>
+			<if test="idNumber != null and idNumber != ''">
+				AND a.id_number LIKE '%'||#{idNumber}||'%'
+			</if>
+			<if test="unitId != null and unitId != ''">
+				AND a.unit_id = #{unitId}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairGunTheory">
+		SELECT 
+			<include refid="affairGunTheoryColumns"/>
+		FROM affair_gun_theory a
+		<include refid="affairGunTheoryJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.number ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_gun_theory(
+			id,
+			exam,
+			police_no,
+			name,
+			id_number,
+			unit,
+			unit_id,
+			enter_time,
+			handover_time,
+			objective_results,
+			subjective_performance,
+			final_result,
+			status,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			number,
+			year_month
+		) VALUES (
+			#{id},
+			#{exam},
+			#{policeNo},
+			#{name},
+			#{idNumber},
+			#{unit},
+			#{unitId},
+			#{enterTime},
+			#{handoverTime},
+			#{objectiveResults},
+			#{subjectivePerformance},
+			#{finalResult},
+			#{status},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{number},
+			#{yearMonth}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_gun_theory SET 	
+			exam = #{exam},
+			police_no = #{policeNo},
+			name = #{name},
+			id_number = #{idNumber},
+			unit = #{unit},
+			unit_id = #{unitId},
+			enter_time = #{enterTime},
+			handover_time = #{handoverTime},
+			objective_results = #{objectiveResults},
+			subjective_performance = #{subjectivePerformance},
+			final_result = #{finalResult},
+			status = #{status},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			number = #{number},
+			year_month = #{yearMonth}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_gun_theory SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_gun_theory SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+	
+</mapper>

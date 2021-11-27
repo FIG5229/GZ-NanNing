@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairZkInfoDao">
+    
+	<sql id="affairZkInfoColumns">
+		a.id AS "id",
+		a.date AS "date",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.name AS "name",
+		a.id_number AS "idNumber",
+		a.sex AS "sex",
+		a.type AS "type",
+		a.money AS "money",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.situation AS "situation",
+		a.subsidy_org AS "subsidyOrg"
+	</sql>
+	
+	<sql id="affairZkInfoJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairZkInfo">
+		SELECT 
+			<include refid="affairZkInfoColumns"/>
+		FROM affair_zk_info a
+		<include refid="affairZkInfoJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairZkInfo">
+		SELECT 
+			<include refid="affairZkInfoColumns"/>
+		FROM affair_zk_info a
+		<include refid="affairZkInfoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<choose>
+				<when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+					AND a.date between #{startDate} and #{endDate}
+				</when>
+				<when test="startDate != null and startDate != ''">
+					AND a.date >= #{startDate}
+				</when>
+				<when test="endDate != null and endDate != ''">
+					AND  #{endDate} >= a.date
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			<if test="unitId != null and unitId != ''">
+				AND a.unit_id = #{unitId}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE '%'||#{name}||'%'
+			</if>
+			<if test="sex != null and sex != ''">
+				AND a.sex = #{sex}
+			</if>
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+			<choose>
+				<when test="minMoney != null and minMoney != '' and maxMoney != null and maxMoney != ''">
+					AND a.money between #{minMoney} and #{maxMoney}
+				</when>
+				<when test="minMoney != null and minMoney != ''">
+					AND a.money >= #{minMoney}
+				</when>
+				<when test="maxMoney != null and maxMoney != ''">
+					AND  #{maxMoney} >= a.money
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			<!--${sqlMap.dsf}
+			<if test="userId != null and userId != ''">
+				or (a.unit_id = #{userId} AND a.del_flag = #{DEL_FLAG_NORMAL})
+			</if>-->
+			<if test="userId != null and userId != ''">
+				AND ( o.ID = #{userId} OR o.parent_ids LIKE'%,'||#{userId}||',%' OR u.ID = #{userId} or a.unit_id=#{userId})
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairZkInfo">
+		SELECT 
+			<include refid="affairZkInfoColumns"/>
+		FROM affair_zk_info a
+		<include refid="affairZkInfoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_zk_info(
+			id,
+			date,
+			unit,
+			unit_id,
+			name,
+			id_number,
+			sex,
+			type,
+			money,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			situation,
+			subsidy_org
+		) VALUES (
+			#{id},
+			#{date},
+			#{unit},
+			#{unitId},
+			#{name},
+			#{idNumber},
+			#{sex},
+			#{type},
+			#{money},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{situation},
+			#{subsidyOrg}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_zk_info SET 	
+			date = #{date},
+			unit = #{unit},
+			unit_id = #{unitId},
+			name = #{name},
+			id_number = #{idNumber},
+			sex = #{sex},
+			type = #{type},
+			money = #{money},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			situation = #{situation},
+			subsidy_org = #{subsidyOrg}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_zk_info SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_zk_info SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+	
+	<select id="findInfoByCreateOrgId" resultType="java.util.HashMap">
+		SELECT case when(SUM(money) ISNULL) then 0 ELSE SUM(money) end as sum, count(id)
+		from affair_zk_info azki
+		WHERE
+		azki.del_flag = '0'
+		<if test="id != null and id != ''">
+		AND create_org_id = #{id}
+		</if>
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(azki.date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from azki.date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND azki.date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND azki.date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= azki.date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findInfoByCreateOrgIds" resultType="java.util.HashMap">
+		SELECT case when(SUM(money) ISNULL) then 0 ELSE SUM(money) end as sum , count(id)
+		from affair_zk_info azki
+		WHERE
+		azki.del_flag = '0'
+		AND create_org_id in (
+		<foreach collection="ids" item="id" index="index" separator=",">
+		 	#{id}
+		 </foreach>		
+		)
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(azki.date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from azki.date) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND azki.date between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND azki.date >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= azki.date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+</mapper>

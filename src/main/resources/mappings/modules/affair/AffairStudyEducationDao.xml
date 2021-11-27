@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairStudyEducationDao">
+    
+	<sql id="affairStudyEducationColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.date AS "date",
+		a.type AS "type",
+		a.place AS "place",
+		a.organization AS "organization",
+		a.organization_id AS "organizationId",
+		a.host AS "host",
+		a.recorder AS "recorder",
+		a.yd_num AS "ydNum",
+		a.sd_num AS "sdNum",
+		a.absent_person AS "absentPerson",
+		a.content AS "content",
+		a.niandu AS "niandu",
+		a.file_path AS "filePath",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="affairStudyEducationJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairStudyEducation">
+		SELECT 
+			<include refid="affairStudyEducationColumns"/>
+		FROM affair_study_education a
+		<include refid="affairStudyEducationJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairStudyEducation">
+		SELECT 
+			<include refid="affairStudyEducationColumns"/>
+		FROM affair_study_education a
+		<include refid="affairStudyEducationJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE '%'||#{name}||'%'
+			</if>
+			<choose>
+				<when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+					AND a.date between #{startDate} and #{endDate}
+				</when>
+				<when test="startDate != null and startDate != ''">
+					AND a.date >= #{startDate}
+				</when>
+				<when test="endDate != null and endDate != ''">
+					AND  #{endDate} >= a.date
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+			<if test="organizationId != null and organizationId != ''">
+				AND a.organization_id = #{organizationId}
+			</if>
+			<if test="host != null and host != ''">
+				AND a.host LIKE '%'||#{host}||'%'
+			</if>
+			<if test="recorder != null and recorder != ''">
+				AND a.recorder LIKE '%'||#{recorder}||'%'
+			</if>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairStudyEducation">
+		SELECT 
+			<include refid="affairStudyEducationColumns"/>
+		FROM affair_study_education a
+		<include refid="affairStudyEducationJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_study_education(
+			id,
+			name,
+			date,
+			type,
+			place,
+			organization,
+			organization_id,
+			host,
+			recorder,
+			yd_num,
+			sd_num,
+			absent_person,
+			content,
+			niandu,
+			file_path,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{name},
+			#{date},
+			#{type},
+			#{place},
+			#{organization},
+			#{organizationId},
+			#{host},
+			#{recorder},
+			#{ydNum},
+			#{sdNum},
+			#{absentPerson},
+			#{content},
+			#{niandu},
+			#{filePath},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_study_education SET 	
+			name = #{name},
+			date = #{date},
+			type = #{type},
+			place = #{place},
+			organization = #{organization},
+			organization_id = #{organizationId},
+			host = #{host},
+			recorder = #{recorder},
+			yd_num = #{ydNum},
+			sd_num = #{sdNum},
+			absent_person = #{absentPerson},
+			content = #{content},
+			niandu = #{niandu},
+			file_path = #{filePath},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_study_education SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_study_education SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+	
+</mapper>

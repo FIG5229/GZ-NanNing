@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairSubmitFormDao">
+    
+	<sql id="affairSubmitFormColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.num AS "num",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.job AS "job",
+		a.start_date AS "startDate",
+		a.end_date AS "endDate",
+		a.arranger AS "arranger",
+		a.checker AS "checker",
+		a.situation AS "situation",
+		a.content AS "content",
+		a.leader AS "leader",
+		a.sign_date AS "signDate",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="affairSubmitFormJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairSubmitForm">
+		SELECT 
+			<include refid="affairSubmitFormColumns"/>
+		FROM affair_submit_form a
+		<include refid="affairSubmitFormJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairSubmitForm">
+		SELECT 
+			<include refid="affairSubmitFormColumns"/>
+		FROM affair_submit_form a
+		<include refid="affairSubmitFormJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE '%'||#{name}||'%'
+			</if>
+			<if test="unitId != null and unitId != ''">
+				AND a.unit_id = #{unitId}
+			</if>
+
+			<if test="job != null and job != ''">
+				AND a.job LIKE '%'||#{job}||'%'
+			</if>
+
+			<if test="arranger != null and arranger != ''">
+				AND a.arranger LIKE '%'||#{arranger}||'%'
+			</if>
+			<if test="checker != null and checker != ''">
+				AND a.checker LIKE '%'||#{checker}||'%'
+			</if>
+			<if test="leader != null and leader != ''">
+				AND a.leader LIKE '%'||#{leader}||'%'
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairSubmitForm">
+		SELECT 
+			<include refid="affairSubmitFormColumns"/>
+		FROM affair_submit_form a
+		<include refid="affairSubmitFormJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_submit_form(
+			id,
+			name,
+			num,
+			unit,
+			unit_id,
+			job,
+			start_date,
+			end_date,
+			arranger,
+			checker,
+			situation,
+			content,
+			leader,
+			sign_date,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{name},
+			#{num},
+			#{unit},
+			#{unitId},
+			#{job},
+			#{startDate},
+			#{endDate},
+			#{arranger},
+			#{checker},
+			#{situation},
+			#{content},
+			#{leader},
+			#{signDate},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_submit_form SET 	
+			name = #{name},
+			num = #{num},
+			unit = #{unit},
+			job = #{job},
+			start_date = #{startDate},
+			end_date = #{endDate},
+			arranger = #{arranger},
+			checker = #{checker},
+			situation = #{situation},
+			content = #{content},
+			leader = #{leader},
+			sign_date = #{signDate},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_submit_form SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_submit_form SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+</mapper>

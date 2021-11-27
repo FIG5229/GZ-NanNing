@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.personnel.dao.PersonnelComplexSelDao">
+
+
+    <select id="selTableNames" resultType="java.util.Map">
+		select relname as tabname,
+		cast(obj_description(relfilenode,'pg_class') as varchar) as comment from pg_class c
+		where relname like 'personnel%';
+	</select>
+
+    <select id="selColumnByTableName" resultType="java.util.Map">
+	SELECT
+		col_description(a.attrelid,a.attnum) as comment,
+		a.attname as name
+	FROM pg_class as c,pg_attribute as a
+	where c.relname = #{tableName}
+ 	and a.attname in
+ 		(SELECT
+		COLUMN_NAME
+		FROM information_schema.columns
+		WHERE table_schema = 'public' and table_name=#{tableName})
+	and a.attrelid = c.oid and a.attnum>0
+	ORDER BY a.attnum
+	</select>
+    <select id="selCustomSql" resultType="java.util.Map">
+		${_parameter}
+	</select>
+    <select id="selCustomBatchSql" resultType="com.thinkgem.jeesite.modules.personnel.entity.PersonnelBase">
+		${_parameter}
+	</select>
+    <select id="selDictTypeByTC" resultType="java.util.Map">
+		select a.table_name AS "tableName",
+		a.table_annotation AS "tableAnnotation",
+		a.dict_fields AS "dictFields",
+		a.dict_fields_name AS "dictFieldsName",
+		a.dict_type AS "dictType"
+		FROM
+		personnel_complexsel_dict_fields a
+		WHERE a.table_name = #{tableSel}
+			AND a.dict_fields = #{columnSel}
+		LIMIT 1
+	</select>
+</mapper>

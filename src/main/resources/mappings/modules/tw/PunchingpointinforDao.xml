@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.tw.dao.PunchingpointinforDao">
+    
+	<sql id="punchingpointinforColumns">
+		a.guid AS "guid",
+		a.name AS "name",
+		a.policeboxid AS "policeboxid",
+		a.clockorder AS "clockorder",
+		a.maxdistance AS "maxdistance",
+		a.cjsj AS "cjsj",
+		a.cjr AS "cjr",
+		a.cjdwdm AS "cjdwdm",
+		a.xgr AS "xgr",
+		a.xgsj AS "xgsj",
+		a.xgdwdm AS "xgdwdm"
+	</sql>
+	
+	<sql id="punchingpointinforJoins">
+	</sql>
+    
+	<select id="get" resultType="Punchingpointinfor">
+		SELECT 
+			<include refid="punchingpointinforColumns"/>
+		FROM punchingpointinfor a
+		<include refid="punchingpointinforJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="Punchingpointinfor">
+		SELECT 
+			<include refid="punchingpointinforColumns"/>
+		FROM punchingpointinfor a
+		<include refid="punchingpointinforJoins"/>
+		<where>
+			
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="Punchingpointinfor">
+		SELECT 
+			<include refid="punchingpointinforColumns"/>
+		FROM punchingpointinfor a
+		<include refid="punchingpointinforJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO punchingpointinfor(
+			guid,
+			name,
+			policeboxid,
+			clockorder,
+			maxdistance,
+			cjsj,
+			cjr,
+			cjdwdm,
+			xgr,
+			xgsj,
+			xgdwdm
+		) VALUES (
+			#{guid},
+			#{name},
+			#{policeboxid},
+			#{clockorder},
+			#{maxdistance},
+			#{cjsj},
+			#{cjr},
+			#{cjdwdm},
+			#{xgr},
+			#{xgsj},
+			#{xgdwdm}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE punchingpointinfor SET 	
+			guid = #{guid},
+			name = #{name},
+			policeboxid = #{policeboxid},
+			clockorder = #{clockorder},
+			maxdistance = #{maxdistance},
+			cjsj = #{cjsj},
+			cjr = #{cjr},
+			cjdwdm = #{cjdwdm},
+			xgr = #{xgr},
+			xgsj = #{xgsj},
+			xgdwdm = #{xgdwdm}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM punchingpointinfor
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

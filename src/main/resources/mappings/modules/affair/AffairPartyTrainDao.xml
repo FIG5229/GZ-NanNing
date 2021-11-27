@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairPartyTrainDao">
+    
+	<sql id="affairPartyTrainColumns">
+		a.id AS "id",
+		a.start_time AS "startTime",
+		a.end_time AS "endTime",
+		a.unit AS "unit",
+		a.unit_id AS "unitId",
+		a.train_place AS "trainPlace",
+		a.train_form AS "trainForm",
+		a.train_name AS "trainName",
+		a.train_result AS "trainResult",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.id_num AS "idNum"
+	</sql>
+	
+	<sql id="affairPartyTrainJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairPartyTrain">
+		SELECT 
+			<include refid="affairPartyTrainColumns"/>
+		FROM affair_party_train a
+		<include refid="affairPartyTrainJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairPartyTrain">
+		SELECT 
+			<include refid="affairPartyTrainColumns"/>
+		FROM affair_party_train a
+		<include refid="affairPartyTrainJoins"/>
+		LEFT JOIN affair_general_situation s
+		ON s.id = a.unit_id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+
+			<choose>
+				<when test="beginStartTime != null and endStartTime != null and beginStartTime != '' and endStartTime != ''">
+					AND a.start_time BETWEEN #{beginStartTime} AND #{endStartTime}
+				</when>
+				<when test="beginStartTime != null and beginStartTime != ''">
+					AND a.start_time &gt;= #{beginStartTime}
+				</when>
+				<when test="endStartTime != null and endStartTime != ''">
+					AND a.start_time &lt;= #{endStartTime}
+				</when>
+				<otherwise></otherwise>
+			</choose>
+
+			<choose>
+				<when test="beginEndTime != null and endEndTime != null and beginEndTime != '' and endEndTime != ''">
+					AND a.end_time BETWEEN #{beginEndTime} AND #{endEndTime}
+				</when>
+				<when test="beginEndTime != null and beginEndTime != ''">
+					AND a.end_time &gt;= #{beginEndTime}
+				</when>
+				<when test="endEndTime != null and endEndTime != ''">
+					AND a.end_time &lt;= #{endEndTime}
+				</when>
+				<otherwise></otherwise>
+			</choose>
+
+<!--			<if test="beginStartTime != null and endStartTime != null and beginStartTime != '' and endStartTime != ''">-->
+<!--				AND a.start_time BETWEEN #{beginStartTime} AND #{endStartTime}-->
+<!--			</if>-->
+<!--			<if test="beginEndTime != null and endEndTime != null and beginEndTime != '' and endEndTime != ''">-->
+<!--				AND a.end_time BETWEEN #{beginEndTime} AND #{endEndTime}-->
+<!--			</if>-->
+			<if test="unit != null and unit != ''">
+				AND a.unit = #{unit}
+			</if>
+			<if test="trainName != null and trainName != ''">
+				AND a.train_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{trainName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{trainName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{trainName},'%')</if>
+					<if test="dbName == 'postgre'">'%'||#{trainName}||'%'</if>
+			</if>
+			<!--<if test="treeId != null and treeId != ''">
+				AND (a.unit_id = #{treeId} OR s.parent_ids LIKE CONCAT('%,', #{treeId}, ',%'))
+			</if>-->
+			<if test="idNumber != null and idNumber != ''">
+                AND a.id_num = #{idNumber}
+            </if>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairPartyTrain">
+		SELECT 
+			<include refid="affairPartyTrainColumns"/>
+		FROM affair_party_train a
+		<include refid="affairPartyTrainJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_party_train(
+			id,
+			start_time,
+			end_time,
+			unit,
+			unit_id,
+			train_place,
+			train_form,
+			train_name,
+			train_result,
+			create_by,
+			create_org_id,
+			create_date,
+			update_by,
+			update_org_id,
+			update_date,
+			del_flag,
+			id_num
+		) VALUES (
+			#{id},
+			#{startTime},
+			#{endTime},
+			#{unit},
+			#{unitId},
+			#{trainPlace},
+			#{trainForm},
+			#{trainName},
+			#{trainResult},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateDate},
+			#{delFlag},
+			#{idNum}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_party_train SET 	
+			start_time = #{startTime},
+			end_time = #{endTime},
+			unit = #{unit},
+			unit_id = #{unitId},
+			train_place = #{trainPlace},
+			train_form = #{trainForm},
+			train_name = #{trainName},
+			train_result = #{trainResult},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_date = #{updateDate},
+			id_num = #{idNum}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_party_train SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_party_train SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+	
+</mapper>

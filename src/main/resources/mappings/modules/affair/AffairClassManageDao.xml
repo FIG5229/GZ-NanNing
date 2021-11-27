@@ -1,0 +1,457 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairClassManageDao">
+
+    <sql id="affairClassManageColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.year AS "year",
+		a.unit_id AS "unitId",
+		a.unit AS "unit",
+-- 		a.train_date AS "trainDate",
+		a.title AS "title",
+		a.type AS "type",
+		a.purpose AS "purpose",
+		a.content AS "content",
+		a.site AS "site",
+		a.train_object AS "trainObject",
+		a.budget AS "budget",
+		a.channel AS "channel",
+		a.open_status AS "openStatus",
+		a.class_status AS "classStatus",
+		a.posp_status AS "pospStatus",
+		a.creator AS "creator",
+		a.create_time AS "createTime",
+		a.creator_unit AS "creatorUnit",
+		a.sponsor_unit AS "sponsorUnit",
+		a.teacher AS "teacher",
+		a.assistant AS "assistant",
+		a.teacher_phone AS "teacherPhone",
+		a.phone AS "phone",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.status AS "status",
+		a.fees AS "fees",
+		a.teacher_fees AS "teacherFees",
+		a.informant AS "informant",
+		a.began_date AS "beganDate",
+		a.result_date AS "resultDate",
+		a.level AS "level",
+		a.creator_unit_id AS "creatorUnitId",
+		a.sponsor_unit_id AS "sponsorUnitId",
+		a.train_day AS "trainDay",
+		a.count AS "count",
+		a.train_way AS "trainWay",
+		a.class_count AS "classCount",
+		a.score AS "score",
+		a.participate_train AS "participateTrain",
+		a.real_participate AS "realParticipate",
+		a.participate_rate AS "participateRate",
+		a.passed_count AS "passedCount",
+		a.fail_count AS "failCount",
+		a.pass_rate AS "passRate",
+		a.accommodation_fees AS "accommodationFees",
+		a.board_wages AS "boardWages",
+		a.site_fees AS "siteFees",
+		a.other_fees AS "otherFees",
+		a.fees_count AS "feesCount",
+		a.study_time AS "studyTime",
+		a.average_time AS "averageTime",
+		a.study_count AS "studyCount",
+		a.average_count AS "averageCount",
+		a.project  AS "project",
+		a.approval_status  AS "approvalStatus"
+	</sql>
+
+    <sql id="affairClassManageJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+
+    <select id="get" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairClassManage">
+        SELECT
+        <include refid="affairClassManageColumns"/>
+        FROM affair_class_manage a
+        <include refid="affairClassManageJoins"/>
+        WHERE a.id = #{id}
+    </select>
+
+    <select id="findList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairClassManage">
+        SELECT
+        <include refid="affairClassManageColumns"/>
+        FROM affair_class_manage a
+        <include refid="affairClassManageJoins"/>
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="name != null and name != ''">
+                AND a.name LIKE
+                <if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+                <if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+                <if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+            </if>
+            <if test="year != null and year != ''">
+                AND a.year = #{year}
+            </if>
+            <if test="unit != null and unit != ''">
+                AND a.unit = #{unit}
+            </if>
+			<if test="type != null and type != ''">
+                AND a.type = #{type}
+            </if>
+			<choose>
+				<when test="beganDate != null and beganDate != '' and resultDate != null and resultDate != ''">
+					AND a.began_date between #{beganDate} and #{resultDate}
+				</when>
+				<when test="beganDate != null and beganDate != ''">
+					AND a.began_date>= #{beganDate}
+				</when>
+				<when test="resultDate != null and resultDate != ''">
+					AND  #{resultDate} >= a.result_date
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			${sqlMap.dsf}
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="findAllList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairClassManage">
+        SELECT
+        <include refid="affairClassManageColumns"/>
+        FROM affair_class_manage a
+        <include refid="affairClassManageJoins"/>
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <insert id="insert">
+		INSERT INTO affair_class_manage(
+			id,
+			name,
+			year,
+			unit_id,
+			unit,
+			title,
+			type,
+			purpose,
+			content,
+			site,
+			train_object,
+			budget,
+			channel,
+			open_status,
+			class_status,
+			posp_status,
+			creator,
+			create_time,
+			creator_unit,
+			sponsor_unit,
+			teacher,
+			assistant,
+			teacher_phone,
+			phone,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			status,
+		    fees,
+		    teacher_fees,
+		    informant,
+		    began_date,
+		    result_date,
+		    level,
+		    creator_unit_id,
+		    sponsor_unit_id,
+		    train_day,
+		    count,
+		    train_way,
+		    class_count,
+			score,
+			participate_train,
+			real_participate,
+			participate_rate,
+			passed_count,
+			fail_count,
+			pass_rate,
+			accommodation_fees,
+			board_wages,
+			site_fees,
+			other_fees,
+			fees_count,
+			study_time,
+			average_time,
+			study_count,
+			average_count,
+			project,
+			approval_status
+		) VALUES (
+			#{id},
+			#{name},
+			#{year},
+			#{unitId},
+			#{unit},
+			#{title},
+			#{type},
+			#{purpose},
+			#{content},
+			#{site},
+			#{trainObject},
+			#{budget},
+			#{channel},
+			#{openStatus},
+			#{classStatus},
+			#{pospStatus},
+			#{creator},
+			#{createTime},
+			#{creatorUnit},
+			#{sponsorUnit},
+			#{teacher},
+			#{assistant},
+			#{teacherPhone},
+			#{phone},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+		    #{status},
+		    #{fees},
+		    #{teacherFees},
+		    #{informant},
+		    #{beganDate},
+		    #{resultDate},
+		    #{level},
+		    #{creatorUnitId},
+		    #{sponsorUnitId},
+			#{trainDay},
+			#{count},
+			#{trainWay},
+			#{classCount},
+			#{score},
+			#{participateTrain},
+			#{realParticipate},
+			#{participateRate},
+			#{passedCount},
+			#{failCount},
+			#{passRate},
+			#{accommodationFees},
+			#{boardWages},
+			#{siteFees},
+			#{otherFees},
+			#{feesCount},
+			#{studyTime},
+			#{averageTime},
+			#{studyCount},
+			#{averageCount},
+			#{project},
+			#{approvalStatus}
+			)
+	</insert>
+
+    <update id="update">
+		UPDATE affair_class_manage SET 	
+			name = #{name},
+			year = #{year},
+			unit_id = #{unitId},
+			unit = #{unit},
+			title = #{title},
+			type = #{type},
+			purpose = #{purpose},
+			content = #{content},
+			site = #{site},
+			train_object = #{trainObject},
+			budget = #{budget},
+			channel = #{channel},
+			open_status = #{openStatus},
+			class_status = #{classStatus},
+			posp_status = #{pospStatus},
+			creator = #{creator},
+			create_time = #{createTime},
+			creator_unit = #{creatorUnit},
+			sponsor_unit = #{sponsorUnit},
+			teacher = #{teacher},
+			assistant = #{assistant},
+			teacher_phone = #{teacherPhone},
+			phone = #{phone},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			status = #{status},
+		    fees = #{fees},
+		    teacher_fees = #{teacherFees},
+		    informant = #{informant},
+		    began_date = #{beganDate},
+		    result_date = #{resultDate},
+		    level = #{level},
+		    creator_unit_id = #{creatorUnitId},
+		    sponsor_unit_id = #{sponsorUnitId},
+		    train_day = #{trainDay},
+		    count = #{count},
+		    train_way = #{trainWay},
+		    class_count = #{classCount},
+			score = #{score},
+			participate_train = #{participateTrain},
+			real_participate = #{realParticipate},
+			participate_rate = #{participateRate},
+			passed_count = #{passedCount},
+			fail_count = #{failCount},
+			pass_rate = #{passRate},
+			accommodation_fees = #{accommodationFees},
+			board_wages = #{boardWages},
+			site_fees = #{siteFees},
+			other_fees = #{otherFees},
+			fees_count = #{feesCount},
+			study_time = #{studyTime},
+			average_time = #{averageTime},
+			study_count = #{studyCount},
+			average_count = #{averageCount},
+			project = #{project},
+			approval_status = #{approvalStatus}
+		WHERE id = #{id}
+	</update>
+
+    <update id="delete">
+		UPDATE affair_class_manage SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+    <update id="deleteByIds">
+        UPDATE affair_class_manage SET
+        del_flag = '1'
+        WHERE id in
+        <foreach collection="ids" item="item" index="index"
+                 open="(" separator="," close=")">#{item}
+        </foreach>
+    </update>
+
+	<select id="findByIds" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairClassManage">
+		select
+		<include refid="affairClassManageColumns"/>
+		from affair_class_manage a where id in
+		<foreach collection="ids" item="item" index="index"
+				 open="(" separator="," close=")">#{item}
+		</foreach>
+	</select>
+
+	<select id="idList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairClassInformation">
+		SELECT a.* FROM affair_class_information a inner join affair_class_manage man on man.id = a.class_manage_id
+
+		<where>
+			a.del_flag = #{affairClassInformation.DEL_FLAG_NORMAL}
+			<if test="affairClassInformation.className != null and affairClassInformation.className != ''">
+				AND a.class_name LIKE
+				<if test="affairClassInformation.dbName == 'oracle'">'%'||#{affairClassInformation.className}||'%'</if>
+				<if test="affairClassInformation.dbName == 'mssql'">'%'+#{affairClassInformation.className}+'%'</if>
+				<if test="affairClassInformation.dbName == 'mysql'">concat('%',#{affairClassInformation.className},'%')</if>
+				<if test="affairClassInformation.dbName == 'postgre'">'%'||#{affairClassInformation.className}||'%'</if>
+			</if>
+			<if test="affairClassInformation.number != null and affairClassInformation.number != ''">
+				AND a.number LIKE
+				<if test="affairClassInformation.dbName == 'oracle'">'%'||#{affairClassInformation.number}||'%'</if>
+				<if test="affairClassInformation.dbName == 'mssql'">'%'+#{affairClassInformation.number}+'%'</if>
+				<if test="affairClassInformation.dbName == 'mysql'">concat('%',#{affairClassInformation.number},'%')</if>
+				<if test="affairClassInformation.dbName == 'postgre'">'%'||#{affairClassInformation.number}||'%'</if>
+			</if>
+			<if test="affairClassInformation.name != null and affairClassInformation.name != ''">
+				AND a.name LIKE
+				<if test="affairClassInformation.dbName == 'oracle'">'%'||#{affairClassInformation.name}||'%'</if>
+				<if test="affairClassInformation.dbName == 'mssql'">'%'+#{affairClassInformation.name}+'%'</if>
+				<if test="affairClassInformation.dbName == 'mysql'">concat('%',#{affairClassInformation.name},'%')</if>
+				<if test="affairClassInformation.dbName == 'postgre'">'%'||#{affairClassInformation.name}||'%'</if>
+			</if>
+			<if test="affairClassInformation.way != null and affairClassInformation.way != ''">
+				AND a.way = #{affairClassInformation.way}
+			</if>
+			<if test="affairClassInformation.beganDate != null and affairClassInformation.beganDate != ''">
+				AND a.began_date = #{affairClassInformation.beganDate}
+			</if>
+			<if test="affairClassInformation.resultDate != null and affairClassInformation.resultDate != ''">
+				AND a.result_date = #{affairClassInformation.resultDate}
+			</if>
+			<if test="affairClassInformation.unit != null and affairClassInformation.unit != ''">
+				AND a.unit = #{affairClassInformation.unit}
+			</if>
+				AND man.id = #{id}
+			<choose>
+				<when test="affairClassInformation.beganDate != null and affairClassInformation.beganDate != '' and affairClassInformation.resultDate != null and affairClassInformation.resultDate != ''">
+					AND a.began_date between #{affairClassInformation.beganDate} and #{affairClassInformation.resultDate}
+				</when>
+				<when test="affairClassInformation.beganDate != null and affairClassInformation.beganDate != ''">
+					AND a.began_date>= #{affairClassInformation.beganDate}
+				</when>
+				<when test="affairClassInformation.resultDate != null and affairClassInformation.resultDate != ''">
+					AND  #{affairClassInformation.resultDate} >= a.result_date
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			${affairClassInformation.sqlMap.dsf}
+		</where>
+	</select>
+
+
+	<select id="idListRenYuan" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairPersonnelMessage">
+		SELECT a.* FROM affair_class_manage man inner join affair_personnel_message a on man.id = a.class_manage_id
+		<where>
+			a.del_flag = #{affairPersonnelMessage.DEL_FLAG_NORMAL}
+			<if test="affairPersonnelMessage.username != null and affairPersonnelMessage.username != ''">
+				AND a.username = #{affairPersonnelMessage.username}
+			</if>
+			<if test="affairPersonnelMessage.birthDate != null and affairPersonnelMessage.birthDate != ''">
+				AND a.birth_date = #{affairPersonnelMessage.birthDate}
+			</if>
+			<if test="affairPersonnelMessage.organization != null and affairPersonnelMessage.organization != ''">
+				AND a.organization = #{affairPersonnelMessage.organization}
+			</if>
+			<if test="affairPersonnelMessage.post != null and affairPersonnelMessage.post != ''">
+				AND a.post = #{affairPersonnelMessage.post}
+			</if>
+			AND man.id = #{affairPersonnelMessage.id}
+		</where>
+
+	</select>
+
+	<update id="deleteClassInfo">
+		UPDATE affair_class_information SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+</mapper>

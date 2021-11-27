@@ -1,0 +1,340 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairNetworkCollegeDao">
+    
+	<sql id="affairNetworkCollegeColumns">
+		a.id AS "id",
+		a.unit AS "unit",
+		a.time AS "time",
+		a.name AS "name",
+		a.last_month_integral AS "lastMonthIntegral",
+		a.this_month_statistics AS "thisMonthStatistics",
+		a.this_month_integral AS "thisMonthIntegral",
+		a.this_year_statistics AS "thisYearStatistics",
+		a.adjunct AS "adjunct",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.unit_id AS "unitId",
+		a.id_number AS "idNumber"
+	</sql>
+	
+	<sql id="affairNetworkCollegeJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairNetworkCollege">
+		SELECT 
+			<include refid="affairNetworkCollegeColumns"/>
+		FROM affair_network_college a
+		<include refid="affairNetworkCollegeJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairNetworkCollege">
+		SELECT 
+			<include refid="affairNetworkCollegeColumns"/>
+		FROM affair_network_college a
+		<include refid="affairNetworkCollegeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="unit != null and unit != ''">
+				AND a.unit LIKE
+				<if test="dbName == 'oracle'">'%'||#{unit}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{unit}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{unit},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{unit}||'%'</if>
+			</if>
+			<if test="time != null and time != ''">
+				AND a.time LIKE
+				<if test="dbName == 'oracle'">'%'||#{time}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{time}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{time},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{time}||'%'</if>
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE
+				<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+				<if test="dbName == 'postgre'">'%'||#{name}||'%'</if>
+			</if>
+			<if test="userId != '' and userId != null">
+				AND ( o.ID = #{userId} OR o.parent_ids LIKE'%,'||#{userId}||',%' OR u.ID = #{createBy.id} or a.unit_id = #{userId} or u.office_id = #{userId})
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairNetworkCollege">
+		SELECT 
+			<include refid="affairNetworkCollegeColumns"/>
+		FROM affair_network_college a
+		<include refid="affairNetworkCollegeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_network_college(
+			id,
+			unit,
+			time,
+			name,
+			last_month_integral,
+			this_month_statistics,
+			this_month_integral,
+			this_year_statistics,
+			adjunct,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			unit_id,
+			id_number
+		) VALUES (
+			#{id},
+			#{unit},
+			#{time},
+			#{name},
+			#{lastMonthIntegral},
+			#{thisMonthStatistics},
+			#{thisMonthIntegral},
+			#{thisYearStatistics},
+			#{adjunct},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{unitId},
+			#{idNumber}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_network_college SET 	
+			unit = #{unit},
+			time = #{time},
+			name = #{name},
+			last_month_integral = #{lastMonthIntegral},
+			this_month_statistics = #{thisMonthStatistics},
+			this_month_integral = #{thisMonthIntegral},
+			this_year_statistics = #{thisYearStatistics},
+			adjunct = #{adjunct},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			unit_id = #{unitId},
+			id_number = #{idNumber}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_network_college SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<select id="selectLastYearIntegeralByUserId" resultType="double" >
+		SELECT A
+			.this_year_statistics
+		FROM
+			affair_network_college A
+		WHERE
+			A.user_id = #{userId}
+			and TO_CHAR(A.time, 'yyyy') = #{ye}
+		ORDER BY
+			A."time" DESC
+			LIMIT 1
+	</select>
+
+	<select id="selectThisYearCodeByUserId" resultType="double" >
+		SELECT SUM
+			(this_month_integral)
+		FROM
+			affair_network_college
+		WHERE
+			user_id = #{userId}
+			and TO_CHAR(time, 'yyyy') = #{year}
+	</select>
+
+	<select id="selectLastMonthById" resultType="double">
+		SELECT A
+			.this_month_integral
+		FROM
+			affair_network_college A
+		WHERE
+			A.user_id = #{userId}
+			and TO_CHAR(A.time, 'yyyy') = #{year}
+			and TO_CHAR(A.time, 'mm') =  #{month}
+	</select>
+
+	<select id="selectSumYearById" resultType="java.lang.String">
+		SELECT SUM(this_month_integral )
+		FROM
+			affair_network_college
+		WHERE
+			 id_number = #{userId}
+			 AND del_flag = '0'
+			AND time LIKE concat('%',#{year},'%')
+	</select>
+
+	<select id="selectLastScore" resultType="java.lang.Double">
+		SELECT
+			this_month_integral
+		FROM
+			affair_network_college
+		WHERE
+			id_number = #{idNumber}
+			AND del_flag = '0'
+			AND time LIKE concat('%',#{time},'%')
+			limit 1
+	</select>
+
+	<select id="selectAllId" resultType="java.lang.String">
+		SELECT DISTINCT
+			( id_number )
+		FROM
+			affair_network_college b
+			LEFT JOIN sys_office o ON o.id = b.create_org_id
+			LEFT JOIN sys_user u ON u.id = b.create_by
+		WHERE
+			b.del_flag = '0'
+		<if test="userId != '' and userId != null">
+			AND ( o.ID = #{userId} OR o.parent_ids LIKE'%,'||#{userId}||',%' OR u.ID = #{userId} or b.unit_id = #{userId} or u.office_id = #{userId})
+		</if>
+	</select>
+
+	<select id="selectBean" resultType="java.lang.String">
+		SELECT SUM(this_month_integral )
+		FROM
+			affair_network_college
+		WHERE
+			 id_number = #{id}
+			 AND del_flag = '0'
+			AND time LIKE concat('%',#{year},'%')
+	</select>
+
+	<select id="selectUnit" resultType="java.lang.String">
+		SELECT DISTINCT
+			( unit )
+		FROM
+			affair_network_college
+		WHERE
+			del_flag = '0'
+			and id_number = #{id}
+	</select>
+
+	<select id="selectName" resultType="java.lang.String">
+		SELECT DISTINCT
+			( name )
+		FROM
+			affair_network_college
+		WHERE
+			del_flag = '0'
+			and id_number = #{id}
+	</select>
+
+    <select id="selectIdNumber" resultType="java.lang.String">
+		SELECT DISTINCT
+			( id_number )
+		FROM
+			affair_network_college
+		WHERE
+			del_flag = '0' and
+			name = #{name}
+	</select>
+
+    <select id="selectAllBean" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairNetworkCollege">
+		 SELECT
+		<include refid="affairNetworkCollegeColumns"/>
+			FROM affair_network_college a
+		<include refid="affairNetworkCollegeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="unit != null and unit != ''">
+				AND a.unit LIKE #{unit}
+			</if>
+			<if test="time != null and time != ''">
+				AND a.time LIKE concat('%',#{time},'%')
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE #{name}
+			</if>
+			<if test="userId != '' and userId != null">
+				AND ( o.ID = #{userId} OR o.parent_ids LIKE'%,'||#{userId}||',%' OR u.ID = #{createBy.id} or a.unit_id = #{userId} or u.office_id = #{userId})
+			</if>
+		</where>
+	</select>
+
+    <select id="findProblemDataList"
+            resultType="com.thinkgem.jeesite.modules.affair.entity.AffairNetworkCollege">
+		SELECT
+		<include refid="affairNetworkCollegeColumns"/>
+		FROM affair_network_college a
+		<include refid="affairNetworkCollegeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE #{name}
+			</if>
+			and (a.time = '' or a.time is null or (substring(a.time,5,1) &lt;&gt; '-' or substring(a.time,6,1) not in ('0','1') or substring(a.time,7,1) not in ('0','1','2','3','4','5','6','7','8','9')))
+			<if test="userId != '' and userId != null">
+				AND ( o.ID = #{userId} OR o.parent_ids LIKE'%,'||#{userId}||',%' OR u.ID = #{createBy.id} or a.unit_id = #{userId} or u.office_id = #{userId})
+			</if>
+			<if test="createById_pro!='' and createById_pro != null ">
+				AND a.create_by =#{createById_pro}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<update id="deleteByIds">
+		UPDATE affair_network_college SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+</mapper>

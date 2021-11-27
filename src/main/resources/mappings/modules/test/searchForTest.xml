@@ -1,0 +1,435 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.search.enums.SearchForDao">
+
+	<sql id="personnelBaseColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.id_number AS "idNumber",
+		a.nation AS "nation",
+		a.birthday AS "birthday",
+		a.status AS "status",
+		a.blood_type AS "bloodType",
+		a.police_depot_sign AS "policeDepotSign",
+		a.police_id_number AS "policeIdNumber",
+		a.personnel_type AS "personnelType",
+		a.native_place AS "nativePlace",
+		a.birth_place AS "birthPlace",
+		a.grow_place AS "growPlace",
+		a.population_character AS "populationCharacter",
+		a.hjszd AS "hjszd",
+		a.identity AS "identity",
+		a.marriage_status AS "marriageStatus",
+		a.secret_status AS "secretStatus",
+		a.health_status AS "healthStatus",
+		a.hjszdxz AS "hjszdxz",
+		a.reason AS "reason",
+		a.work_date AS "workDate",
+        a.public_security_date AS "publicSecurityDate",
+		a.jcgzjlsj AS "jcgzjlsj",
+		a.gljsjzz AS "gljsjzz",
+		a.jxyjxznx AS "jxyjxznx",
+		a.politics_face AS "politicsFace",
+		a.organization_date AS "organizationDate",
+		a.workunit_code AS "workunitCode",
+		a.workunit_name AS "workunitName",
+		a.unit_code AS "unitCode",
+		a.relationship_unit AS "relationshipUnit",
+		a.bmhjz AS "bmhjz",
+		a.job_abbreviation AS "jobAbbreviation",
+		a.job_fullname AS "jobFullname",
+		a.job AS "job",
+		a.xggbbs AS "xggbbs",
+		a.is_xggb AS "isXggb",
+		a.category AS "category",
+		a.expertise AS "expertise",
+		a.award AS "award",
+		a.assessment AS "assessment",
+		a.remarks AS "remarks",
+		a.photo AS "photo",
+		a.sex AS "sex",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.workunit_id AS "workunitId"
+	</sql>
+	<sql id="personnelBaseJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+    </sql>
+
+	<sql id="personnelRewardColumns">
+		b.id AS "id",
+		b.id_number AS "idNumber",
+		b.name_code AS "nameCode",
+		b.file_no AS "fileNo",
+		b.file_name AS "fileName",
+		b.name AS "rewardName",
+		b.job AS "job",
+		b.job_level AS "jobLevel",
+		b.designation_level AS "designationLevel",
+		b.sign AS "sign",
+		b.treatment_type AS "treatmentType",
+		b.reward_reason AS "rewardReason",
+		b.approval_org_name AS "approvalOrgName",
+		b.approval_org_code AS "approvalOrgCode",
+		b.approcal_org_type AS "approcalOrgType",
+		b.approcal_org_level AS "approcalOrgLevel",
+		b.approcal_date AS "approcalDate",
+		b.achievement AS "achievement",
+		b.cancel_identification AS "cancelIdentification",
+		b.cancel_date AS "cancelDate",
+		b.cancel_reason AS "cancelReason",
+		b.create_by AS "createBy.id",
+		b.create_org_id AS "createOrgId",
+		b.create_id_no AS "createIdNo",
+		b.create_date AS "createDate",
+		b.update_by AS "updateBy.id",
+		b.update_org_id AS "updateOrgId",
+		b.update_id_no AS "updateIdNo",
+		b.update_date AS "updateDate",
+		b.del_flag AS "delFlag"
+	</sql>
+
+	<sql id="personnelRewardJoins">
+		LEFT JOIN sys_office o ON o.id = b.create_org_id
+		LEFT JOIN sys_user u ON u.id = b.create_by
+	</sql>
+
+	<sql id="personnelPunishColumns">
+		c.id AS "id",
+		c.id_number AS "idNumber",
+		c.name AS "cjName",
+		c.type AS "cjType",
+		c.code AS "cjcode",
+		c.job_level AS "jobLevel",
+		c.case_no AS "caseNo",
+		c.reason AS "reason",
+		c.case_reason AS "caseReason",
+		c.approval_date AS "approvalDate",
+		c.approval_org AS "approvalOrg",
+		c.approval_org_code AS "approvalOrgCode",
+		c.file_no AS "fileNo",
+		c.approval_office_type AS "cjOrgType",
+		c.is_cancel_over AS "isCancelOver",
+		c.cancel_date AS "cancelDate",
+		c.cancel_reason AS "cancelReason",
+		c.create_by AS "createBy.id",
+		c.create_org_id AS "createOrgId",
+		c.create_id_no AS "createIdNo",
+		c.create_date AS "createDate",
+		c.update_by AS "updateBy.id",
+		c.update_org_id AS "updateOrgId",
+		c.update_id_no AS "updateIdNo",
+		c.update_date AS "updateDate",
+		c.del_flag AS "delFlag"
+	</sql>
+
+	<sql id="personnelPunishJoins">
+		LEFT JOIN sys_office o ON o.id = c.create_org_id
+		LEFT JOIN sys_user u ON u.id = c.create_by
+	</sql>
+
+	<sql id="personnelYearCheckColumns">
+		d.id AS "id",
+		d.id_number AS "idNumber",
+		d.year AS "year",
+		d.conclusion AS "conclusion",
+		d.date AS "date",
+		d.unit AS "unit",
+		d.unit_code AS "unitCode",
+		d.should_num AS "shouldNum",
+		d.real_num AS "realNum",
+		d.yx_vote_num AS "yxVoteNum",
+		d.cz_vote_num AS "czVoteNum",
+		d.jbcz_vote_num AS "jbczVoteNum",
+		d.bcz_vote_num AS "bczVoteNum",
+		d.qq_vote_num AS "qqVoteNum",
+		d.member AS "member",
+		d.remark AS "remark",
+		d.create_by AS "createBy.id",
+		d.create_org_id AS "createOrgId",
+		d.create_id_no AS "createIdNo",
+		d.create_date AS "createDate",
+		d.update_by AS "updateBy.id",
+		d.update_org_id AS "updateOrgId",
+		d.update_id_no AS "updateIdNo",
+		d.update_date AS "updateDate",
+		d.del_flag AS "delFlag",
+		d.unit_id AS "unitId"
+	</sql>
+
+	<sql id="personnelYearCheckJoins">
+		LEFT JOIN sys_office o ON o.id =d.create_org_id
+		LEFT JOIN sys_user u ON u.id = d.create_by
+	</sql>
+
+	<sql id="personnelXueliColumns">
+		e.id AS "id",
+		e.id_number AS "idNumber",
+		e.name AS "xlName",
+		e.school_name AS "schoolName",
+		e.classify AS "classify",
+		e.start_date AS "startDate",
+		e.end_date AS "endDate",
+		e.year AS "year",
+		e.major_name AS "majorName",
+		e.major_code AS "majorCode",
+		e.type1 AS "type1",
+		e.explain AS "explain",
+		e.status AS "status",
+		e.sequence_no AS "sequenceNo",
+		e.school_area AS "schoolArea",
+		e.type2 AS "type2",
+		e.certificate_no AS "certificateNo",
+		e.modality AS "modality",
+		e.complete_situation AS "completeSituation",
+		e.describe AS "describe",
+		e.create_by AS "createBy.id",
+		e.create_org_id AS "createOrgId",
+		e.create_id_no AS "createIdNo",
+		e.create_date AS "createDate",
+		e.update_by AS "updateBy.id",
+		e.update_org_id AS "updateOrgId",
+		e.update_id_no AS "updateIdNo",
+		e.update_date AS "updateDate",
+		e.del_flag AS "delFlag"
+	</sql>
+
+	<sql id="personnelXueliJoins">
+		LEFT JOIN sys_office o ON o.id = e.create_org_id
+		LEFT JOIN sys_user u ON u.id = e.create_by
+	</sql>
+
+	<sql id="examLdPerformanceAppraisalColumns">
+		f.id AS "id",
+		f.unit AS "unit",
+		f.job AS "job",
+		f.name AS "name",
+		f.fraction AS "fraction",
+		f.item AS "item",
+		f.exam_type AS "examType",
+		f.workflow_id AS "workflowId",
+		f.create_by AS "createBy.id",
+		f.create_org_id AS "createOrgId",
+		f.create_id_no AS "createIdNo",
+		f.create_date AS "createDate",
+		f.update_by AS "updateBy.id",
+		f.update_org_id AS "updateOrgId",
+		f.update_id_no AS "updateIdNo",
+		f.update_date AS "updateDate",
+		f.del_flag AS "delFlag",
+		f.year AS "year",
+		f.month AS "month"
+	</sql>
+
+	<sql id="examLdPerformanceAppraisalJoins">
+		LEFT JOIN sys_office o ON o.id = f.create_org_id
+		LEFT JOIN sys_user u ON u.id = f.create_by
+	</sql>
+
+	<!--<select id="findList" resultType="java.util.Map">
+		SELECT
+		<include refid="personnelBaseColumns"/>,
+		<include refid="personnelRewardColumns"/>,
+		<include refid="personnelPunishColumns"/>,
+		<include refid="personnelYearCheckColumns"/>,
+		<include refid="personnelXueliColumns"/>
+		FROM personnel_base a, personnel_reward b, personnel_punish c, personnel_year_check d, personnel_xueli e
+		<include refid="personnelBaseJoins"/>,
+		<include refid="personnelRewardJoins"/>,
+		<include refid="personnelPunishJoins"/>,
+		<include refid="personnelYearCheckJoins"/>,
+		<include refid="personnelXueliJoins"/>
+		<where>
+			a.del_flag = '0'
+			AND b.del_flag = '0' AND c.del_flag = '0' AND d.del_flag = '0' AND e.del_flag = '0'
+			AND a.id_number = b.id_number
+			AND a.id_number = c.id_number
+			AND a.id_number = d.id_number
+			AND a.id_number = e.id_number
+			<if test="sex != null and sex != ''">
+				AND a.sex = #{sex}
+			</if>
+			<if test="nation != null and nation != ''">
+				AND a.nation = #{nation}
+			</if>
+			<if test="mianmao != null and mianmao != ''">
+				AND a.politics_face = #{mianmao}
+			</if>
+			<if test="workunitId != null and workunitId != ''">
+				AND a.workunit_id = #{workunitId}
+			</if>
+			<if test="rewardName != null and rewardName != ''">
+				AND b.name LIKE '%'||#{rewardName}||'%'
+			</if>
+			<if test="approcalOrgType != null and approcalOrgType !=''">
+				AND b.approcal_org_type = #{approcalOrgType}
+			</if>
+			<if test="cjType != null and cjType != ''">
+				AND c.type = #{cjType}
+			</if>
+			<if test="cjName != null and cjName != ''">
+				AND c.name LIKE '%'||#{cjName}||'%'
+			</if>
+			<if test="cjOrgType != null and cjOrgType != ''">
+				AND c.approval_office_type = #{cjOrgType}
+			</if>
+			<if test="year != null and year != ''">
+				AND d.year LIKE '%'||#{year}||'%'
+			</if>
+			<if test="conclusion != null and conclusion != ''">
+				AND d.conclusion LIKE '%'||#{conclusion}||'%'
+			</if>
+			<if test="xlName != null and xlName != ''">
+				AND e.name LIKE '%'||#{xlName}||'%'
+			</if>
+			<if test="schoolName != null and schoolName != ''">
+				AND e.school_name LIKE '%'||#{schoolName}||'%'
+			</if>
+			&lt;!&ndash; 数据范围过滤 &ndash;&gt;
+			&#45;&#45; 			${sqlMap.dsf}
+		</where>
+	</select>-->
+
+	<select id="findLists" resultType="java.util.Map">
+		SELECT
+		<include refid="personnelBaseColumns"/>,
+		<include refid="personnelRewardColumns"/>,
+		<include refid="personnelPunishColumns"/>,
+		<include refid="personnelYearCheckColumns"/>,
+		<include refid="personnelXueliColumns"/>
+		FROM personnel_base a, personnel_reward b, personnel_punish c, personnel_year_check d, personnel_xueli e
+		<include refid="personnelBaseJoins"/>,
+		<include refid="personnelRewardJoins"/>,
+		<include refid="personnelPunishJoins"/>,
+		<include refid="personnelYearCheckJoins"/>,
+		<include refid="personnelXueliJoins"/>
+		<where>
+			a.del_flag = '0'
+			AND b.del_flag = '0' AND c.del_flag = '0' AND d.del_flag = '0' AND e.del_flag = '0'
+			AND a.id_number = b.id_number
+			AND a.id_number = c.id_number
+			AND a.id_number = d.id_number
+			AND a.id_number = e.id_number
+			<if test="sex != null and sex != ''">
+				AND a.sex = #{sex}
+			</if>
+			<if test="nation != null and nation != ''">
+				AND a.nation in <foreach collection="nation" item="item" index="index"
+										 open="(" separator="," close=")">#{item}</foreach>
+			</if>
+			<if test="mianmao != null and mianmao != ''">
+				AND a.politics_face in <foreach collection="mianmao" item="item" index="index"
+												open="(" separator="," close=")">#{item}</foreach>
+			</if>
+			<if test="rewardName != null and rewardName != ''">
+				AND b.name LIKE '%'||#{rewardName}||'%'
+			</if>
+			<if test="approcalOrgType != null and approcalOrgType !=''">
+				AND b.approcal_org_type in <foreach collection="approcalOrgType" item="item" index="index"
+													open="(" separator="," close=")">#{item}</foreach>
+			</if>
+			<if test="cjType != null and cjType != ''">
+				AND c.type in <foreach collection="cjType" item="item" index="index"
+									   open="(" separator="," close=")">#{item}</foreach>
+			</if>
+			<if test="cjName != null and cjName != ''">
+				AND c.name LIKE '%'||#{cjName}||'%'
+			</if>
+			<if test="cjOrgType != null and cjOrgType != ''">
+				AND c.approval_office_type in <foreach collection="cjOrgType" item="item" index="index"
+													   open="(" separator="," close=")">#{item}</foreach>
+			</if>
+			<if test="year != null and year != ''">
+				AND d.year LIKE '%'||#{year}||'%'
+			</if>
+			<if test="conclusion != null and conclusion != ''">
+				AND d.conclusion LIKE '%'||#{conclusion}||'%'
+			</if>
+			<if test="xlName != null and xlName != ''">
+				AND e.name LIKE '%'||#{xlName}||'%'
+			</if>
+			<if test="schoolName != null and schoolName != ''">
+				AND e.school_name LIKE '%'||#{schoolName}||'%'
+			</if>
+			<!-- 数据范围过滤 -->
+						${sqlMap.dsf}
+		</where>
+	</select>
+
+	<!--<select id="findBaseList" resultType="java.util.Map">
+		SELECT
+		<include refid="personnelBaseColumns"/>
+		FROM personnel_base a
+		<include refid="personnelBaseJoins"/>
+		<where>
+			a.del_flag = '0'
+			<if test="sex != null and sex != ''">
+				AND a.sex = #{sex}
+			</if>
+			<if test="nation != null and nation != ''">
+				AND a.nation = #{nation}
+			</if>
+			<if test="mianmao != null and mianmao != ''">
+				AND a.politics_face = #{mianmao}
+			</if>
+			<if test="unitId != null and unitId != ''">
+				AND a.workunit_id = #{unitId}
+			</if>
+			&lt;!&ndash; 数据范围过滤 &ndash;&gt;
+			&#45;&#45; 			${sqlMap.dsf}
+		</where>
+	</select>-->
+
+	<select id="findBaseLists" resultType="java.util.Map">
+		SELECT
+		<include refid="personnelBaseColumns"/>
+		FROM personnel_base a
+		<include refid="personnelBaseJoins"/>
+		<where>
+			a.del_flag = '0'
+			<if test="sex != null and sex != ''">
+				AND a.sex = #{sex}
+			</if>
+			<if test="nation != null and nation != ''">
+				AND a.nation = #{nation}
+			</if>
+			<if test="mianmao != null and mianmao != ''">
+				AND a.politics_face in <foreach collection="mianmao" item="item" index="index"
+												open="(" separator="," close=")">#{item}</foreach>
+			</if>
+			<if test="age != null and age != ''">
+				AND a.birthday >= #{age}
+			</if>
+			<!-- 数据范围过滤 -->
+			${sqlMap.dsf}
+		</where>
+	</select>
+
+	<select id="findInfo" resultType="java.util.Map">
+		SELECT
+		<include refid="examLdPerformanceAppraisalColumns"/>
+		f.name AS "name",
+		AVG (CAST ( f.fraction AS INTEGER ))
+		FROM exam_ld_performance_appraisal f, personnel_base a
+		<include refid="examLdPerformanceAppraisalJoins"/>
+		<where>
+			f.del_flag = '0'
+			<if test="kpYear != null and kpYear != ''">
+				AND f.exam_type = '2'
+				AND SPLIT_PART(f.month, '-', 1) = #{kpYear}
+				GROUP BY f.name
+				HAVING AVG (CAST ( f.fraction AS INTEGER )) &gt;= #{score}
+			</if>
+			<!-- 数据范围过滤 -->
+	${sqlMap.dsf}
+		</where>
+	</select>
+</mapper>

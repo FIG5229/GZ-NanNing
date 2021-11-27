@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairGroupManagementDao">
+    
+	<sql id="affairGroupManagementColumns">
+		a.id AS "id",
+		a.payer AS "payer",
+		a.payer_num AS "payerNum",
+		a.amount AS "amount",
+		a.payment_content AS "paymentContent",
+		a.payment_time AS "paymentTime",
+		a.group1 AS "group1",
+		a.group_id AS "groupId",
+		a.payee AS "payee",
+		a.payee_num AS "payeeNum",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.unit AS "unit",
+		a.unit_id AS "unitId"
+	</sql>
+	
+	<sql id="affairGroupManagementJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_by
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairGroupManagement">
+		SELECT 
+			<include refid="affairGroupManagementColumns"/>
+		FROM affair_group_management a
+		<include refid="affairGroupManagementJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairGroupManagement">
+		SELECT 
+			<include refid="affairGroupManagementColumns"/>
+		FROM affair_group_management a
+		<include refid="affairGroupManagementJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="payer != null and payer != ''">
+				AND a.payer LIKE '%'||#{payer}||'%'
+			</if>
+			<choose>
+				<when test="minMoney != null and minMoney != '' and maxMoney != null and maxMoney != ''">
+					AND a.amount between #{minMoney} and #{maxMoney}
+				</when>
+				<when test="minMoney != null and minMoney != ''">
+					AND a.amount >= #{minMoney}
+				</when>
+				<when test="maxMoney != null and maxMoney != ''">
+					AND  #{maxMoney} >= a.amount
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			<choose>
+				<when test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+					AND a.payment_time between #{startDate} and #{endDate}
+				</when>
+				<when test="startDate != null and startDate != ''">
+					AND a.payment_time >= #{startDate}
+				</when>
+				<when test="endDate != null and endDate != ''">
+					AND  #{endDate} >= a.payment_time
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			<if test="groupId != null and groupId != ''">
+				AND a.group_id = #{groupId}
+			</if>
+			<if test="payee != null and payee != ''">
+				AND a.payee LIKE '%'||#{payee}||'%'
+			</if>
+			<if test="unit != null and unit != ''">
+				AND a.unit LIKE '%'||#{unit}||'%'
+			</if>
+			<if test="unitId != null and unitId != ''">
+				AND a.unit_id LIKE '%'||#{unitId}||'%'
+			</if>
+			<choose>
+				<when test="userGroup == '1'.toString()">
+
+				</when>
+				<when test="userGroup != '' and userGroup != null and userGroup != '1'.toString() and userOffice != null and userOffice != ''">
+					AND ( o.ID = #{userOffice} OR o.parent_ids LIKE'%,'||#{userOffice}||',%' OR u.ID = #{createBy.id} or a.group_id = #{userGroup} )
+				</when>
+				<when test="userOffice != null and userOffice != '' ">
+					<!--AND ( o.ID = #{userOffice} OR o.parent_ids LIKE'%,'||#{userOffice}||',%' OR u.ID = #{createBy.id} or a.unit_id LIKE'%'||#{userOffice}||'%' or u.office_id LIKE'%'||#{userOffice}||'%')-->
+					/*AND ( o.ID = #{userOffice} OR o.parent_ids LIKE'%,'||#{userOffice}||',%' OR u.ID = #{createBy.id} or a.unit_id LIKE'%,'||#{userOffice}||'%' or a.unit_id LIKE'%'||#{userOffice}||',%' or a.unit_id = #{userOffice} or u.office_id = #{userOffice})*/
+					AND ( o.ID = #{userOffice} OR o.parent_ids LIKE'%,'||#{userOffice}||',%' OR u.ID = #{createBy.id} )
+				</when>
+				<otherwise>
+					AND ( o.ID = #{userOffice} OR u.ID = #{createBy.id} )
+				</otherwise>
+			</choose>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.payment_time DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairGroupManagement">
+		SELECT 
+			<include refid="affairGroupManagementColumns"/>
+		FROM affair_group_management a
+		<include refid="affairGroupManagementJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_group_management(
+			id,
+			payer,
+			payer_num,
+			amount,
+			payment_content,
+			payment_time,
+			group1,
+			group_id,
+			payee,
+			payee_num,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag,
+			unit,
+			unit_id
+		) VALUES (
+			#{id},
+			#{payer},
+			#{payerNum},
+			#{amount},
+			#{paymentContent},
+			#{paymentTime},
+			#{group1},
+			#{groupId},
+			#{payee},
+			#{payeeNum},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag},
+			#{unit},
+			#{unitId}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_group_management SET 	
+			payer = #{payer},
+			payer_num = #{payerNum},
+			amount = #{amount},
+			payment_content = #{paymentContent},
+			payment_time = #{paymentTime},
+			group1 = #{group1},
+			group_id = #{groupId},
+			payee = #{payee},
+			payee_num = #{payeeNum},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate},
+			unit = #{unit},
+			unit_id = #{unitId}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_group_management SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	<update id="deleteByIds">
+		UPDATE affair_group_management SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+
+	<select id="findFeeDetailList" resultType="com.thinkgem.jeesite.modules.affair.entity.AffairGroupManagement">
+		select <include refid="affairGroupManagementColumns"/>
+		from affair_group_management a
+		left join affair_tw_base t on t.id=a.group_id
+		where a.del_flag = '0'
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.payment_time, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.payment_time) = #{year}
+			</when>
+			<when test="startDate != null and endDate != null">
+				AND a.payment_time between  #{startDate,jdbcType=DATE} and #{endDate,jdbcType=DATE}
+			</when>
+			<when test="startDate != null">
+				AND a.payment_time >= #{startDate,jdbcType=DATE}
+			</when>
+			<when test="endDate != null">
+				AND  #{endDate,jdbcType=DATE} >= a.payment_time
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		and (t.parent_ids like '%,' || #{payee} || ',%' or t.parent_id=#{payee})
+
+	</select>
+
+</mapper>

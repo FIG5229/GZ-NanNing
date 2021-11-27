@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>南宁铁路公安局微信报警平台</title>
+    <link rel="stylesheet" type="text/css" href="./css/base.css">
+    <link rel="stylesheet" href="./font/iconfont.css">
+	<link rel="shortcut icon" href="./favicon.ico" type="image/x-icon" />
+    <style>
+        .login-form{
+            width: 300px;
+            text-align: center;
+            margin:0 auto;
+            padding-top: 100px;
+        }
+    </style>
+</head>
+<body class="login-body">
+<div class="login-wrap">
+    <div class="login">
+        <div class="login-form">
+            <form id="loginForm">
+                <div class="item">
+                    <label for="username"><i class="iconfont icon-login"></i> 用户名</label>
+                    <input type="text" id="username" class="inp-txt" >
+                </div>
+                <div class="item">
+                    <label for="password"><i class="iconfont icon-password"></i> 密 &nbsp;&nbsp;码</label>
+                    <input type="password" id="password" class="inp-txt" >
+                </div>
+                <div class="item-btn" >
+                    <button class="login_btn" type="button" id="loginBtn">登录</button>
+                    <button class="login_reset" type="reset">重置</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script src="./plugin/jQuery/jquery-1.8.3.min.js"></script>
+<script src="js/common/cookie.js"></script>
+<script src="js/common/common.js"></script>
+<script src="js/common/config.js"></script>
+<script>
+
+$(function () {
+    $("#loginBtn").on("click", function () {
+        var $this = $(this);
+        var username = $("#username").val();
+        var password = $("#password").val();
+        // 本地验证只做了非空判断
+        if (!username || !password) {
+            alert('账户和密码不能为空！')
+            return false
+        }
+        $.ajax({
+            url: ajaxRoot + '/v1/api/platform/login',
+            type: "POST",
+            data: JSON.stringify({
+                account: "admin",
+                password: "admin"
+            }),
+            dataType: 'json',
+            contentType: 'application/json',
+            success: function (res) {
+                // Cookie.Set("JSESSIONID", '6295A77EC1FE357E21E4AAA066BF4488');
+                window.location.href = webroot + "index.html";
+            },
+            error:function(XMLHttpRequest, textStatus, errorThrown){
+                $this.removeAttr("disabled").text('重试');
+                if(XMLHttpRequest.responseText){
+                    var res = JSON.parse(XMLHttpRequest.responseText);
+                    alert(res.message);
+                }else{
+                    alert('服务器连接失败，请稍后重试！');
+                }
+            }
+        });
+    });
+
+    $("#password").keydown(function () {
+        //回车键监听
+        if (event.keyCode == "13") {
+            $("#loginBtn").click();
+        }
+    });
+})
+</script>
+</body>
+</html>

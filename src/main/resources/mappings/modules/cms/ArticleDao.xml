@@ -1,0 +1,711 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.cms.dao.ArticleDao">
+    
+	<sql id="cmsArticleColumns">
+		a.id AS "id",
+		a.category_id AS "category.id",
+		a.title AS "title",
+		a.link AS "link",
+		a.color AS "color",
+		a.image AS "image",
+		a.appendfile AS "appendfile",
+		a.keywords AS "keywords",
+		a.description AS "description",
+		a.weight AS "weight",
+		a.weight_date AS "weightDate",
+		a.hits AS "hits",
+		a.posid AS "posid",
+		a.custom_content_view AS "customContentView",
+		a.view_config AS "viewConfig",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		c.name AS "category.name",
+		u.name AS "user.name",
+		a.unit_examine as "unitExamine",
+		a.office_examine as "officeExamine",
+		a.office_director_examine as "officeDirectorExamine",
+		a.final_examine as "finalExamine",
+		a.unit_examine_id as "unitExamineId",
+		a.office_examine_id as "officeExamineId",
+		a.office_director_examine_id as "officeDirectorExamineId",
+		a.final_examine_id as "finalExamineId",
+		a.check_type as checkType
+	</sql>
+	
+	<sql id="cmsArticleJoins">
+		JOIN cms_category c ON c.id = a.category_id
+		JOIN sys_office o ON o.id = c.office_id
+		JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="Article">
+		SELECT 
+			<include refid="cmsArticleColumns"/>
+		FROM cms_article a
+		<include refid="cmsArticleJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="Article">
+		SELECT 
+			<include refid="cmsArticleColumns"/>
+		FROM cms_article a
+		<include refid="cmsArticleJoins"/>
+		<where>
+			a.del_flag = #{delFlag}
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%', #{title}, '%')</if>
+					<if test="dbName == 'postgre'">'%'||#{title}||'%'</if>
+			</if>
+			<if test="posid != null and posid != ''">
+				AND a.posid LIKE 
+					<if test="dbName == 'oracle'">'%'||#{posid}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{posid}+'%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%', #{posid}, '%')</if>
+					<if test="dbName == 'postgre'">'%'||#{posid}||'%'</if>
+			</if>
+			<!--典型培树 根据关键词查询，无类别信息-->
+			<if test="category != null and category != ''">
+				<if test="category.id != null and category.id != ''">
+					AND (a.category_id = #{category.id}
+					<if test="category.parentIds != null and category.parentIds != ''">
+						or c.parent_ids like
+							<if test="dbName == 'oracle'">'%'||#{category.id}||'%'</if>
+							<if test="dbName == 'mssql'">'%,'+#{category.id}+',%'</if>
+							<if test="dbName == 'mysql'">CONCAT('%,', #{category.id}, ',%')</if>
+							<if test="dbName == 'postgre'">'%,'||#{category.id}||',%'</if>
+					</if>)
+				</if>
+			</if>
+			<if test="image != null and image != ''">
+				AND a.image  = #{image}
+			</if>
+			<if test="keywords != null and keywords != ''">
+				AND a.keywords  like
+				<if test="dbName == 'oracle'">'%'||#{keywords}||'%'</if>
+				<if test="dbName == 'mssql'">'%,'+#{keywords}+',%'</if>
+				<if test="dbName == 'mysql'">CONCAT('%,', #{keywords}, ',%')</if>
+				<if test="dbName == 'postgre'">'%,'||#{keywords}||',%'</if>
+			</if>
+			<if test="createBy != null and createBy.id != null and createBy.id != ''">
+				AND a.create_by  = #{createBy.id}
+			</if>
+			<if test="checkType != null and checkType != '' and delFlag == '2'.toString() ">
+				and a.check_type = #{checkType}
+			</if>
+			<!-- ${sqlMap.dsf}-->
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.weight DESC, a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="Article">
+		SELECT 
+			<include refid="cmsArticleColumns"/>
+		FROM cms_article a
+		<include refid="cmsArticleJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.weight DESC, a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findColumnList" resultType="Article">
+		SELECT
+		<include refid="cmsArticleColumns"/>
+		FROM cms_article a
+		<include refid="cmsArticleJoins"/>
+		<where>
+			A.del_flag = #{delFlag}
+
+			<!--和内容管理里 办公室 管理内容一致-->
+			<choose>
+				<when test="category != null and category.id != null and category.id != '' ">
+					and a.category_id = #{category.id }
+				</when>
+				<otherwise>
+					and a.category_id in ('127650291835482991a8b19ddd29029c','f72a5b908848442cb5606c32c65d4632','3cac8ac633dd43e2845f6c45b0c9c4ea','d82d42b9d0ab4c34b5405dbb8e398020')
+				</otherwise>
+			</choose>
+			<!--AND A.category_id in ( '1' ,  '6' ,  '5d7f5d61b84243ddb53ce5c359e6c2f2'
+			,  'd82d42b9d0ab4c34b5405dbb8e398020' ,  '127650291835482991a8b19ddd29029c'
+			, '2' , '27' , '3cac8ac633dd43e2845f6c45b0c9c4ea' ,
+			'c749a29cdfef44279339b3bdee2a5bff' ,  '96c02b11a0814f258210ee2d7f128d5f' ,
+			'c0a6b0c5c94b406abcb86a76d11a5470',  '88f067bce5e84ca8986879873aed0719','f72a5b908848442cb5606c32c65d4632','18')-->
+			<if test="title != null and title != ''">
+				AND a.title LIKE
+				<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+				<if test="dbName == 'mysql'">CONCAT('%', #{title}, '%')</if>
+				<if test="dbName == 'postgre'">'%'||#{title}||'%'</if>
+			</if>
+			<if test="checkType != null and checkType != '' and delFlag == '2'.toString() ">
+				and a.check_type = #{checkType}
+			</if>
+			<if test="officeExamineId != null and officeExamineId != ''">
+				and a.office_examine_id = #{officeExamineId}
+			</if>
+			<if test="finalExamineId != null and finalExamineId != ''">
+				and a.final_examine_id = #{finalExamineId}
+			</if>
+			<if test="officeDirectorExamineId != null and officeDirectorExamineId != ''">
+				and a.office_director_examine_id = #{officeDirectorExamineId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.weight DESC, a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<insert id="insert">
+		INSERT INTO cms_article(
+			id,
+			category_id,
+			title,
+			link,
+			color,
+			image,
+			appendfile,
+			keywords,
+			description,
+			weight,
+			weight_date,
+			hits,
+			posid,
+			custom_content_view,
+			view_config,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			unit_examine,
+			office_examine,
+			office_director_examine,
+			final_examine,
+			unit_examine_id,
+			office_examine_id,
+			office_director_examine_id,
+			final_examine_id,
+			check_type
+		) VALUES (
+			#{id},
+			#{category.id},
+			#{title},
+			#{link},
+			#{color},
+			#{image},
+			#{appendfile},
+			#{keywords},
+			#{description},
+			#{weight},
+			#{weightDate},
+			#{hits},
+			#{posid},
+			#{customContentView},
+			#{viewConfig},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{unitExamine},
+			#{officeExamine},
+			#{officeDirectorExamine},
+			#{finalExamine},
+			#{unitExamineId},
+			#{officeExamineId},
+			#{officeDirectorExamineId},
+			#{finalExamineId},
+			#{checkType}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE cms_article SET 	
+			category_id = #{category.id},
+			title = #{title},
+			link = #{link},
+			color = #{color},
+			image = #{image},
+			appendfile = #{appendfile},
+			keywords = #{keywords},
+			description = #{description},
+			weight = #{weight},
+			weight_date = #{weightDate},
+			hits = #{hits},
+			posid = #{posid},
+			custom_content_view = #{customContentView},
+			view_config = #{viewConfig},
+			create_date = #{createDate},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			del_flag = #{delFlag},
+			unit_examine = #{unitExamine},
+			office_examine = #{officeExamine},
+			office_director_examine = #{officeDirectorExamine},
+			final_examine = #{finalExamine},
+			unit_examine_id = #{unitExamineId},
+			office_examine_id = #{officeExamineId},
+			office_director_examine_id = #{officeDirectorExamineId},
+			final_examine_id = #{finalExamineId},
+			check_type = #{checkType}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE cms_article SET 
+			del_flag = #{delFlag}
+		WHERE id = #{id}
+	</update>
+	<update id="push">
+		UPDATE cms_article SET
+			del_flag = '0'
+		WHERE id = #{id}
+	</update>
+	
+	<select id="findByIdIn" resultType="Article">
+		SELECT 
+			<include refid="cmsArticleColumns"/>
+		from cms_article a where 
+		<where>
+			id in (${id});
+		</where>		
+	</select>
+ 
+	<update id="updateExpiredWeight">
+		update cms_article SET
+			 weight = 0
+		WHERE weight &gt; 0 AND weight_date &lt; 
+			<if test="dbName == 'oracle'">sysdate</if>
+			<if test="dbName == 'mssql'">FLOOR(CONVERT(FLOAT,GETDATE()))</if>
+			<if test="dbName == 'mysql'">CURDATE()</if>
+			<if test="dbName == 'postgre'">NOW()</if>
+	</update>
+	
+	<update id="updateHitsAddOne">
+		update cms_article set
+			 hits = hits+1
+		 WHERE id = #{id}
+	</update>
+	
+	<select id="findStats" resultType="Category">
+		select max(c.id) AS "id",
+		       max(c.name) AS "name",
+		       max(cp.id) AS "parent.id",
+		       max(cp.name) AS "parent.name",
+		       count(*) AS "cnt",
+		       sum(a.hits) AS "hits",
+		       max(a.update_date) as "updateDate",
+		       max(o.id) AS "office.id",
+		       max(o.name) AS "office.name"
+		  FROM cms_article a
+		  RIGHT JOIN cms_category c ON c.id = a.category_id
+		  JOIN cms_category cp ON c.parent_id = cp.id
+		  JOIN sys_office o ON o.id = c.office_id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL} 
+			AND c.site_id = #{site.id}
+			<if test="office.id != null and office.id != ''">
+				AND (c.office_id = #{office.id} OR o.parent_ids like 
+					<if test="dbName == 'oracle'">'%'||#{office.id}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{office.id}+'%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%', #{office.id}, '%')</if>
+					<if test="dbName == 'postgre'">'%'||#{office.id}||'%'</if>)					
+			</if>
+			<if test="beginDate != null and beginDate != ''">
+				AND a.update_date <![CDATA[ >= #{beginDate} ]]>
+			</if>
+			<if test="endDate != null and endDate != ''">
+				AND a.update_date <![CDATA[ <= #{endDate} ]]>
+			</if>
+			<if test="id != null and id != ''">
+				AND (c.id = #{id} OR c.parent_ids LIKE 
+					<if test="dbName == 'oracle'">'%'||#{id}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{id}+'%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%', #{id}, '%')</if>
+					<if test="dbName == 'postgre'">'%'||#{id}||'%'</if>					
+					)
+			</if>
+			group by cp.sort, cp.id, c.sort, c.id
+			order by cp.sort, cp.id, c.sort, c.id
+		</where>		
+	</select>
+
+	<select id="columnSatistics" resultType="map">
+		select
+		count( CASE WHEN ( a.category_id = 'd82d42b9d0ab4c34b5405dbb8e398020' ) THEN a.category_id END ) AS report,
+		"count" ( CASE WHEN ( a.category_id = '3cac8ac633dd43e2845f6c45b0c9c4ea' ) THEN a.category_id END ) AS survey,
+		"count" ( CASE WHEN ( a.category_id = 'c749a29cdfef44279339b3bdee2a5bff' ) THEN a.category_id END ) AS xuanjiao,
+		"count" ( CASE WHEN ( a.category_id IN ( 'c749a29cdfef44279339b3bdee2a5bff', '3cac8ac633dd43e2845f6c45b0c9c4ea', 'd82d42b9d0ab4c34b5405dbb8e398020' ) ) THEN a.category_id END ) as total, '北海处' as label
+		from cms_article a
+		left join sys_user u on a.create_by=u.id
+		left join sys_office o on o.id=u.office_id
+		where a.del_flag &lt;&gt; '1'and (o.id = '156' or o.parent_id ='156'  or o.parent_ids  LIKE '%,' || '156' || ',%')
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.create_date) = #{year}
+			</when>
+			<when test="beginDate != null and beginDate != '' and endDate != null and endDate != ''">
+				AND a.create_date between #{beginDate} and #{endDate}
+			</when>
+			<when test="beginDate != null and beginDate != ''">
+				AND a.create_date >= #{beginDate}
+			</when>
+			<when test="endDate != null and endDate != ''">
+				AND  #{endDate} >= a.create_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		union all
+		select
+		count( CASE WHEN ( a.category_id = 'd82d42b9d0ab4c34b5405dbb8e398020' ) THEN a.category_id END ) AS report,
+		"count" ( CASE WHEN ( a.category_id = '3cac8ac633dd43e2845f6c45b0c9c4ea' ) THEN a.category_id END ) AS survey,
+		"count" ( CASE WHEN ( a.category_id = 'c749a29cdfef44279339b3bdee2a5bff' ) THEN a.category_id END ) AS xuanjiao,
+		"count" ( CASE WHEN ( a.category_id IN ( 'c749a29cdfef44279339b3bdee2a5bff', '3cac8ac633dd43e2845f6c45b0c9c4ea', 'd82d42b9d0ab4c34b5405dbb8e398020' ) ) THEN a.category_id END ) as total, '南宁处' as label
+		from cms_article a
+		left join sys_user u on a.create_by=u.id
+		left join sys_office o on o.id=u.office_id
+		where a.del_flag &lt;&gt; '1'and (o.id = '34' or o.parent_id ='34'  or o.parent_ids  LIKE '%,' || '34' || ',%')
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.create_date) = #{year}
+			</when>
+			<when test="beginDate != null and beginDate != '' and endDate != null and endDate != ''">
+				AND a.create_date between #{beginDate} and #{endDate}
+			</when>
+			<when test="beginDate != null and beginDate != ''">
+				AND a.create_date >= #{beginDate}
+			</when>
+			<when test="endDate != null and endDate != ''">
+				AND  #{endDate} >= a.create_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		union all
+		select
+		count( CASE WHEN ( a.category_id = 'd82d42b9d0ab4c34b5405dbb8e398020' ) THEN a.category_id END ) AS report,
+		"count" ( CASE WHEN ( a.category_id = '3cac8ac633dd43e2845f6c45b0c9c4ea' ) THEN a.category_id END ) AS survey,
+		"count" ( CASE WHEN ( a.category_id = 'c749a29cdfef44279339b3bdee2a5bff' ) THEN a.category_id END ) AS xuanjiao,
+		"count" ( CASE WHEN ( a.category_id IN ( 'c749a29cdfef44279339b3bdee2a5bff', '3cac8ac633dd43e2845f6c45b0c9c4ea', 'd82d42b9d0ab4c34b5405dbb8e398020' ) ) THEN a.category_id END ) as total, '柳州处' as label
+		from cms_article a
+		left join sys_user u on a.create_by=u.id
+		left join sys_office o on o.id=u.office_id
+		where a.del_flag &lt;&gt; '1'and (o.id = '95' or o.parent_id ='95'  or o.parent_ids  LIKE '%,' || '95' || ',%')
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.create_date) = #{year}
+			</when>
+			<when test="beginDate != null and beginDate != '' and endDate != null and endDate != ''">
+				AND a.create_date between #{beginDate} and #{endDate}
+			</when>
+			<when test="beginDate != null and beginDate != ''">
+				AND a.create_date >= #{beginDate}
+			</when>
+			<when test="endDate != null and endDate != ''">
+				AND  #{endDate} >= a.create_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		union all
+		select
+		count( CASE WHEN ( a.category_id = 'd82d42b9d0ab4c34b5405dbb8e398020' ) THEN a.category_id END ) AS report,
+		"count" ( CASE WHEN ( a.category_id = '3cac8ac633dd43e2845f6c45b0c9c4ea' ) THEN a.category_id END ) AS survey,
+		"count" ( CASE WHEN ( a.category_id = 'c749a29cdfef44279339b3bdee2a5bff' ) THEN a.category_id END ) AS xuanjiao,
+		"count" ( CASE WHEN ( a.category_id IN ( 'c749a29cdfef44279339b3bdee2a5bff', '3cac8ac633dd43e2845f6c45b0c9c4ea', 'd82d42b9d0ab4c34b5405dbb8e398020' ) ) THEN a.category_id END ) as total, '公安局' as label
+		from cms_article a
+		left join sys_user u on a.create_by=u.id
+		left join sys_office o on o.id=u.office_id
+		where a.del_flag &lt;&gt; '1'and (o.id = '0' or o.id = '1' or o.parent_id in ('1','307','312','316') or o.parent_id like '0')
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.create_date) = #{year}
+			</when>
+			<when test="beginDate != null and beginDate != '' and endDate != null and endDate != ''">
+				AND a.create_date between #{beginDate} and #{endDate}
+			</when>
+			<when test="beginDate != null and beginDate != ''">
+				AND a.create_date >= #{beginDate}
+			</when>
+			<when test="endDate != null and endDate != ''">
+				AND  #{endDate} >= a.create_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+
+	</select>
+
+	<select id="findGovernmentList" resultType="Article">
+		select <include refid="cmsArticleColumns"/>
+		from cms_article a
+		LEFT JOIN sys_user u ON u."id" = a.create_by
+		left join sys_office o on u.office_id=o."id"
+		JOIN cms_category c ON c.id = a.category_id
+		where a.del_flag &lt;&gt; '1' and c."name" = #{label}
+		and a.category_id IN ( 'c749a29cdfef44279339b3bdee2a5bff', '3cac8ac633dd43e2845f6c45b0c9c4ea', 'd82d42b9d0ab4c34b5405dbb8e398020' )
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.create_date) = #{year}
+			</when>
+			<when test="beginDate != null and beginDate != '' and endDate != null and endDate != ''">
+				AND a.create_date between #{beginDate} and #{endDate}
+			</when>
+			<when test="beginDate != null and beginDate != ''">
+				AND a.create_date >= #{beginDate}
+			</when>
+			<when test="endDate != null and endDate != ''">
+				AND  #{endDate} >= a.create_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="company != 'top'">
+				and (o.id = #{company} or o.parent_id =#{company}  or o.parent_ids  LIKE '%,' || '${company}' || ',%')
+			</when>
+			<otherwise>
+				and (o.id = '0' or o.id = '1' or o.parent_id in ('1','307','312','316') or o.parent_id like '0')
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.weight DESC, a.update_date DESC
+			</otherwise>
+		</choose>
+
+	</select>
+
+	<select id="countSecrecy" resultType="map">
+		select count( CASE WHEN ( a.category_id = 'c749a29cdfef44279339b3bdee2a5bff' ) THEN a.category_id END ) AS propaganda,
+		"count" ( CASE WHEN ( a.category_id = '96c02b11a0814f258210ee2d7f128d5f' ) THEN a.category_id END ) AS alarm,
+		'北海处' as label
+		FROM cms_article a
+		LEFT JOIN sys_user u
+		ON a.create_by=u.id
+		LEFT JOIN sys_office o
+		ON o.id=u.office_id
+		WHERE a.del_flag &lt;&gt; '1'and (o.id = '156' or o.parent_id ='156' or o.parent_ids LIKE '%,' || '156' || ',%')
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.create_date) = #{year}
+			</when>
+			<when test="beginDate != null and beginDate != '' and endDate != null and endDate != ''">
+				AND a.create_date between #{beginDate} and #{endDate}
+			</when>
+			<when test="beginDate != null and beginDate != ''">
+				AND a.create_date >= #{beginDate}
+			</when>
+			<when test="endDate != null and endDate != ''">
+				AND  #{endDate} >= a.create_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		union all
+		select count( CASE WHEN ( a.category_id = 'c749a29cdfef44279339b3bdee2a5bff' ) THEN a.category_id END ) AS propaganda,
+		"count" ( CASE WHEN ( a.category_id = '96c02b11a0814f258210ee2d7f128d5f' ) THEN a.category_id END ) AS alarm,
+		'南宁处' as label
+		FROM cms_article a
+		LEFT JOIN sys_user u ON a.create_by=u.id
+		LEFT JOIN sys_office o ON o.id=u.office_id
+		WHERE a.del_flag &lt;&gt; '1'and (o.id = '34' or o.parent_id ='34' or o.parent_ids LIKE '%,' || '34' || ',%')
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.create_date) = #{year}
+			</when>
+			<when test="beginDate != null and beginDate != '' and endDate != null and endDate != ''">
+				AND a.create_date between #{beginDate} and #{endDate}
+			</when>
+			<when test="beginDate != null and beginDate != ''">
+				AND a.create_date >= #{beginDate}
+			</when>
+			<when test="endDate != null and endDate != ''">
+				AND  #{endDate} >= a.create_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		union all
+		select count( CASE WHEN ( a.category_id = 'c749a29cdfef44279339b3bdee2a5bff' ) THEN a.category_id END ) AS propaganda,
+		"count" ( CASE WHEN ( a.category_id = '96c02b11a0814f258210ee2d7f128d5f' ) THEN a.category_id END ) AS alarm,
+		'柳州处' as label
+		FROM cms_article a
+		LEFT JOIN sys_user u
+		ON a.create_by=u.id
+		LEFT JOIN sys_office o
+		ON o.id=u.office_id
+		WHERE a.del_flag &lt;&gt; '1'and (o.id = '95' or o.parent_id ='95' or o.parent_ids LIKE '%,' || '95' || ',%')
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.create_date) = #{year}
+			</when>
+			<when test="beginDate != null and beginDate != '' and endDate != null and endDate != ''">
+				AND a.create_date between #{beginDate} and #{endDate}
+			</when>
+			<when test="beginDate != null and beginDate != ''">
+				AND a.create_date >= #{beginDate}
+			</when>
+			<when test="endDate != null and endDate != ''">
+				AND  #{endDate} >= a.create_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		union all
+		select count( CASE WHEN ( a.category_id = 'c749a29cdfef44279339b3bdee2a5bff' ) THEN a.category_id END ) AS propaganda,
+		"count" ( CASE WHEN ( a.category_id = '96c02b11a0814f258210ee2d7f128d5f' ) THEN a.category_id END ) AS alarm,
+		'公安局' as label
+		FROM cms_article a
+		LEFT JOIN sys_user u
+		ON a.create_by=u.id
+		LEFT JOIN sys_office o
+		ON o.id=u.office_id
+		WHERE a.del_flag &lt;&gt; '1'and (o.id = '0' or o.id = '1' or o.parent_id in ('1','307','312','316') or o.parent_id like '0')
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.create_date) = #{year}
+			</when>
+			<when test="beginDate != null and beginDate != '' and endDate != null and endDate != ''">
+				AND a.create_date between #{beginDate} and #{endDate}
+			</when>
+			<when test="beginDate != null and beginDate != ''">
+				AND a.create_date >= #{beginDate}
+			</when>
+			<when test="endDate != null and endDate != ''">
+				AND  #{endDate} >= a.create_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>;
+	</select>
+
+	<select id="findSecrecyDetailList" resultType="Article">
+		select <include refid="cmsArticleColumns"/>
+		from cms_article a
+		LEFT JOIN sys_user u ON u."id" = a.create_by
+		left join sys_office o on u.office_id=o."id"
+		JOIN cms_category c ON c.id = a.category_id
+		where a.del_flag &lt;&gt; '1' and c."name" = #{label}
+		and a.category_id IN ( 'c749a29cdfef44279339b3bdee2a5bff', '96c02b11a0814f258210ee2d7f128d5f')
+		<choose>
+			<when test="month != null and month !=''">
+				AND TO_CHAR(a.create_date, 'yyyy-mm') = #{month}
+			</when>
+			<when test="year != null and year !=''">
+				AND extract(year from a.create_date) = #{year}
+			</when>
+			<when test="beginDate != null and beginDate != '' and endDate != null and endDate != ''">
+				AND a.create_date between #{beginDate} and #{endDate}
+			</when>
+			<when test="beginDate != null and beginDate != ''">
+				AND a.create_date >= #{beginDate}
+			</when>
+			<when test="endDate != null and endDate != ''">
+				AND  #{endDate} >= a.create_date
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="company != 'top'">
+				and (o.id = #{company} or o.parent_id =#{company}  or o.parent_ids  LIKE '%,' || '${company}' || ',%')
+			</when>
+			<otherwise>
+				and (o.id = '0' or o.id = '1' or o.parent_id in ('1','307','312','316') or o.parent_id like '0')
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.weight DESC, a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+    <select id="selectAllYear" resultType="java.lang.String">
+		select DISTINCT
+		( to_char( create_date, 'yyyy' ) )
+		from
+			cms_article
+		where
+		 	del_flag = '0'
+	</select>
+
+	<select id="selectNumber" resultType="java.lang.Integer">
+		SELECT COUNT
+			( "id" )
+		FROM
+			cms_article
+		WHERE
+			del_flag = '0'
+			AND create_by = #{idNumber}
+			AND to_char ( "create_date", 'yyyy-mm-dd' ) BETWEEN #{yearL} AND #{yearT}
+			AND category_id = #{dyId}
+	</select>
+
+</mapper>

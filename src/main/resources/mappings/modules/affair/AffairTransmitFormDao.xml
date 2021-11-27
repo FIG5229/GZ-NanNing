@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.affair.dao.AffairTransmitFormDao">
+    
+	<sql id="affairTransmitFormColumns">
+		a.id AS "id",
+		a.handler AS "handler",
+		a.handle_date AS "handleDate",
+		a.handle_zi AS "handleZi",
+		a.handle_dh AS "handleDh",
+		a.receiver AS "receiver",
+		a.receive_date AS "receiveDate",
+		a.receive_org AS "receiveOrg",
+		a.receive_org_id AS "receiveOrgId",
+		a.receive_zi AS "receiveZi",
+		a.receive_dh AS "receiveDh",
+		a.z_num AS "zNum",
+		a.f_num AS "fNum",
+		a.material_num AS "materialNum",
+		a.create_by AS "createBy.id",
+		a.create_org_id AS "createOrgId",
+		a.create_id_no AS "createIdNo",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_org_id AS "updateOrgId",
+		a.update_id_no AS "updateIdNo",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="affairTransmitFormJoins">
+		LEFT JOIN sys_office o ON o.id = a.create_org_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="AffairTransmitForm">
+		SELECT 
+			<include refid="affairTransmitFormColumns"/>
+		FROM affair_transmit_form a
+		<include refid="affairTransmitFormJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AffairTransmitForm">
+		SELECT 
+			<include refid="affairTransmitFormColumns"/>
+		FROM affair_transmit_form a
+		<include refid="affairTransmitFormJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="handler != null and handler != ''">
+				AND a.handler LIKE '%'||#{handler}||'%'
+			</if>
+
+			<if test="handleDate != null and handleDate != ''">
+				AND a.handle_date = #{handleDate}
+			</if>
+
+			<if test="handleZi != null and handleZi != ''">
+				AND a.handle_zi LIKE '%'||#{handleZi}||'%'
+			</if>
+			<if test="handleDh != null and handleDh != ''">
+				AND a.handle_dh LIKE '%'||#{handleDh}||'%'
+			</if>
+			<if test="receiver != null and receiver != ''">
+				AND a.receiver LIKE '%'||#{receiver}||'%'
+			</if>
+			<choose>
+				<when test="beginReceiveDate != null and endReceiveDate != null and beginReceiveDate != '' and endReceiveDate != ''">
+					AND a.receive_date BETWEEN #{beginReceiveDate} AND #{endReceiveDate}
+				</when>
+				<when test="beginReceiveDate != null and beginReceiveDate != ''">
+					AND a.receive_date &gt;= #{beginReceiveDate}
+				</when>
+				<when test="endReceiveDate != null and endReceiveDate != ''">
+					AND a.receive_date &lt;= #{endReceiveDate}
+				</when>
+				<otherwise></otherwise>
+			</choose>
+			<if test="receiveOrgId != null and receiveOrgId != ''">
+				AND a.receive_org_id = #{receiveOrgId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AffairTransmitForm">
+		SELECT 
+			<include refid="affairTransmitFormColumns"/>
+		FROM affair_transmit_form a
+		<include refid="affairTransmitFormJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO affair_transmit_form(
+			id,
+			handler,
+			handle_date,
+			handle_zi,
+			handle_dh,
+			receiver,
+			receive_date,
+			receive_org,
+			receive_org_id,
+			receive_zi,
+			receive_dh,
+			z_num,
+			f_num,
+			material_num,
+			create_by,
+			create_org_id,
+			create_id_no,
+			create_date,
+			update_by,
+			update_org_id,
+			update_id_no,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{handler},
+			#{handleDate},
+			#{handleZi},
+			#{handleDh},
+			#{receiver},
+			#{receiveDate},
+			#{receiveOrg},
+			#{receiveOrgId},
+			#{receiveZi},
+			#{receiveDh},
+			#{zNum},
+			#{fNum},
+			#{materialNum},
+			#{createBy.id},
+			#{createBy.office.id},
+			#{createIdNo},
+			#{createDate},
+			#{updateBy.id},
+			#{updateBy.office.id},
+			#{updateIdNo},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE affair_transmit_form SET 	
+			handler = #{handler},
+			handle_date = #{handleDate},
+			handle_zi = #{handleZi},
+			handle_dh = #{handleDh},
+			receiver = #{receiver},
+			receive_date = #{receiveDate},
+			receive_org = #{receiveOrg},
+			receive_org_id = #{receiveOrgId},
+			receive_zi = #{receiveZi},
+			receive_dh = #{receiveDh},
+			z_num = #{zNum},
+			f_num = #{fNum},
+			material_num = #{materialNum},
+			update_by = #{updateBy.id},
+			update_org_id = #{updateBy.office.id},
+			update_id_no = #{updateIdNo},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE affair_transmit_form SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByIds">
+		UPDATE affair_transmit_form SET
+		del_flag = '1'
+		WHERE id in <foreach collection="ids" item="item" index="index"
+							 open="(" separator="," close=")">#{item}</foreach>
+	</update>
+	
+</mapper>
